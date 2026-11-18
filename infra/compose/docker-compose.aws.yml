@@ -1,0 +1,33 @@
+name: designx
+x-app: &app
+  image: ${DESIGNX_IMAGE:?Set the built image ID}
+  env_file:
+    - path: /etc/designx/app.env
+      format: raw
+  network_mode: host
+  restart: unless-stopped
+  init: true
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+
+services:
+  api:
+    <<: *app
+    command: [node, --import, tsx, apps/api/src/main.ts]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3100/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+  worker:
+    <<: *app
+    command: [node, --import, tsx, apps/worker/src/main.ts]
+    environment:
+      WORKER_ROLE: all
+  renderer:
+    <<: *app
+    command: [node, --import, tsx, apps/renderer/src/main.ts]
+    shm_size: 1gb

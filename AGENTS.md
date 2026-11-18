@@ -84,6 +84,24 @@ run -- <command> <arguments> 自动选择可用回环端口，为子进程更新
 
 2026-11-18 实测 SSH 登录用户为 ubuntu，PostgreSQL 返回 designx|workx，Redis 返回 PONG，本地隧道转发也已验证。
 
+## 开发与服务器部署
+
+当前 Codex 环境负责开发、构建和验证。用户通过 https://designx.velax.cn 访问 aws-1 上独立部署的应用版本。
+
+部署已提交的当前代码版本。
+
+    python3 scripts/cloud/deploy.py
+
+该入口先构建 Web，再将当前 Git 提交和 dist 上传至 /srv/designx/releases/<版本>。服务器构建 Docker 镜像并固定其镜像 ID，通过 infra/compose/docker-compose.aws.yml 运行 API、all Worker 和 Renderer。应用使用生产运行模式及宿主机网络，API 仅监听服务器 127.0.0.1:3100。Docker 的 restart 策略负责服务器重启后的进程恢复。
+
+Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/current/dist，/api/ 代理至服务器本机 3100。该站点的运行依赖服务器上的部署文件和容器。E2B 访问开发环境继续使用前文的默认 chisel 方案。
+
+服务器配置保存在 /etc/designx/app.env，权限 0600。首次部署从当前绑定选择应用所需的数据库和 R2 参数，后续部署保留已有服务器配置。当前 AI 与图片生成默认关闭。上传使用已有的同源 API 通道，由服务器写入 R2。
+
+部署会执行记录式数据库迁移、检查 API 健康和 Worker/Renderer 就绪，再切换 current 链接与 Nginx。已有部署存在时，服务启动或站点配置失败会恢复上一版本的镜像配置与静态链接。数据库迁移按仓库现有方式向前执行。
+
+该服务器使用的 TLS 证书路径为 /etc/letsencrypt/live/designx.velax.cn，现有 Certbot 自动续期任务在证书更新后重载 Nginx。域名 DNS、证书及服务器已有 PostgreSQL/R2 是部署前提。
+
 ## Claude 远端开发
 
 先读取 Claude 远端环境的 setup 和已有 SSH 配置，确认 Tailscale 运行模式、实际 socket、代理端口与密钥位置。用户此前说明 Claude 的 setup 使用 SOCKS5 接入 tailnet，该环境的具体参数尚未在本次 Codex 会话实测。

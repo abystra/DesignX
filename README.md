@@ -41,6 +41,14 @@ pnpm dev:all
 
 cloudflared 通过 setup/start 的 --tunnel-provider cloudflared 参数显式选择。该备用模式输出临时 HTTPS URL，R2 浏览器直传需匹配对应 Origin 的 CORS。基础开发默认 AI_ENABLED=false，启用 AI 时使用该环境明确配置的模型和模板。
 
+## 部署到 aws-1
+
+在当前环境完成开发并提交代码，再部署当前提交。
+
+    python3 scripts/cloud/deploy.py
+
+部署入口为 https://designx.velax.cn。Web 构建文件、API、Worker 和 Renderer 均在 aws-1 上运行，Nginx 提供静态页面并将 /api/ 转发到服务器本机 3100。部署目录、运行配置、回退步骤和开发环境区别见 AGENTS.md 的“开发与服务器部署”。
+
 ## 可用旅程
 
 1. 模板灵感 → 预览模板 → 使用模板 → 修改文字/图片/图层 → 自动或手动保存 → 刷新重开。
@@ -93,4 +101,4 @@ python3 tests/e2e/ai_creation.py --allow-paid-ai
 - `packages/server-domain`、`server-infra`：领域业务、RLS、事务、队列和 S3。
 - `db/migrations`、`infra/compose`：可重放 SQL 迁移、本地 PostgreSQL / SeaweedFS。
 
-当前可本地运行和联调，尚未作公网生产部署验收。`pnpm build` 只构建 Web 静态文件；API、Worker、Renderer 的生产镜像、进程管理、反向代理及部署流水线尚未交付。邮箱验证/找回、OTP、通用自动冲突解决、定时素材 GC、多人实时协作、独立图片/视频模型、完整配方与计费未实现。低倍率仍渲染真实图层，无缩略图 LOD。生产需独立配置数据库角色、存储凭证、HTTPS、备份与 tldraw 许可，不能使用示例开发密码。
+当前支持本地联调与 aws-1 部署，部署验证范围以实际运行结果为准。`pnpm build` 只构建 Web 静态文件；aws-1 的 API、Worker、Renderer 镜像、进程管理和 Nginx 配置由 scripts/cloud/deploy.py 部署，自动 CI/CD 流水线仍需另行配置。邮箱验证/找回、OTP、通用自动冲突解决、定时素材 GC、多人实时协作、独立图片/视频模型、完整配方与计费未实现。低倍率仍渲染真实图层，无缩略图 LOD。生产需独立配置数据库角色、存储凭证、HTTPS、备份与 tldraw 许可，不能使用示例开发密码。
