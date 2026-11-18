@@ -34,6 +34,39 @@
 
 在需要直连托管代理的命令执行器中运行，受沙箱限制时使用执行工具提供的权限升级机制。
 
+### 初始化与启动
+
+首次进入 Codex 环境执行初始化，再启动开发进程。
+
+    python3 scripts/cloud/dev.py setup
+    python3 scripts/cloud/dev.py start
+
+setup 安装锁定的 pnpm 依赖、Renderer 所需 Chromium 和已校验摘要的隧道工具，通过管理员 SSH 在 aws-1 的 designx 库中补齐租户角色，再执行仓库的幂等数据库迁移并验证数据库、Redis、R2。已有 designx 库由 workx 拥有。
+
+start 在 Codex 工作区启动 Web、API、Generation、Media、Agent、Import 和 Renderer，共享到 aws-1 的数据库隧道。开发 Web 监听 0.0.0.0:5173，API 监听 127.0.0.1:3001。Node.js、Python 3、corepack、curl 是入口前提。
+
+对象存储默认使用现有 R2 designx 私有桶，S3_BUCKET 与 S3_STAGING_BUCKET 均为 designx，保持仓库既有开发约定。S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY 优先使用同名绑定，缺少时从 WORKX_R2_PARENT_ACCESS_KEY_ID / WORKX_R2_PARENT_SECRET_ACCESS_KEY 读取。S3_ENDPOINT 等显式环境变量可覆盖开发默认值。服务端 S3 请求使用环境中的 HTTP_PROXY / HTTPS_PROXY / NO_PROXY 规则。
+
+AI_ENABLED 默认为 false，基础初始化及浏览器验收使用这一配置。需要 AI 功能时在该环境显式配置 AI_ENABLED 及对应模型、E2B 模板和凭据。
+
+### E2B 访问开发环境
+
+默认使用 chisel。云开发环境主动连接 E2B 内的 chisel 服务端，由反向隧道将开发环境的 Web 5173、API 3001 映射到 E2B 的同名回环端口。chisel 使用随机认证和服务端指纹校验，E2B 入口要求 traffic access token。
+
+start 默认创建专用 E2B 隧道沙箱，在开发进程运行期间定期续期，退出时清理。设置 DESIGNX_TUNNEL_SANDBOX_ID 可接入指定的现有 E2B 沙箱，退出时关闭本次隧道服务。E2B SDK 使用当前环境的 HTTPS_PROXY / HTTP_PROXY。
+
+连接信息保存在 Git 忽略的 .env.cloud-tunnel.local。E2B 内的浏览器与客户端访问 http://127.0.0.1:5173，API 访问 http://127.0.0.1:3001。
+
+cloudflared 是显式选择的备用方式。
+
+    python3 scripts/cloud/dev.py setup --tunnel-provider cloudflared
+    python3 scripts/cloud/dev.py start --tunnel-provider cloudflared
+
+也可显式设置 DESIGNX_TUNNEL_PROVIDER=cloudflared。该模式建立临时 HTTPS 入口并输出 URL，应用的 WEB_ORIGIN 随入口设置。此模式要求 cloudflared 可直连 Cloudflare 网络；当前 Codex 网络中的直连测试被拒绝，需在具备对应网络能力的环境使用。浏览器直传 R2 时，桶 CORS 还需允许实际使用的浏览器 Origin，现有开发规则允许 http://127.0.0.1:5173。
+
+仅需单独建立 E2B 隧道时，在应用已运行的环境执行 node scripts/cloud/tunnel.mjs，默认同样为 chisel，--provider cloudflared 显式启用备用。
+
+
 验证 SSH、PostgreSQL 身份和 Redis 认证。
 
     python3 scripts/cloud/access.py check

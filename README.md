@@ -30,6 +30,17 @@ pnpm dev:all
 
 停止应用使用 Ctrl+C；`pnpm infra:down` 停止基础设施并保留数据卷。不要用 `down -v`，除非有意删除本项目开发数据。
 
+## Codex 云端开发
+
+应用运行在 Codex 工作区，PostgreSQL 和 Redis 使用 aws-1，文件使用已配置的 R2 designx 私有桶。环境变量绑定与本地、Claude 远端开发的区别见 AGENTS.md。
+
+    python3 scripts/cloud/dev.py setup
+    python3 scripts/cloud/dev.py start
+
+初始化会准备依赖、Chromium、数据库租户角色和迁移，并验证云端连接。启动会运行 Web、API、各 Worker 与 Renderer，并默认建立 chisel 反向隧道。云开发环境主动连接 E2B 内的 chisel 服务端，E2B 随后可访问 http://127.0.0.1:5173 及 http://127.0.0.1:3001。连接信息写入 Git 忽略的 .env.cloud-tunnel.local。专用隧道沙箱随开发进程续期和清理，已有沙箱可通过 DESIGNX_TUNNEL_SANDBOX_ID 指定。
+
+cloudflared 通过 setup/start 的 --tunnel-provider cloudflared 参数显式选择。该备用模式输出临时 HTTPS URL，R2 浏览器直传需匹配对应 Origin 的 CORS。基础开发默认 AI_ENABLED=false，启用 AI 时使用该环境明确配置的模型和模板。
+
 ## 可用旅程
 
 1. 模板灵感 → 预览模板 → 使用模板 → 修改文字/图片/图层 → 自动或手动保存 → 刷新重开。

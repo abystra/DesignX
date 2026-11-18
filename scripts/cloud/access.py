@@ -165,19 +165,22 @@ def run(options, directory, command):
             else:
                 raise RuntimeError("SSH tunnel startup timed out")
             print("aws-1 PostgreSQL and Redis tunnels ready", file=sys.stderr)
-            child = subprocess.Popen(command, env=env)
+            child = subprocess.Popen(command, env=env, start_new_session=True)
             while child.poll() is None:
                 if tunnel.poll() is not None:
                     raise RuntimeError("SSH tunnel disconnected")
                 time.sleep(0.2)
             return child.returncode
         finally:
-            if child is not None and child.poll() is None:
-                child.terminate()
+            if child is not None:
                 try:
-                    child.wait(timeout=5)
+                    os.killpg(child.pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+                try:
+                    child.wait(timeout=10)
                 except subprocess.TimeoutExpired:
-                    child.kill()
+                    os.killpg(child.pid, signal.SIGKILL)
                     child.wait()
             tunnel.terminate()
             try:

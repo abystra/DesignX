@@ -2,16 +2,21 @@ import { S3Client, HeadBucketCommand, CreateBucketCommand, PutObjectCommand, Get
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Readable } from 'node:stream';
 import { config } from './config.js';
+import { ProxyAgent } from 'proxy-agent';
 import { parseBucketAliases,resolveObjectLocation } from './storage-locations.js';
 
 const bucketAliases = parseBucketAliases(process.env.S3_BUCKET_ALIASES_JSON);
 const locate = (bucket:string,key='') => resolveObjectLocation(bucket,key,bucketAliases);
 
-export const storage = new S3Client({ endpoint: config.s3Endpoint, region: config.s3Region, forcePathStyle: true, requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED', credentials: { accessKeyId: config.s3AccessKey, secretAccessKey: config.s3SecretKey } });
+const proxyAgent = new ProxyAgent();
+const requestHandler = { httpAgent: proxyAgent, httpsAgent: proxyAgent };
+
+export const storage = new S3Client({ requestHandler, endpoint: config.s3Endpoint, region: config.s3Region, forcePathStyle: true, requestChecksumCalculation: 'WHEN_REQUIRED', responseChecksumValidation: 'WHEN_REQUIRED', credentials: { accessKeyId: config.s3AccessKey, secretAccessKey: config.s3SecretKey } });
 // Legacy objects remain readable during verified copy/switch and rollback. This
 // client is deliberately used only by GET/HEAD; all writes use the primary store.
 export const legacyReadBucket = () => process.env.LEGACY_S3_BUCKET || undefined;
 const legacyStorage = process.env.LEGACY_S3_BUCKET && process.env.LEGACY_S3_BUCKET !== config.s3Bucket ? new S3Client({
+ requestHandler,
  endpoint:process.env.LEGACY_S3_ENDPOINT||config.s3Endpoint,region:process.env.LEGACY_S3_REGION||config.s3Region,forcePathStyle:true,
  requestChecksumCalculation:'WHEN_REQUIRED',responseChecksumValidation:'WHEN_REQUIRED',
  credentials:{accessKeyId:process.env.LEGACY_S3_ACCESS_KEY_ID||config.s3AccessKey,secretAccessKey:process.env.LEGACY_S3_SECRET_ACCESS_KEY||config.s3SecretKey},
