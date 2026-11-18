@@ -96,7 +96,7 @@ run -- <command> <arguments> 自动选择可用回环端口，为子进程更新
 
 Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/current/dist，/api/ 代理至服务器本机 3100。该站点的运行依赖服务器上的部署文件和容器。E2B 访问开发环境继续使用前文的默认 chisel 方案。
 
-服务器配置保存在 /etc/designx/app.env，权限 0600。首次部署从当前绑定选择应用所需的数据库和 R2 参数，后续部署保留已有服务器配置。当前 AI 与图片生成默认关闭。上传使用已有的同源 API 通道，由服务器写入 R2。
+服务器配置保存在 /etc/designx/app.env，权限 0600。首次部署为服务器创建独立的 designx_production 数据库和 designx_app 登录角色，密码在服务器生成并写入该私有配置。R2 参数从当前环境的应用绑定读取，后续部署保留已有服务器配置。Codex 开发仍使用前文的 designx 数据库。当前 AI 与图片生成默认关闭。上传使用已有的同源 API 通道，由服务器写入 R2。
 
 部署会执行记录式数据库迁移、检查 API 健康和 Worker/Renderer 就绪，再切换 current 链接与 Nginx。已有部署存在时，服务启动或站点配置失败会恢复上一版本的镜像配置与静态链接。数据库迁移按仓库现有方式向前执行。
 

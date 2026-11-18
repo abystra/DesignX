@@ -24,14 +24,8 @@ def ssh(command, **kwargs):
 
 def runtime_configuration():
     env = os.environ
-    required = ["DATABASE_URL", "PGPASSWORD"]
-    for name in required:
-        if not env.get(name):
-            raise RuntimeError("Missing deployment binding: " + name)
     values = {
         "NODE_ENV": "production",
-        "DATABASE_URL": env["DATABASE_URL"],
-        "PGPASSWORD": env["PGPASSWORD"],
         "API_HOST": "127.0.0.1",
         "PORT": "3100",
         "WEB_ORIGIN": "https://designx.velax.cn",
@@ -90,22 +84,8 @@ def main():
     ssh("sudo -n install -d -m 755 /srv/designx/releases /etc/designx " + shlex.quote(remote))
     with archive.open("rb") as source:
         ssh("sudo -n tar -xf - -C " + shlex.quote(remote), stdin=source)
-    installer = """
-import json, os
-from pathlib import Path
-import sys
-values=json.load(sys.stdin)
-path=Path('/etc/designx/app.env')
-try:
- descriptor=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
-except FileExistsError:
- print('Preserved existing server runtime configuration')
-else:
- with os.fdopen(descriptor,'w') as output:
-  output.write(''.join(key+'='+value+'\\n' for key,value in values.items()))
- print('Created server runtime configuration')
-"""
-    ssh("sudo -n python3 -c " + shlex.quote(installer),
+    initializer = (ROOT / "scripts/cloud/initialize-runtime.py").read_text()
+    ssh("sudo -n python3 -c " + shlex.quote(initializer),
         input=json.dumps(runtime_configuration()), text=True)
     ssh("sudo -n python3 " + shlex.quote(remote + "/scripts/cloud/deploy-release.py") +
         " " + shlex.quote(remote))
