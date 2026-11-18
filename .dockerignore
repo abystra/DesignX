@@ -1,9 +1,13 @@
 .git
 node_modules
-dist
 .env
 .env.*
 artifacts
 test-results
 playwright-report
-**/__pycache__
+dist
+runtime/matfs/dist
+runtime/runner/**/__pycache__
+infra/e2b/dist
+
+.deployment/

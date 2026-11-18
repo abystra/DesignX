@@ -47,7 +47,7 @@ def point_current(target):
 
 
 tag = "designx:" + release.name
-run(["docker", "build", "--tag", tag, "--file", "infra/docker/Dockerfile", "."], cwd=release)
+run(["docker", "build", "--target", "renderer", "--tag", tag, "--file", "infra/docker/Dockerfile", "."], cwd=release)
 image = subprocess.check_output(["docker", "image", "inspect", "--format", "{{.Id}}", tag], text=True).strip()
 image_file.write_text("DESIGNX_IMAGE=" + image + "\n")
 for path in [release / "dist", *(release / "dist").rglob("*")]:
