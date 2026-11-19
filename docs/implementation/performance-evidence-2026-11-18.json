@@ -1,7 +1,7 @@
 {
   "date": "2026-11-18",
   "environment": "Codex managed cloud, isolated PostgreSQL/S3/Chromium",
-  "commit": null,
+  "commit": "50f25edeebd2ffe2606722e3f9a2d2f0e0c8c89f",
   "tests": {
     "unit": 108,
     "api": 111,
@@ -154,9 +154,34 @@
     "budgets": "all passed; loopback 1440x1000, 1006 projects, 24 x 1000-node works, 96-card scroll, 5 concurrent scoped metadata reads",
     "visualReview": "reviewed corrected full-aspect cached images; grid intrinsic-height clipping fixed"
   },
-  "release": null,
-  "production": null,
-  "ci": null,
+  "release": {
+    "path": "/srv/designx/releases/50f25edeebd2-20261119084506",
+    "image": "sha256:b4dccef7d850cf42f140e36dd8beaf211c52db199eaccef77df0844bbd3e590e",
+    "migration": "0018_project_previews.sql applied in development and production"
+  },
+  "production": {
+    "base": "https://designx.velax.cn",
+    "commit": "50f25edeebd2ffe2606722e3f9a2d2f0e0c8c89f",
+    "checks": [
+      "public built home defers Editor/Studio and reads no full document for previews",
+      "real private WebP, authenticated ETag revalidation and anonymous refusal",
+      "deferred Editor edits, persists, reloads and downloads real 600x800 PNG",
+      "saved revision replaces the preview URL",
+      "390px list shows the saved preview",
+      "deferred legacy Studio and Board open",
+      "deleted project blocks the former preview URL before cache response"
+    ],
+    "errors": [],
+    "cleanup": true,
+    "initialScriptPaths": [
+      "/assets/index-BrC0uor6.js"
+    ]
+  },
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44490232054",
+    "status": "in_progress",
+    "conclusion": null
+  },
   "limits": [
     "Cold rendering has one-time generation cost per revision; measured separately from warm cache",
     "No claim of million-record scale or production multi-user load",
@@ -175,5 +200,6 @@
     ],
     "errors": []
   },
-  "previewArtifacts": "tests/e2e/.artifacts/previews-1795077830528"
+  "previewArtifacts": "tests/e2e/.artifacts/previews-1795077830528",
+  "productionHarnessCorrection": "First run waited for a below-fold lazy image without scrolling; added real scrolling to the project card. Both runs cleaned owned accounts and objects."
 }
