@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-18",
+  "environment": "Codex managed cloud, isolated PostgreSQL/S3/Chromium",
+  "commit": "5c6b853a3eeff1304d77a39fd9109782e4bf0e26",
+  "tests": {
+    "unit": 108,
+    "api": 108,
+    "additionalActualAiSourceApi": 25,
+    "typecheck": "passed",
+    "build": "passed",
+    "structure": "passed",
+    "browser": {
+      "account": 6,
+      "poster": 11,
+      "library": 10,
+      "preferences": 8,
+      "templates": 5,
+      "recovery": 7,
+      "largeImport": 3,
+      "render": 3
+    }
+  },
+  "templateJourney": {
+    "base": "http://127.0.0.1:38157",
+    "checks": [
+      "all 8 template previews create the exact frozen version with source evidence and real PNG exports",
+      "PDF download and long Chinese edit/save/reload retain original template provenance",
+      "versioned templates remain discoverable through favorites",
+      "global search opens the same published template version",
+      "legacy Studio adds a server-resolved versioned template artboard"
+    ],
+    "errors": []
+  },
+  "artifacts": "tests/e2e/.artifacts/templates-1795076542579",
+  "visualReview": {
+    "files": "8 actual 600x800 PNG, long Chinese subtitle PNG, rasterized actual PDF and editor screenshot",
+    "result": "viewed; no missing image/font or Chinese subtitle clipping",
+    "renderChangedPixelRatios": [
+      0,
+      0.00025,
+      0
+    ]
+  },
+  "release": {
+    "path": "/srv/designx/releases/5c6b853a3eef-20261119082324",
+    "image": "sha256:a01da6fef90b7a0202aa9e1e3936c696b93fe4e57bfae473be92412d75fda0d9",
+    "migration": "0017_creation_sources.sql applied"
+  },
+  "production": {
+    "base": "https://designx.velax.cn",
+    "commit": "5c6b853a3eeff1304d77a39fd9109782e4bf0e26",
+    "checks": [
+      "live template search/preview/source creates the exact frozen version",
+      "edit/save/reload preserves creation provenance",
+      "real PNG download from versioned template",
+      "real PDF download from versioned template",
+      "obsolete version rejected without another project",
+      "template favorite filter uses persisted selection",
+      "old Studio creates a server-versioned template artboard"
+    ],
+    "errors": [],
+    "cleanup": true
+  },
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44487160365",
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "limits": [
+    "Physical phone keyboard, Safari and screen reader not verified",
+    "Unsplash general license does not establish portrait/trademark/artwork releases; photographer unknown is recorded as null",
+    "Pre-G4 rollback requires retaining hashed image and provenance support"
+  ]
+}
