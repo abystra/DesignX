@@ -14,7 +14,10 @@ const app=await buildApp({logger:false});
 const actors:string[]=[];let asset:any,project:any;
 const children:ChildProcess[]=[];let logs='';
 function child(path:string){const processHandle=spawn(process.execPath,['--import','tsx',path],{cwd:process.cwd(),env:{...process.env,WORKER_ROLE:'media'},stdio:['ignore','pipe','pipe']});children.push(processHandle);processHandle.stdout?.on('data',d=>{logs+=String(d);});processHandle.stderr?.on('data',d=>{logs+=String(d);});return processHandle;}
-async function request(method:string,url:string,payload?:any,actor=0,headers:any={}){return app.inject({method:method as any,url,payload,headers:{origin:'http://127.0.0.1:5173',cookie:actors[actor],...headers}});}
+async function request(method:string,url:string,payload?:any,actor=0,headers:any={}){
+ if(method==='PUT'&&url.startsWith('/api/preferences/')){const current=await app.inject({method:'GET',url,headers:{cookie:actors[actor]}});headers={'if-match':current.headers.etag,...headers};}
+ return app.inject({method:method as any,url,payload,headers:{origin:'http://127.0.0.1:5173',cookie:actors[actor],...headers}});
+}
 async function until(fn:()=>Promise<any>,predicate:(v:any)=>boolean,ms=45000){const start=Date.now();let value:any;while(Date.now()-start<ms){value=await fn();if(predicate(value))return value;await sleep(250);}throw new Error(`Timed out: ${JSON.stringify(value)}\n${logs}`);}
 async function waitJob(jobId:string){return until(async()=>(await request('GET',`/api/jobs/${jobId}`)).json(),j=>['succeeded','failed','cancelled'].includes(j.status));}
 test.after(async()=>{

@@ -10,7 +10,10 @@ await migrate();
 const app=await buildApp({logger:false});
 const unique=randomUUID();
 const cookies:string[]=[];
-const request=async(method:string,url:string,payload?:any,actor=0,extra:any={})=>app.inject({method:method as any,url,payload,headers:{origin:'http://127.0.0.1:5173',...(cookies[actor]?{cookie:cookies[actor]}:{}),...extra}});
+const request=async(method:string,url:string,payload?:any,actor=0,extra:any={})=>{
+ if(method==='PUT'&&url.startsWith('/api/preferences/')){const current=await app.inject({method:'GET',url,headers:{cookie:cookies[actor]}});extra={'if-match':current.headers.etag,...extra};}
+ return app.inject({method:method as any,url,payload,headers:{origin:'http://127.0.0.1:5173',...(cookies[actor]?{cookie:cookies[actor]}:{}),...extra}});
+};
 let project:any,workspaceId:string,secondWorkspaceId:string;
 test.after(async()=>{await app.close();await stopQueue();await pool.end();});
 test('registration, session cookie and authentication survive fresh API instance',async()=>{

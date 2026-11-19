@@ -39,7 +39,7 @@ export async function buildApp(options:{logger?:boolean,aiEnabled?:boolean}={}) 
   if(error.code==='FST_REQ_FILE_TOO_LARGE'){reply.code(413).send({error:'PAYLOAD_TOO_LARGE',message:'文件不能超过 10 MB'});return;}
   const status=error.statusCode||500;
   if(status>=500)req.log.error(error);
-  reply.code(status).send({error:error instanceof HttpError?error.code:status>=500?'INTERNAL_ERROR':error.code||'BAD_REQUEST',message:status>=500?'服务暂时不可用，请稍后重试':error.message});
+  reply.code(status).send({error:error instanceof HttpError?error.code:status>=500?'INTERNAL_ERROR':error.code||'BAD_REQUEST',message:status>=500?'服务暂时不可用，请稍后重试':error.message,...(error instanceof HttpError&&error.details?{details:error.details}:{})});
  });
  app.get('/api/health',async()=>{await pool.query('SELECT 1');return {status:'ok',aiEnabled:options.aiEnabled??config.aiEnabled};});
  await app.register(authRoutes);

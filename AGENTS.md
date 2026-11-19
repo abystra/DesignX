@@ -167,6 +167,7 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 - 新建个人海报使用 `workspaceMode=editor`，旧项目/多画板默认 `studio`；列表、搜索和刷新必须遵守持久化入口。
 - 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。
 - Editor 的保存与另存副本使用持久化请求键；本机草稿按账号/空间/文档及挂载实例隔离，禁止恢复为跨标签整体覆盖。异常恢复合同和限制见 [G1 作品恢复](docs/implementation/recovery-release.md)。
+- 收藏使用偏好条目原子增删及幂等键；品牌、参考等整体偏好必须携带 If-Match revision，冲突保留输入并由用户明确合并/采用最新。禁止重新加入无条件整体 PUT。读取兼容、近期上限及回退边界见 [G3 偏好并发](docs/implementation/preferences-release.md)。
 - 公共工具目录只列真实手动入口和 `/api/capabilities` 配方。提示词明确标注为预设，能力关闭时在创建项目之前阻止进入。
 - 模板文档构造复用 `src/data/template-design.js`；UI 预览与服务端创建保持一致。品牌 Logo 使用素材 ID、版本 ID 和不可变 URL 的统一合同。
 - 项目/素材目录使用 `/api/projects/page`、`/api/assets/page` 的游标分页与服务端筛选；不要先取 1000 条再在浏览器过滤，也不要自动遍历全库填满选择器。上传状态读取单素材；错误与空结果分开。B1 合同及限制见 [资料库分页与搜索](docs/implementation/library-search-release.md)。

@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import catalog from "../data/catalog.json";
 import { api, uploadAsset, waitForJob, refreshWorkspace } from "../lib/api";
+import { readPreference, usePreferenceWriter, acceptPreference } from "../lib/preferences";
 import { useLibraryPage } from "../lib/use-library-page";
 import LibraryPageStatus from "./LibraryPageStatus";
 import { useAiTurns } from "../lib/useAiTurns";
@@ -298,6 +299,8 @@ export default function AIStudio({
   const [query, setQuery] = useState("");
   const [assetTab, setAssetTab] = useState("示例素材");
   const [recentSkills, setRecentSkills] = useState([]);
+  const writePreference = usePreferenceWriter();
+  const skillRevision = useRef(0);
   const [materialQuery, setMaterialQuery] = useState("");
   const materialPage = useLibraryPage("/assets/page", { q: materialQuery, status: "ready" }, panel === "assets" && assetTab === "我的资产");
   const serverAssets = materialPage.items.map(normalizeAsset);
@@ -653,7 +656,7 @@ export default function AIStudio({
           await Promise.all([
             api(`/projects/${projectId}/assets`),
             api("/preferences/references"),
-            api("/preferences/studio-skills"),
+            readPreference("studio-skills"),
           ]);
         if (!active) return;
         const normalize = normalizeAsset;
@@ -663,7 +666,7 @@ export default function AIStudio({
         setReferences(
           (Array.isArray(referenceData) ? referenceData : []).map(normalize),
         );
-        setRecentSkills(Array.isArray(skills) ? skills : []);
+        acceptPreference(skills, skillRevision, setRecentSkills);
         setLibraryError("");
       } catch (failure) {
         if (active) setLibraryError(failure.message);
@@ -996,13 +999,8 @@ export default function AIStudio({
     setPopover(null);
     setError("");
     setDraft((v) => v.replace(/\/[\w\u4e00-\u9fa5]*$/, ""));
-    const next = [
-      s.id || s.name,
-      ...recentSkills.filter((id) => id !== (s.id || s.name)),
-    ].slice(0, 12);
     try {
-      await api("/preferences/studio-skills", { method: "PUT", body: next });
-      setRecentSkills(next);
+      acceptPreference(await writePreference("studio-skills", { item: s.id || s.name }), skillRevision, setRecentSkills);
     } catch (failure) {
       setError(failure.message);
     }

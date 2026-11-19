@@ -18,8 +18,8 @@ const page = await context.newPage(); page.setDefaultTimeout(20000);
 const errors = [], checks = [], requests = [], timings = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('request', request => { if (request.method() === 'GET') requests.push(new URL(request.url()).pathname); });
-async function api(path, data, method = data === undefined ? 'GET' : 'POST') {
-  const response = await context.request.fetch(base + '/api' + path, { method, data, headers: { Origin: base } });
+async function api(path, data, method = data === undefined ? 'GET' : 'POST', headers = {}) {
+  const response = await context.request.fetch(base + '/api' + path, { method, data, headers: { Origin: base, ...headers } });
   assert.ok(response.ok(), `${path}: ${response.status()} ${await response.text()}`); return response.json();
 }
 async function home(route = 'projects') {
@@ -138,7 +138,7 @@ try {
   const created = await api('/projects/' + page.url().split('#editor/')[1]);
   assert.equal(created.design.nodes[0].src, asset.image);
   check('old uploaded material found by server search is placed into a real saved poster');
-  await api('/preferences/asset-favorites', [asset.assetId, 'stock-coffee'], 'PUT');
+  for (const item of [asset.assetId, 'stock-coffee']) await api('/preferences/asset-favorites/items', { item, present: true }, 'PATCH', { 'Idempotency-Key': randomUUID() });
   await home('assets'); await ready();
   await page.getByRole('tab', { name: '我的收藏' }).click(); await ready();
   await page.getByRole('button', { name: '预览 藏在很早以前的素材', exact: true }).waitFor();

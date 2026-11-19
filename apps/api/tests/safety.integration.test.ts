@@ -10,7 +10,10 @@ await migrate();
 const app=await buildApp({logger:false});
 const register=await app.inject({method:'POST',url:'/api/auth/register',payload:{email:`safety-${randomUUID()}@example.test`,password:'correct-horse-designx',name:'Safety'}});
 const cookie=String(register.headers['set-cookie']).split(';')[0],workspace=register.json().workspace.id;
-const request=(method:string,url:string,payload?:any,headers:any={})=>app.inject({method:method as any,url,payload,headers:{cookie,...headers}});
+const request=async(method:string,url:string,payload?:any,headers:any={})=>{
+ if(method==='PUT'&&url.startsWith('/api/preferences/')){const current=await app.inject({method:'GET',url,headers:{cookie}});headers={'if-match':current.headers.etag,...headers};}
+ return app.inject({method:method as any,url,payload,headers:{cookie,...headers}});
+};
 let project:any;
 test.after(async()=>{await app.close();await stopQueue();await pool.end();});
 test('atomic business writes and queue dispatch roll back together',async()=>{

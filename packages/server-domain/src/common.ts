@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { ArtboardSchema } from '../../doc-core/src/index.js';
 import type { Tx } from '../../server-infra/src/db.js';
 export const id = () => randomUUID();
-export class HttpError extends Error { constructor(public statusCode: number, public code: string, message: string) { super(message); } }
+export class HttpError extends Error { constructor(public statusCode: number, public code: string, message: string, public details?: unknown) { super(message); } }
 export function notFound(): never { throw new HttpError(404, 'NOT_FOUND', '内容不存在或无权访问'); }
 export const blankDesign = () => ({ width: 600, height: 800, background: '#ffffff', nodes: [] });
 export const designSchema = ArtboardSchema;

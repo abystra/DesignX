@@ -1,0 +1,60 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {buildApp} from '../src/server.js';
+import {migrate} from '../../../db/migrate.js';
+import {pool} from '../../../packages/server-infra/src/db.js';
+import {stopQueue} from '../../../packages/server-infra/src/queue.js';
+await migrate();const app=await buildApp({logger:false}),cookies:string[]=[],username='pref_'+randomUUID().slice(0,8),password='preference-test-password';
+const req=(method:string,key:string,body?:any,headers:any={},actor=0)=>app.inject({method:method as any,url:'/api/preferences/'+key,payload:body,headers:{origin:'http://127.0.0.1:5173',cookie:cookies[actor],...headers}});
+const item=(key:string,id:string,present=true,requestId=randomUUID(),actor=0)=>req('PATCH',key+'/items',{item:id,present},{'idempotency-key':requestId},actor);
+test.before(async()=>{
+ const registered=await app.inject({method:'POST',url:'/api/auth/register',payload:{username,password,name:'偏好验收'}});assert.equal(registered.statusCode,201);cookies.push(String(registered.headers['set-cookie']).split(';')[0]);
+ const login=await app.inject({method:'POST',url:'/api/auth/login',payload:{account:username,password}});assert.equal(login.statusCode,200);cookies.push(String(login.headers['set-cookie']).split(';')[0]);
+ const other=await app.inject({method:'POST',url:'/api/auth/register',payload:{username:'other_'+randomUUID().slice(0,8),password,name:'其他空间'}});assert.equal(other.statusCode,201);cookies.push(String(other.headers['set-cookie']).split(';')[0]);
+});
+test.after(async()=>{await app.close();await stopQueue();await pool.end();});
+test('independent sessions add and remove different favorites without overwriting; replay cannot resurrect old intent',async()=>{
+ const ids=[randomUUID(),randomUUID()];
+ const responses=await Promise.all([item('template-favorites','t1',true,ids[0],0),item('template-favorites','t2',true,ids[1],1)]);assert.ok(responses.every(r=>r.statusCode===200));
+ assert.deepEqual(new Set((await req('GET','template-favorites')).json()),new Set(['t1','t2']));
+ const revision=(await req('GET','template-favorites?meta=1')).json().revision;
+ await item('template-favorites','t1',true,ids[0],1);assert.equal((await req('GET','template-favorites?meta=1')).json().revision,revision);
+ await item('template-favorites','t1',false,randomUUID(),1);
+ const replay=await item('template-favorites','t1',true,ids[0]);assert.deepEqual(replay.json().value,['t2']);
+ assert.equal((await item('template-favorites','t2',false,ids[0])).statusCode,409);
+ assert.deepEqual((await req('GET','template-favorites',undefined,{},2)).json(),null);
+});
+test('brand compare-and-set has one concurrent winner; stale conflict includes the current tenant value',async()=>{
+ const base={name:'Brand',colors:['#ffffff'],description:'base'};
+ assert.equal((await req('PUT','brand',base)).statusCode,428,'old writers cannot silently overwrite');
+ const saved=await req('PUT','brand?meta=1',base,{'if-match':'"0"','idempotency-key':randomUUID()});assert.equal(saved.statusCode,200);
+ const version=saved.json().revision,headers={'if-match':'"'+version+'"'};
+ const writes=await Promise.all([req('PUT','brand?meta=1',{...base,name:'A'},{...headers,'idempotency-key':randomUUID()},0),req('PUT','brand?meta=1',{...base,name:'B'},{...headers,'idempotency-key':randomUUID()},1)]);
+ assert.deepEqual(writes.map(r=>r.statusCode).sort(),[200,409]);const conflict=writes.find(r=>r.statusCode===409)!.json();
+ assert.equal(conflict.error,'PREFERENCE_CONFLICT');assert.equal(conflict.details.current.revision,version+1);
+ assert.equal((await req('GET','brand',undefined,{},2)).json(),null);
+ const replayKey=randomUUID(),current=(await req('GET','brand?meta=1')).json();
+ const update=await req('PUT','brand?meta=1',{...base,name:'Saved once'},{'if-match':'"'+current.revision+'"','idempotency-key':replayKey});
+ const again=await req('PUT','brand?meta=1',{...base,name:'Saved once'},{'if-match':'"'+current.revision+'"','idempotency-key':replayKey});assert.equal(again.json().revision,update.json().revision);
+});
+test('structured references reject stale writes and foreign materials; deleted references are not restored by stale lists',async()=>{
+ const first=[{id:'r1',title:'我的参考',prompt:'保留'}];assert.equal((await req('PUT','references',first,{'if-match':'"0"'})).statusCode,200);
+ const old=(await req('GET','references?meta=1')).json();
+ assert.equal((await req('PUT','references',[],{'if-match':'"'+old.revision+'"'})).statusCode,200);
+ const stale=await req('PUT','references',first,{'if-match':'"'+old.revision+'"'});assert.equal(stale.statusCode,409);assert.deepEqual(stale.json().details.current.value,[]);
+ const current=(await req('GET','references?meta=1')).json();
+ const invalid=await req('PUT','references',[{id:'r2',title:'外部图片',material:{kind:'asset',id:randomUUID()}}],{'if-match':'"'+current.revision+'"'});assert.equal(invalid.statusCode,400);
+ assert.equal((await item('asset-favorites',randomUUID(),true,randomUUID(),2)).statusCode,404);
+ assert.deepEqual((await req('GET','references')).json(),[]);
+});
+test('project favorites validate tenant ownership; recent items merge and stay bounded',async()=>{
+ const project=await app.inject({method:'POST',url:'/api/projects',payload:{title:'我的海报',workspaceMode:'editor'},headers:{cookie:cookies[0]}});assert.equal(project.statusCode,201);
+ assert.equal((await item('favorites',project.json().id)).statusCode,200);
+ const page=await app.inject({method:'GET',url:'/api/projects/page?favorites=1',headers:{cookie:cookies[0]}});assert.equal(page.statusCode,200);assert.equal(page.json().items[0].id,project.json().id);
+ const denied=await app.inject({method:'GET',url:'/api/projects/page?favorites=1',headers:{cookie:cookies[2]}});assert.equal(denied.json().total,0);
+ assert.equal((await item('favorites',project.json().id,true,randomUUID(),2)).statusCode,404);
+ const results=await Promise.all(Array.from({length:15},(_,i)=>item('studio-skills','skill-'+i,true,randomUUID(),i%2)));assert.ok(results.every(r=>r.statusCode===200));
+ const recent=(await req('GET','studio-skills')).json();assert.equal(recent.length,12);assert.equal(new Set(recent).size,12);
+ await item('studio-skills',recent[5]);assert.equal((await req('GET','studio-skills')).json()[0],recent[5]);
+});

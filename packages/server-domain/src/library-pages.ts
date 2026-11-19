@@ -14,6 +14,7 @@ const projectQuery = baseQuery
     sort: z.enum(["updated", "name", "recent"]).default("updated"),
     trash: z.enum(["0", "1"]).default("0"),
     recent: z.enum(["0", "1"]).default("0"),
+    favorites: z.enum(["0", "1"]).default("0"),
     folderId: z.string().uuid().optional(),
     type: z.enum(["all", "design", "ai"]).default("all"),
   })
@@ -100,6 +101,7 @@ export async function projectPage(tx: Tx, workspaceId: string, input: unknown) {
   if (query.q)
     conditions.push(`position(lower(${bind(query.q)}) in lower(p.title)) > 0`);
   if (query.folderId) conditions.push(`p.folder_id=${bind(query.folderId)}`);
+  if (query.favorites === "1") conditions.push("EXISTS (SELECT 1 FROM preferences f WHERE f.key='favorites' AND f.value ? p.id)");
   if (query.sort === "recent" || query.recent === "1")
     conditions.push("p.last_opened_at IS NOT NULL");
   if (query.type !== "all")

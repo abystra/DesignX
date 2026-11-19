@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Bookmark, Search } from "lucide-react";
 import catalog from "../data/catalog.json";
-import { api } from "../lib/api";
+import { readPreference, usePreferenceWriter, acceptPreference } from "../lib/preferences";
 import { useCapabilities } from "../lib/creative-capabilities";
 import { creationEntries } from "../lib/creation-entry.js";
 import "./creation-catalog.css";
 
 export default function Catalog({ mode = "tools", onSelect, onToast }) {
   const capabilities = useCapabilities();
+  const writePreference = usePreferenceWriter();
+  const favoriteRevision = useRef(0);
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -28,7 +30,7 @@ export default function Catalog({ mode = "tools", onSelect, onToast }) {
   );
   async function loadFavorites() {
     try {
-      setFavorites((await api("/preferences/catalog-favorites")) || []);
+      acceptPreference(await readPreference("catalog-favorites"), favoriteRevision, setFavorites);
       setReady(true);
       setError("");
     } catch (failure) {
@@ -45,15 +47,9 @@ export default function Catalog({ mode = "tools", onSelect, onToast }) {
   async function toggleFavorite(item) {
     if (!ready || saving) return;
     setSaving(true);
-    const next = favorites.includes(item.id)
-      ? favorites.filter((id) => id !== item.id)
-      : [...favorites, item.id];
     try {
-      await api("/preferences/catalog-favorites", {
-        method: "PUT",
-        body: next,
-      });
-      setFavorites(next);
+      acceptPreference(await writePreference("catalog-favorites", { item: item.id, present: !favorites.includes(item.id) }), favoriteRevision, setFavorites);
+      setError("");
     } catch (failure) {
       setError(failure.message);
       onToast?.(failure.message);

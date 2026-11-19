@@ -1,11 +1,12 @@
 import { normalizeBrand } from "../../../packages/server-domain/src/materials.js";
+import {preferenceKeys,setKeys,readPreference,lockPreference,normalizePreference,storePreference,validateItems} from '../../../packages/server-domain/src/preferences.js';
+import {idempotent} from '../../../packages/server-domain/src/idempotency.js';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { tenantTransaction } from '../../../packages/server-infra/src/db.js';
 import { id,notFound,HttpError,emit } from '../../../packages/server-domain/src/common.js';
 import { templates } from '../../../src/data/templates.js';
 import { readFile } from 'node:fs/promises';
-const preferenceKeys=new Set(['favorites','template-favorites','asset-favorites','catalog-favorites','studio-skills','references','brand','ui','recent']);
 export async function libraryRoutes(app:FastifyInstance) {
  app.get('/api/templates',async()=>templates);
  app.get('/api/catalog',async()=>JSON.parse(await readFile(new URL('../../../src/data/catalog.json',import.meta.url),'utf8')));
@@ -21,18 +22,40 @@ export async function libraryRoutes(app:FastifyInstance) {
  app.delete('/api/folders/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   if(!(await tx.query('DELETE FROM folders WHERE id=$1',[req.params.id])).rowCount)notFound();return {ok:true};
  }));
- app.get('/api/preferences/:key',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
+ app.get('/api/preferences/:key',async(req:any,reply)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   if(!preferenceKeys.has(req.params.key))notFound();
-  const value=(await tx.query('SELECT value FROM preferences WHERE key=$1',[req.params.key])).rows[0]?.value??null;
-  return req.params.key==='brand'&&value?normalizeBrand(tx,value):value;
+  const current=await readPreference(tx,req.params.key);
+  if(req.params.key==='brand'&&current.value)current.value=await normalizeBrand(tx,current.value);
+  reply.header('ETag','"'+current.revision+'"');
+  return req.query?.meta==='1'?current:current.value;
  }));
- app.put('/api/preferences/:key',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
-  const key=req.params.key;if(!preferenceKeys.has(key))notFound();let value=req.body;
-  if(/favorites/.test(key)||key==='studio-skills')value=z.array(z.string().max(200)).max(5000).parse(value);
-  if(key==='references')value=z.array(z.object({id:z.string().max(100),title:z.string().max(200),prompt:z.string().max(10000).optional(),image:z.string().max(2048).optional()}).passthrough()).max(500).parse(value);
-  if(key==='brand')value=await normalizeBrand(tx,value);
-  if(value===undefined||Buffer.byteLength(JSON.stringify(value))>1000000)throw new HttpError(400,'INVALID_PREFERENCE','设置数据超出限制');
-  await tx.query('INSERT INTO preferences(workspace_id,key,value) VALUES($1,$2,$3) ON CONFLICT(workspace_id,key) DO UPDATE SET value=excluded.value,updated_at=now()',[req.identity.workspace.id,key,JSON.stringify(value)]);
-  await emit(tx,req.identity.workspace.id,'preference.updated',{key});return value;
+ app.put('/api/preferences/:key',async(req:any,reply)=>tenantTransaction(req.identity.workspace.id,async tx=>{
+  const key=req.params.key,workspace=req.identity.workspace.id;if(!preferenceKeys.has(key))notFound();
+  const condition=req.headers['if-match'];
+  if(typeof condition!=='string'||!/^"\d+"$/.test(condition))throw new HttpError(428,'PREFERENCE_VERSION_REQUIRED','请刷新页面后重试，设置需要读取时的版本');
+  const expected=Number(condition.slice(1,-1));
+  await idempotent(tx,workspace,req.headers['idempotency-key'],{route:'preference.replace',key,expected,body:req.body},async()=>{
+   await lockPreference(tx,workspace,key);const current=await readPreference(tx,key);
+   if(current.revision!==expected)throw new HttpError(409,'PREFERENCE_CONFLICT','另一端已更新，本次输入已保留，请先查看最新内容',{current});
+   const saved=await storePreference(tx,workspace,key,await normalizePreference(tx,key,req.body));return {revision:saved.revision};
+  });
+  const current=await readPreference(tx,key);reply.header('ETag','"'+current.revision+'"');return req.query?.meta==='1'?current:current.value;
+ }));
+ app.patch('/api/preferences/:key/items',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
+  const key=req.params.key,workspace=req.identity.workspace.id;
+  if(!setKeys.has(key)&&key!=='studio-skills'&&key!=='recent')notFound();
+  if(!req.headers['idempotency-key'])throw new HttpError(400,'IDEMPOTENCY_KEY_REQUIRED','请提供操作标识');
+  const body=z.object({item:z.string().min(1).max(200),present:z.boolean().default(true)}).strict().parse(req.body);
+  await idempotent(tx,workspace,req.headers['idempotency-key'],{route:'preference.item',key,body},async()=>{
+   await lockPreference(tx,workspace,key);const current=await readPreference(tx,key);
+   const list=Array.isArray(current.value)?current.value.filter((item:any)=>typeof item==='string'):[];
+   if(body.present)await validateItems(tx,key,[body.item]);
+   let next=[...new Set(list.filter((item:string)=>item!==body.item))];
+   if(body.present){if(setKeys.has(key))next=list.includes(body.item)?[...new Set(list)]:[...next,body.item];else next.unshift(body.item);}
+   if(!setKeys.has(key))next=next.slice(0,key==='studio-skills'?12:100);
+   if(next.length>5000)throw new HttpError(400,'PREFERENCE_LIMIT','收藏数量已达上限');
+   const saved=await storePreference(tx,workspace,key,next);return {revision:saved.revision};
+  });
+  return readPreference(tx,key); // A replay reports current state without repeating its old write.
  }));
 }

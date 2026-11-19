@@ -49,6 +49,7 @@ import ProjectThumbnail from "./components/ProjectThumbnail.jsx";
 import LibraryPageStatus from "./components/LibraryPageStatus.jsx";
 import { useLibraryPage } from "./lib/use-library-page.js";
 import { api, uploadAsset, refreshWorkspace } from "./lib/api";
+import { readPreference, usePreferenceWriter, acceptPreference } from "./lib/preferences";
 import { initialDesign } from "./data/template-design.js";
 import { creationEntries, materialFor } from "./lib/creation-entry.js";
 import "./styles/poster.css";
@@ -496,6 +497,8 @@ export default function App({
   const [collapsed, setCollapsed] = useState(false),
     [projects, setProjects] = useState([]),
     [favorites, setFavorites] = useState([]);
+  const writePreference = usePreferenceWriter();
+  const favoriteRevision = useRef(0);
   const [template, setTemplate] = useState(null),
     [editing, setEditing] = useState(null),
     [task, setTask] = useState(null),
@@ -648,11 +651,11 @@ export default function App({
       try {
         const [list, favs] = await Promise.all([
           api("/projects/page?limit=3"),
-          api("/preferences/template-favorites"),
+          readPreference("template-favorites"),
         ]);
         if (!active) return;
         setProjects(list.items);
-        setFavorites(favs || []);
+        acceptPreference(favs, favoriteRevision, setFavorites);
         setLoadError("");
         const route = location.hash.slice(1);
         if (route.startsWith("studio/")) await restoreStudio(route.slice(7));
@@ -791,18 +794,10 @@ export default function App({
     return savedProject;
   }
   async function favorite(id) {
-    const next = favorites.includes(id)
-      ? favorites.filter((x) => x !== id)
-      : [...favorites, id];
     try {
-      await api("/preferences/template-favorites", {
-        method: "PUT",
-        body: next,
-      });
-      setFavorites(next);
-    } catch (e) {
-      notify(e.message);
-    }
+      const saved = await writePreference("template-favorites", { item: id, present: !favorites.includes(id) });
+      acceptPreference(saved, favoriteRevision, setFavorites);
+    } catch (e) { notify(e.message); }
   }
   async function edit(p) {
     try {
