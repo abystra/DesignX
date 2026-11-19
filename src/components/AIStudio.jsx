@@ -1,3 +1,5 @@
+import ModalFrame from "./ui/ModalFrame.jsx";
+import { useVisualViewport } from "./ui/useVisualViewport.js";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -44,7 +46,11 @@ import {
 } from "lucide-react";
 import catalog from "../data/catalog.json";
 import { api, uploadAsset, waitForJob, refreshWorkspace } from "../lib/api";
-import { readPreference, usePreferenceWriter, acceptPreference } from "../lib/preferences";
+import {
+  readPreference,
+  usePreferenceWriter,
+  acceptPreference,
+} from "../lib/preferences";
 import { useLibraryPage } from "../lib/use-library-page";
 import LibraryPageStatus from "./LibraryPageStatus";
 import { useAiTurns } from "../lib/useAiTurns";
@@ -302,7 +308,11 @@ export default function AIStudio({
   const writePreference = usePreferenceWriter();
   const skillRevision = useRef(0);
   const [materialQuery, setMaterialQuery] = useState("");
-  const materialPage = useLibraryPage("/assets/page", { q: materialQuery, status: "ready" }, panel === "assets" && assetTab === "我的资产");
+  const materialPage = useLibraryPage(
+    "/assets/page",
+    { q: materialQuery, status: "ready" },
+    panel === "assets" && assetTab === "我的资产",
+  );
   const serverAssets = materialPage.items.map(normalizeAsset);
   const [projectAssets, setProjectAssets] = useState([]);
   const [references, setReferences] = useState([]);
@@ -325,6 +335,8 @@ export default function AIStudio({
   const [chatHidden, setChatHidden] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [, renderHistory] = useState(0);
+  const rootViewport = useRef(null);
+  useVisualViewport(rootViewport);
   const viewport = useRef(),
     chat = useRef(),
     input = useRef(),
@@ -652,12 +664,11 @@ export default function AIStudio({
     let active = true;
     const load = async () => {
       try {
-        const [linkedAssets, referenceData, skills] =
-          await Promise.all([
-            api(`/projects/${projectId}/assets`),
-            api("/preferences/references"),
-            readPreference("studio-skills"),
-          ]);
+        const [linkedAssets, referenceData, skills] = await Promise.all([
+          api(`/projects/${projectId}/assets`),
+          api("/preferences/references"),
+          readPreference("studio-skills"),
+        ]);
         if (!active) return;
         const normalize = normalizeAsset;
         setProjectAssets(
@@ -1000,7 +1011,11 @@ export default function AIStudio({
     setError("");
     setDraft((v) => v.replace(/\/[\w\u4e00-\u9fa5]*$/, ""));
     try {
-      acceptPreference(await writePreference("studio-skills", { item: s.id || s.name }), skillRevision, setRecentSkills);
+      acceptPreference(
+        await writePreference("studio-skills", { item: s.id || s.name }),
+        skillRevision,
+        setRecentSkills,
+      );
     } catch (failure) {
       setError(failure.message);
     }
@@ -1707,7 +1722,9 @@ export default function AIStudio({
     await createArtboards([
       {
         title: template.title,
-        templateId: template.id, templateVersion: template.version, templateDigest: template.digest,
+        templateId: template.id,
+        templateVersion: template.version,
+        templateDigest: template.digest,
         position: nextPosition(),
       },
     ]);
@@ -1915,6 +1932,7 @@ export default function AIStudio({
   }[panel];
   return (
     <div
+      ref={rootViewport}
       className={`ai-studio ${chatHidden ? "st-chat-hidden" : ""} st-mobile-${mobileView}`}
     >
       <aside className="st-chat">
@@ -2143,7 +2161,11 @@ export default function AIStudio({
               <div className="st-attachments">
                 {attached.map((a) => (
                   <div key={a.id}>
-                    <img src={a.thumbnail || a.url} alt={a.name} loading="lazy" />
+                    <img
+                      src={a.thumbnail || a.url}
+                      alt={a.name}
+                      loading="lazy"
+                    />
                     <span>{a.name}</span>
                     <button
                       aria-label={`移除素材 ${a.name}`}
@@ -3165,13 +3187,30 @@ export default function AIStudio({
                     <b>上传素材，给灵感一个参照</b>
                     <span>JPG / PNG / WebP / GIF · 每张不超过 10 MB</span>
                   </button>
-                  {panel === "assets" && assetTab === "我的资产" && <div className="dx-material-picker"><label>搜索我的资产<input aria-label="搜索我的资产" type="search" maxLength={200} value={materialQuery} onChange={e => setMaterialQuery(e.target.value)} /></label></div>}
+                  {panel === "assets" && assetTab === "我的资产" && (
+                    <div className="dx-material-picker">
+                      <label>
+                        搜索我的资产
+                        <input
+                          aria-label="搜索我的资产"
+                          type="search"
+                          maxLength={200}
+                          value={materialQuery}
+                          onChange={(e) => setMaterialQuery(e.target.value)}
+                        />
+                      </label>
+                    </div>
+                  )}
                   <div className="st-asset-grid">
                     {(panel === "files" ? assets : library).map((a) => (
                       <div className="st-library-item" key={a.id}>
                         <button onClick={() => attachAsset(a)}>
                           <div>
-                            <img src={a.thumbnail || a.url} alt={a.name} loading="lazy" />
+                            <img
+                              src={a.thumbnail || a.url}
+                              alt={a.name}
+                              loading="lazy"
+                            />
                             <span>
                               <Plus size={13} />
                               引用到对话
@@ -3211,14 +3250,21 @@ export default function AIStudio({
                       </div>
                     ))}
                   </div>
-                  {panel === "assets" && assetTab === "我的资产" && <LibraryPageStatus page={materialPage} label="素材" />}
-                  {!(panel === "files" ? assets : library).length && (assetTab !== "我的资产" || panel === "files" || materialPage.loaded && !materialPage.loading && !materialPage.error) && (
-                    <div className="st-panel-empty">
-                      <Images size={30} />
-                      <h3>这里还没有素材</h3>
-                      <p>上传图片后，可以加入画布或保留为需求参考</p>
-                    </div>
+                  {panel === "assets" && assetTab === "我的资产" && (
+                    <LibraryPageStatus page={materialPage} label="素材" />
                   )}
+                  {!(panel === "files" ? assets : library).length &&
+                    (assetTab !== "我的资产" ||
+                      panel === "files" ||
+                      (materialPage.loaded &&
+                        !materialPage.loading &&
+                        !materialPage.error)) && (
+                      <div className="st-panel-empty">
+                        <Images size={30} />
+                        <h3>这里还没有素材</h3>
+                        <p>上传图片后，可以加入画布或保留为需求参考</p>
+                      </div>
+                    )}
                 </div>
               </>
             )}
@@ -3257,17 +3303,19 @@ export default function AIStudio({
         </button>
       </nav>
       {showNew && (
-        <div className="st-dialog-shade">
-          <section role="dialog" aria-modal="true" aria-label="开始新的创作">
-            <span className="st-greeting-symbol">✳</span>
-            <h2>给新的想法，一个空间。</h2>
-            <p>当前工作区会保存到我的项目，新创作拥有独立的画布与草稿。</p>
-            <button className="st-primary" onClick={() => leave(onNew)}>
-              开始新创作 <ArrowUpRight size={16} />
-            </button>
-            <button onClick={() => setShowNew(false)}>继续当前创作</button>
-          </section>
-        </div>
+        <ModalFrame title="开始新的创作" onClose={() => setShowNew(false)}>
+          <div className="st-dialog-shade">
+            <section>
+              <span className="st-greeting-symbol">✳</span>
+              <h2>给新的想法，一个空间。</h2>
+              <p>当前工作区会保存到我的项目，新创作拥有独立的画布与草稿。</p>
+              <button className="st-primary" onClick={() => leave(onNew)}>
+                开始新创作 <ArrowUpRight size={16} />
+              </button>
+              <button onClick={() => setShowNew(false)}>继续当前创作</button>
+            </section>
+          </div>
+        </ModalFrame>
       )}
       <input
         type="file"

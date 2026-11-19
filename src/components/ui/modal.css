@@ -1,0 +1,63 @@
+.dx-modal-frame {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: var(--dx-visible-height, 100dvh);
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--dx-text-primary);
+  font:
+    14px/1.5 "Noto Sans SC Variable",
+    sans-serif;
+  overflow: hidden;
+}
+.dx-modal-frame::backdrop {
+  background: transparent;
+}
+.dx-modal-frame
+  > :is(.modal-shade, .ws-modal-shade, .ed-modal-backdrop, .st-dialog-shade) {
+  position: absolute;
+  inset: 0;
+  padding: max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  box-sizing: border-box;
+}
+.dx-modal-frame
+  :is(.modal, .ws-modal, .ed-export-modal, .st-dialog-shade > section) {
+  max-height: calc(var(--dx-visible-height, 100dvh) - 32px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.dx-modal-frame
+  :is(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+  ) {
+  min-height: 44px;
+}
+.dx-modal-frame button {
+  font-size: 14px;
+}
+.dx-modal-frame :is(button, input, select, textarea, a):focus-visible {
+  outline: 2px solid var(--dx-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .dx-modal-frame :is(input, select, textarea) {
+    font-size: 16px;
+  }
+  .dx-modal-frame :is(.modal, .ws-modal, .ed-export-modal) {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+  }
+}

@@ -41,6 +41,7 @@ import {
   Layers,
   Settings2,
 } from "lucide-react";
+import ModalFrame from "./components/ui/ModalFrame.jsx";
 import DeferredRoute from "./components/DeferredRoute.jsx";
 const Editor = lazy(() => import("./components/Editor.jsx"));
 import { projectDrafts } from "./lib/draft-cache";
@@ -50,7 +51,11 @@ import ProjectThumbnail from "./components/ProjectThumbnail.jsx";
 import LibraryPageStatus from "./components/LibraryPageStatus.jsx";
 import { useLibraryPage } from "./lib/use-library-page.js";
 import { api, uploadAsset, refreshWorkspace } from "./lib/api";
-import { readPreference, usePreferenceWriter, acceptPreference } from "./lib/preferences";
+import {
+  readPreference,
+  usePreferenceWriter,
+  acceptPreference,
+} from "./lib/preferences";
 import { initialDesign } from "./data/template-design.js";
 import { creationEntries, materialFor } from "./lib/creation-entry.js";
 import "./styles/poster.css";
@@ -84,57 +89,24 @@ export function Modal({
   className = "",
   title = "设计操作",
 }) {
-  const ref = useRef();
-  useEffect(() => {
-    const old = document.activeElement;
-    ref.current?.focus();
-    const f = (e) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "Tab") {
-        const a = ref.current?.querySelectorAll(
-          'button:not([disabled]),input,textarea,select,a,[tabindex="0"]',
-        );
-        if (!a?.length) return;
-        const first = a[0],
-          last = a[a.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", f);
-    return () => {
-      document.removeEventListener("keydown", f);
-      old?.focus();
-    };
-  }, []);
   return (
-    <div
-      className="modal-shade"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <section
-        className={"modal " + className}
-        ref={ref}
-        tabIndex={-1}
-        role="dialog"
-        aria-label={title}
-        aria-modal="true"
+    <ModalFrame title={title} onClose={onClose}>
+      <div
+        className="modal-shade"
+        onMouseDown={(e) => e.target === e.currentTarget && onClose()}
       >
-        <button
-          className="modal-close icon-button"
-          aria-label="关闭弹窗"
-          onClick={onClose}
-        >
-          <X size={20} />
-        </button>
-        {children}
-      </section>
-    </div>
+        <section className={"modal " + className} tabIndex={-1}>
+          <button
+            className="modal-close icon-button"
+            aria-label="关闭弹窗"
+            onClick={onClose}
+          >
+            <X size={20} />
+          </button>
+          {children}
+        </section>
+      </div>
+    </ModalFrame>
   );
 }
 export function Artwork({ item }) {
@@ -326,11 +298,18 @@ function TemplatesPage({ onSelect, favorites, toggleFavorite }) {
   const [sort, setSort] = useState("编辑精选");
   let list = templates.filter(
     (t) =>
-      (cat === "全部" || (cat === "我的收藏" ? favorites.includes(t.id) : t.category === cat)) &&
+      (cat === "全部" ||
+        (cat === "我的收藏" ? favorites.includes(t.id) : t.category === cat)) &&
       (style === "所有风格" || t.style === style) &&
       `${t.title}${t.subtitle}`.includes(q),
   );
-  if (sort === "最近上新") list = [...list].sort((a,b) => templateRegistry.releases[b.id].changedOn.localeCompare(templateRegistry.releases[a.id].changedOn) || a.id.localeCompare(b.id));
+  if (sort === "最近上新")
+    list = [...list].sort(
+      (a, b) =>
+        templateRegistry.releases[b.id].changedOn.localeCompare(
+          templateRegistry.releases[a.id].changedOn,
+        ) || a.id.localeCompare(b.id),
+    );
   return (
     <div className="templates-page">
       <div className="page-intro">
@@ -584,7 +563,11 @@ export default function App({
       workspaceMode,
       brief: item.prompt || item.draft || "",
       ...(item.template
-        ? { templateId: item.template.id, templateVersion: item.template.version, templateDigest: item.template.digest }
+        ? {
+            templateId: item.template.id,
+            templateVersion: item.template.version,
+            templateDigest: item.template.digest,
+          }
         : { design: initialDesign({ blank: true, ratio: item.ratio }) }),
       ...(materialFor(item) ? { material: materialFor(item) } : {}),
     };
@@ -630,7 +613,11 @@ export default function App({
         .catch(() => {});
     } catch (error) {
       setCreationError(error.message);
-      setTemplateChanged(["TEMPLATE_CHANGED","TEMPLATE_UNAVAILABLE"].includes(error.data?.error));
+      setTemplateChanged(
+        ["TEMPLATE_CHANGED", "TEMPLATE_UNAVAILABLE"].includes(
+          error.data?.error,
+        ),
+      );
     } finally {
       creatingRef.current = false;
       setCreating(false);
@@ -800,9 +787,14 @@ export default function App({
   }
   async function favorite(id) {
     try {
-      const saved = await writePreference("template-favorites", { item: id, present: !favorites.includes(id) });
+      const saved = await writePreference("template-favorites", {
+        item: id,
+        present: !favorites.includes(id),
+      });
       acceptPreference(saved, favoriteRevision, setFavorites);
-    } catch (e) { notify(e.message); }
+    } catch (e) {
+      notify(e.message);
+    }
   }
   async function edit(p) {
     try {
@@ -865,7 +857,16 @@ export default function App({
                   重试创建
                 </button>
               )}
-              {templateChanged && <button onClick={() => { location.hash = "templates"; location.reload(); }}>刷新模板列表</button>}
+              {templateChanged && (
+                <button
+                  onClick={() => {
+                    location.hash = "templates";
+                    location.reload();
+                  }}
+                >
+                  刷新模板列表
+                </button>
+              )}
               <button onClick={() => setCreationError("")}>关闭提示</button>
             </>
           )}
@@ -884,35 +885,51 @@ export default function App({
         )}
         {studio && (
           <div style={{ display: editing ? "none" : "contents" }}>
-            <DeferredRoute onBack={() => { setStudio(null); navigate("projects"); }}><AIStudio
-              key={studio.id}
-              session={studio}
-              onBack={() => navigate("home")}
-              onNew={() => openStudio({ workspaceMode: "studio" })}
-              onEdit={edit}
-              onSave={save}
-              onToast={notify}
-              editedProject={editedProject}
-            /></DeferredRoute>
+            <DeferredRoute
+              onBack={() => {
+                setStudio(null);
+                navigate("projects");
+              }}
+            >
+              <AIStudio
+                key={studio.id}
+                session={studio}
+                onBack={() => navigate("home")}
+                onNew={() => openStudio({ workspaceMode: "studio" })}
+                onEdit={edit}
+                onSave={save}
+                onToast={notify}
+                editedProject={editedProject}
+              />
+            </DeferredRoute>
           </div>
         )}
         {editing ? (
-          <DeferredRoute key={editing.id} onBack={() => { setEditing(null); setStudio(null); navigate("projects"); }}><Editor
+          <DeferredRoute
             key={editing.id}
-            project={editing}
-            draftOwner={`${sessionUser.id}:${workspace.id}`}
-            onCopy={(copy) => {
-              setStudio(null);
-              setEditing(copy);
-              history.replaceState(null, "", "#editor/" + copy.id);
-            }}
             onBack={() => {
               setEditing(null);
-              if (!studio) navigate("projects");
+              setStudio(null);
+              navigate("projects");
             }}
-            onSave={save}
-            onToast={notify}
-          /></DeferredRoute>
+          >
+            <Editor
+              key={editing.id}
+              project={editing}
+              draftOwner={`${sessionUser.id}:${workspace.id}`}
+              onCopy={(copy) => {
+                setStudio(null);
+                setEditing(copy);
+                history.replaceState(null, "", "#editor/" + copy.id);
+              }}
+              onBack={() => {
+                setEditing(null);
+                if (!studio) navigate("projects");
+              }}
+              onSave={save}
+              onToast={notify}
+            />
+          </DeferredRoute>
         ) : studio ? null : (
           <>
             <aside className="sidebar">
@@ -1154,7 +1171,9 @@ export default function App({
             <dl>
               <div>
                 <dt>画布比例</dt>
-                <dd>{template.design.width} × {template.design.height} px</dd>
+                <dd>
+                  {template.design.width} × {template.design.height} px
+                </dd>
               </div>
               <div>
                 <dt>设计内容</dt>
@@ -1168,8 +1187,23 @@ export default function App({
             <details className="template-source">
               <summary>模板版本 {template.version} · 来源与使用依据</summary>
               <p>{template.source.layout.basis}</p>
-              {template.source.images.map(image => <p key={image.sha256}><a href={image.sourceUrl} target="_blank" rel="noreferrer">摄影来源</a> · <a href={image.licenseUrl} target="_blank" rel="noreferrer">Unsplash 许可</a><br />{image.limitations}</p>)}
-              <p>字体：Noto Sans SC / Source Serif 4，OFL-1.1 随包许可。此模板为单张可编辑海报。</p>
+              {template.source.images.map((image) => (
+                <p key={image.sha256}>
+                  <a href={image.sourceUrl} target="_blank" rel="noreferrer">
+                    摄影来源
+                  </a>{" "}
+                  ·{" "}
+                  <a href={image.licenseUrl} target="_blank" rel="noreferrer">
+                    Unsplash 许可
+                  </a>
+                  <br />
+                  {image.limitations}
+                </p>
+              ))}
+              <p>
+                字体：Noto Sans SC / Source Serif 4，OFL-1.1
+                随包许可。此模板为单张可编辑海报。
+              </p>
             </details>
             <button
               className="primary"

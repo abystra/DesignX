@@ -1,3 +1,7 @@
+import DesignThumbnail from "./DesignThumbnail.jsx";
+import { useDrawerFocus } from "./ui/useDrawerFocus.js";
+import ModalFrame from "./ui/ModalFrame.jsx";
+import { useVisualViewport } from "./ui/useVisualViewport.js";
 import { createDraftJournal } from "../lib/draft-cache";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -237,10 +241,22 @@ export default function Editor({
   const [transparent, setTransparent] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
+  const [exportProgress, setExportProgress] = useState("");
+  const [exportJob, setExportJob] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const exportAttempt = useRef(null),
+    exportVisible = useRef(false);
+  exportVisible.current = exportOpen;
+  const rootViewport = useRef(null);
+  useVisualViewport(rootViewport);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [preview, setPreview] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [leftOpen, setLeftOpen] = useState(false);
+  const libraryDrawer = useRef(null),
+    propertiesDrawer = useRef(null);
+  useDrawerFocus(libraryDrawer, leftOpen, "(max-width:850px)");
+  useDrawerFocus(propertiesDrawer, inspectorOpen, "(max-width:1100px)");
   const stageRef = useRef(null),
     fileRef = useRef(null),
     dragRef = useRef(null);
@@ -587,7 +603,7 @@ export default function Editor({
     }
   }
   async function nameVersion() {
-    if (!(await save(false))) return;
+    if (!saved && !(await save(false))) return;
     try {
       await api(
         "/projects/" +
@@ -723,30 +739,6 @@ export default function Editor({
     document.addEventListener("keydown", keyboard);
     return () => document.removeEventListener("keydown", keyboard);
   });
-  useEffect(() => {
-    if (!exportOpen) return;
-    const dialog = document.querySelector(".ed-export-modal");
-    const first = dialog?.querySelector("button");
-    first?.focus();
-    const trap = (e) => {
-      if (e.key !== "Tab") return;
-      const all = [...dialog.querySelectorAll("button, input, select")].filter(
-        (el) => !el.disabled,
-      );
-      const firstEl = all[0],
-        lastEl = all.at(-1);
-      if (e.shiftKey && document.activeElement === firstEl) {
-        e.preventDefault();
-        lastEl.focus();
-      } else if (!e.shiftKey && document.activeElement === lastEl) {
-        e.preventDefault();
-        firstEl.focus();
-      }
-    };
-    document.addEventListener("keydown", trap);
-    return () => document.removeEventListener("keydown", trap);
-  }, [exportOpen]);
-
   function selectedNodes() {
     const ids = selectionIds.length ? selectionIds : [selectedId];
     return designRef.current.nodes.filter(
@@ -848,6 +840,7 @@ export default function Editor({
     };
     commit((d) => ({ ...d, nodes: [...d.nodes, n] }));
     setSelectedId(n.id);
+    setLeftOpen(false);
     setInspectorOpen(true);
   }
   function addShape(type) {
@@ -1011,7 +1004,7 @@ export default function Editor({
             : n,
       ),
     }));
-    notify("已应用模板配色，文字与图层继续保留");
+    notify("已应用配色，文字与图层继续保留");
   }
   async function upload(e) {
     const file = e.target.files?.[0];
@@ -1056,35 +1049,84 @@ export default function Editor({
       setUploadError(e.message);
     }
   }
-  async function exportFile() {
-    setExporting(true);
+  async function cancelExport() {
+    if (!exportJob || cancelling) return;
+    setCancelling(true);
     setExportError("");
     try {
-      if (!(await save(false))) throw new Error("请先完成保存，再导出作品");
-      const p = projectRef.current;
-      const job = await api("/projects/" + (p.projectId || p.id) + "/exports", {
-        method: "POST",
-        body: {
-          format: format === "JPG" ? "jpeg" : format.toLowerCase(),
-          scale: exportScale,
-          transparent,
-          documentId: p.documentId,
-        },
-      });
-      const done = await waitForJob(job.job?.id || job.id, (j) =>
-        setExportError(j.status === "queued" ? "等待导出…" : "正在生成文件…"),
+      const job = await api(`/jobs/${exportJob.id}/cancel`, { method: "POST" });
+      setExportJob(job);
+      setExportProgress(
+        job.status === "cancelled"
+          ? "已取消导出"
+          : job.status === "succeeded"
+            ? "文件已生成，取消未生效"
+            : "正在核对取消状态…",
       );
+    } catch (e) {
+      setExportError(`取消尚未确认：${e.message}，可重试或在创作动态核对。`);
+    } finally {
+      setCancelling(false);
+    }
+  }
+  async function exportFile() {
+    if (exporting) return;
+    let observedStatus;
+    setExporting(true);
+    setExportError("");
+    setExportProgress("正在保存作品…");
+    try {
+      if (!saved && !(await save(false)))
+        throw new Error("请先完成保存，再导出作品");
+      const p = projectRef.current;
+      const body = {
+        format: format === "JPG" ? "jpeg" : format.toLowerCase(),
+        scale: exportScale,
+        transparent,
+        documentId: p.documentId,
+      };
+      const signature = JSON.stringify([p.projectId || p.id, p.revision, body]);
+      if (exportAttempt.current?.signature !== signature)
+        exportAttempt.current = { signature, key: crypto.randomUUID() };
+      const attempt = exportAttempt.current;
+      let job = attempt.jobId
+        ? await api(`/jobs/${attempt.jobId}`)
+        : await api("/projects/" + (p.projectId || p.id) + "/exports", {
+            method: "POST",
+            body,
+            headers: { "Idempotency-Key": attempt.key },
+          });
+      attempt.jobId = job.job?.id || job.id;
+      setExportJob(job);
+      const done = await waitForJob(attempt.jobId, (j) => {
+        observedStatus = j.status;
+        setExportJob(j);
+        setExportProgress(
+          {
+            queued: "等待导出…",
+            running: "正在生成文件…",
+            succeeded: "文件已生成",
+            cancelled: "已取消导出",
+            failed: "导出失败",
+          }[j.status] || "正在核对导出状态…",
+        );
+        if (["failed", "cancelled"].includes(j.status))
+          exportAttempt.current = null;
+      });
       const id = done.result?.exportId || done.exportId || done.id;
-      const a = document.createElement("a");
-      a.href = "/api/exports/" + id + "/file";
-      a.download = "";
-      a.click();
-      setExportOpen(false);
-      setExportError("");
+      if (exportVisible.current) {
+        const a = document.createElement("a");
+        a.href = "/api/exports/" + id + "/file";
+        a.download = "";
+        a.click();
+        setExportOpen(false);
+      }
+      setExportProgress("文件已生成，可从创作动态下载");
+      exportAttempt.current = null;
       refreshWorkspace();
       notify(format + " 文件已生成");
     } catch (e) {
-      setExportError(e.message);
+      setExportError(observedStatus === "cancelled" ? "" : e.message);
     } finally {
       setExporting(false);
     }
@@ -1104,6 +1146,7 @@ export default function Editor({
 
   return (
     <div
+      ref={rootViewport}
       aria-busy={!cacheReady || recovering}
       className={`ed-root ${preview ? "ed-preview" : ""} ${inspectorOpen ? "ed-properties-open" : ""} ${leftOpen ? "ed-left-open" : ""}`}
     >
@@ -1153,49 +1196,47 @@ export default function Editor({
         </div>
       )}
       {versions && (
-        <div className="ed-modal-backdrop">
-          <section
-            className="ed-export-modal"
-            role="dialog"
-            aria-label="版本记录"
-          >
-            <header>
-              <h2>版本记录</h2>
-              <button
-                onClick={() => setVersions(null)}
-                aria-label="关闭版本记录"
-              >
-                <X size={18} />
-              </button>
-            </header>
-            <div className="ed-version-create">
-              <input
-                aria-label="版本名称"
-                placeholder="为当前版本命名"
-                value={versionName}
-                onChange={(e) => setVersionName(e.target.value)}
-              />
-              <button onClick={nameVersion}>保存命名版本</button>
-            </div>
-            <div className="ed-version-list">
-              {versions
-                .filter(
-                  (v) =>
-                    !projectRef.current.documentId ||
-                    v.documentId === projectRef.current.documentId,
-                )
-                .map((v) => (
-                  <div key={v.id}>
-                    <span>
-                      {v.name || "自动保存"}
-                      <small>{new Date(v.createdAt).toLocaleString()}</small>
-                    </span>
-                    <button onClick={() => restoreVersion(v.id)}>恢复</button>
-                  </div>
-                ))}
-            </div>
-          </section>
-        </div>
+        <ModalFrame title="版本记录" onClose={() => setVersions(null)}>
+          <div className="ed-modal-backdrop">
+            <section className="ed-export-modal">
+              <header>
+                <h2>版本记录</h2>
+                <button
+                  onClick={() => setVersions(null)}
+                  aria-label="关闭版本记录"
+                >
+                  <X size={18} />
+                </button>
+              </header>
+              <div className="ed-version-create">
+                <input
+                  aria-label="版本名称"
+                  placeholder="为当前版本命名"
+                  value={versionName}
+                  onChange={(e) => setVersionName(e.target.value)}
+                />
+                <button onClick={nameVersion}>保存命名版本</button>
+              </div>
+              <div className="ed-version-list">
+                {versions
+                  .filter(
+                    (v) =>
+                      !projectRef.current.documentId ||
+                      v.documentId === projectRef.current.documentId,
+                  )
+                  .map((v) => (
+                    <div key={v.id}>
+                      <span>
+                        {v.name || "自动保存"}
+                        <small>{new Date(v.createdAt).toLocaleString()}</small>
+                      </span>
+                      <button onClick={() => restoreVersion(v.id)}>恢复</button>
+                    </div>
+                  ))}
+              </div>
+            </section>
+          </div>
+        </ModalFrame>
       )}
       <header
         className="ed-header"
@@ -1256,7 +1297,10 @@ export default function Editor({
           <IconButton
             icon={Settings2}
             label="显示属性面板"
-            onClick={() => setInspectorOpen(!inspectorOpen)}
+            onClick={() => {
+              setLeftOpen(false);
+              setInspectorOpen(!inspectorOpen);
+            }}
             className="ed-inspector-toggle"
           />
           <button className="ed-button" onClick={openVersions}>
@@ -1271,7 +1315,7 @@ export default function Editor({
             保存
           </button>
           <button
-            className="ed-button ed-primary"
+            className="ed-button ed-primary ed-main-export"
             onClick={() => setExportOpen(true)}
           >
             <Download size={16} />
@@ -1287,9 +1331,12 @@ export default function Editor({
           {nav.map(({ id, icon: Icon, label }) => (
             <button
               key={id}
+              aria-pressed={tab === id}
+              aria-expanded={tab === id && leftOpen}
               className={tab === id ? "is-active" : ""}
               onClick={() => {
                 setTab(id);
+                setInspectorOpen(false);
                 setLeftOpen(true);
               }}
             >
@@ -1304,10 +1351,22 @@ export default function Editor({
             </span>
           </div>
         </nav>
-        <aside className="ed-library">
+        <aside
+          className="ed-library"
+          ref={libraryDrawer}
+          aria-label="编辑工具面板"
+        >
           <details className="ed-source-info">
             <summary>作品来源</summary>
-            <p>{project.creationSource?.kind === 'template' ? `模板：${project.creationSource.title} · 版本 ${project.creationSource.version}` : ({manual:'手动创作',material:'从素材开始',import:'导入作品'})[project.creationSource?.kind] || '历史作品，创建来源未记录'}</p>
+            <p>
+              {project.creationSource?.kind === "template"
+                ? `模板：${project.creationSource.title} · 版本 ${project.creationSource.version}`
+                : {
+                    manual: "手动创作",
+                    material: "从素材开始",
+                    import: "导入作品",
+                  }[project.creationSource?.kind] || "历史作品，创建来源未记录"}
+            </p>
             {project.aiSource && <p>有已发布的 AI 创作记录</p>}
           </details>
           {project.brief && (
@@ -1327,7 +1386,9 @@ export default function Editor({
           </div>
           {tab === "templates" && (
             <>
-              <p className="ed-panel-description">为当前作品调整配色，保留已有内容。</p>
+              <p className="ed-panel-description">
+                为当前作品调整配色，保留已有内容。
+              </p>
               <div className="ed-search-like">
                 <LayoutTemplate size={15} />
                 配色方案 <span>3</span>
@@ -1354,24 +1415,14 @@ export default function Editor({
                   },
                 ].map((t, i) => (
                   <button
-                    className={`ed-template-card ed-template-${i}`}
+                    className="ed-theme-card"
                     key={t.id}
                     onClick={() => applyTheme(t.id)}
                   >
-                    <div style={{ background: t.bg, color: t.fg }}>
-                      <small>MORNING CLUB</small>
-                      <strong>COFFEE</strong>
-                      <span>慢一点，也很好。</span>
-                      <img src="/assets/coffee.jpg" alt="咖啡海报模板" />
-                      <i
-                        style={{
-                          background: t.id === "sage" ? "#a4b65e" : "#f2634b",
-                        }}
-                      >
-                        秋日
-                        <br />
-                        限定
-                      </i>
+                    <div className="ed-theme-swatches" aria-hidden="true">
+                      <i style={{ background: t.bg }} />
+                      <i style={{ background: t.fg }} />
+                      <i style={{ background: "#f2634b" }} />
                     </div>
                     <span>{t.label}</span>
                   </button>
@@ -1381,7 +1432,7 @@ export default function Editor({
                 <Sparkles size={17} />
                 <div>
                   <strong>让设计有自己的风格</strong>
-                  <p>模板配色可以一键切换，文字与图片都可自由修改。</p>
+                  <p>配色可以一键切换，文字与图片都可自由修改。</p>
                 </div>
               </div>
             </>
@@ -1712,21 +1763,8 @@ export default function Editor({
           </div>
           <div className="ed-bottom-bar">
             <div className="ed-page-strip">
-              <div
-                className="ed-page-thumbnail"
-                style={{ background: design.background }}
-              >
-                <span>
-                  {design.nodes
-                    .find((n) => n.id === "title")
-                    ?.text?.split("\n")[0] || "DESIGN"}
-                </span>
-                {design.nodes.find((n) => n.type === "image") && (
-                  <img
-                    src={design.nodes.find((n) => n.type === "image").src}
-                    alt="第 1 页缩略图"
-                  />
-                )}
+              <div className="ed-page-preview">
+                <DesignThumbnail design={design} title="第 1 页" />
               </div>
               <div>
                 <strong>第 1 页</strong>
@@ -1754,7 +1792,11 @@ export default function Editor({
             </div>
           </div>
         </main>
-        <aside className="ed-properties">
+        <aside
+          className="ed-properties"
+          ref={propertiesDrawer}
+          aria-label="图层属性面板"
+        >
           <div className="ed-properties-heading">
             <h2>
               {selected
@@ -1987,7 +2029,7 @@ export default function Editor({
                   <button onClick={() => groupSelection(true)}>取消组合</button>
                 )}
                 <label className="ed-number-field">
-                  旋转
+                  <span>旋转</span>
                   <input
                     aria-label="旋转角度"
                     type="number"
@@ -2195,125 +2237,148 @@ export default function Editor({
         onChange={upload}
       />
       {exportOpen && (
-        <div
-          className="ed-modal-backdrop"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget && !exporting)
-              setExportOpen(false);
-          }}
-        >
-          <section
-            className="ed-export-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="ed-export-title"
+        <ModalFrame title="导出作品" onClose={() => setExportOpen(false)}>
+          <div
+            className="ed-modal-backdrop"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setExportOpen(false);
+            }}
           >
-            <div className="ed-modal-header">
-              <div>
-                <span className="ed-modal-eyebrow">READY TO SHARE</span>
-                <h2 id="ed-export-title">让好设计，被看见。</h2>
+            <section className="ed-export-modal">
+              <div className="ed-modal-header">
+                <div>
+                  <span className="ed-modal-eyebrow">READY TO SHARE</span>
+                  <h2 id="ed-export-title">让好设计，被看见。</h2>
+                </div>
+                <IconButton
+                  icon={X}
+                  label="关闭导出弹窗"
+                  onClick={() => setExportOpen(false)}
+                />
               </div>
-              <IconButton
-                icon={X}
-                label="关闭导出弹窗"
-                onClick={() => setExportOpen(false)}
-                disabled={exporting}
-              />
-            </div>
-            <p className="ed-export-description">
-              导出高清作品，带着灵感去往更多地方。
-            </p>
-            <label className="ed-export-label">文件格式</label>
-            <div className="ed-format-options">
-              {[
-                { name: "PNG", text: "高清图片 · 推荐" },
-                { name: "JPG", text: "轻量分享" },
-                { name: "WebP", text: "高效图片" },
-                { name: "PDF", text: "单页文档" },
-                { name: "DXPROJ", text: "可编辑源稿" },
-              ].map((f) => (
-                <button
-                  key={f.name}
-                  className={format === f.name ? "is-active" : ""}
-                  onClick={() => {
-                    setFormat(f.name);
-                    if (f.name === "JPG") setTransparent(false);
-                  }}
-                >
-                  <strong>{f.name}</strong>
-                  <span>{f.text}</span>
-                  {format === f.name && <Check size={15} />}
-                </button>
-              ))}
-            </div>
-            <label className="ed-export-label" htmlFor="ed-export-resolution">
-              导出尺寸
-            </label>
-            <select
-              className="ed-select"
-              id="ed-export-resolution"
-              value={exportScale}
-              onChange={(e) => setExportScale(Number(e.target.value))}
-            >
-              <option value={1}>
-                原始尺寸 · {W} × {H} px
-              </option>
-              <option value={2}>
-                2 倍高清 · {W * 2} × {H * 2} px
-              </option>
-              <option value={3}>
-                3 倍超清 · {W * 3} × {H * 3} px
-              </option>
-            </select>
-            <label className="ed-checkbox-label">
-              <input
-                type="checkbox"
-                checked={transparent}
-                disabled={["JPG", "PDF", "DXPROJ"].includes(format)}
-                onChange={(e) => setTransparent(e.target.checked)}
-              />
-              <span>透明画布背景</span>
-              <small>
-                {["JPG", "PDF", "DXPROJ"].includes(format)
-                  ? "JPG 不支持透明背景"
-                  : "保留图片及所有图层"}
-              </small>
-            </label>
-            <div className="ed-export-summary">
-              <Layers size={17} />
-              <span>
-                第 1 页 · {design.nodes.filter((n) => !n.hidden).length}{" "}
-                个可见图层
-              </span>
-              <span>
-                {W * exportScale} × {H * exportScale}
-              </span>
-            </div>
-            {exportError && (
-              <p role="alert" className="ed-error">
-                {exportError}
+              <p className="ed-export-description">
+                导出高清作品，带着灵感去往更多地方。
               </p>
-            )}
-            <button
-              className="ed-button ed-primary ed-export-submit"
-              onClick={exportFile}
-              disabled={exporting}
-            >
-              {exporting ? (
-                <>
-                  <span className="ed-spinner" />
-                  正在准备作品…
-                </>
-              ) : (
-                <>
-                  <Download size={18} />
-                  导出 {format}
-                </>
+              <label className="ed-export-label">文件格式</label>
+              <div className="ed-format-options">
+                {[
+                  { name: "PNG", text: "高清图片 · 推荐" },
+                  { name: "JPG", text: "轻量分享" },
+                  { name: "WebP", text: "高效图片" },
+                  { name: "PDF", text: "单页文档" },
+                  { name: "DXPROJ", text: "可编辑源稿" },
+                ].map((f) => (
+                  <button
+                    key={f.name}
+                    disabled={exporting}
+                    aria-pressed={format === f.name}
+                    className={format === f.name ? "is-active" : ""}
+                    onClick={() => {
+                      setFormat(f.name);
+                      if (f.name === "JPG") setTransparent(false);
+                    }}
+                  >
+                    <strong>{f.name}</strong>
+                    <span>{f.text}</span>
+                    {format === f.name && <Check size={15} />}
+                  </button>
+                ))}
+              </div>
+              <label className="ed-export-label" htmlFor="ed-export-resolution">
+                导出尺寸
+              </label>
+              <select
+                className="ed-select"
+                disabled={exporting}
+                id="ed-export-resolution"
+                value={exportScale}
+                onChange={(e) => setExportScale(Number(e.target.value))}
+              >
+                <option value={1}>
+                  原始尺寸 · {W} × {H} px
+                </option>
+                <option value={2}>
+                  2 倍高清 · {W * 2} × {H * 2} px
+                </option>
+                <option value={3}>
+                  3 倍超清 · {W * 3} × {H * 3} px
+                </option>
+              </select>
+              <label className="ed-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={transparent}
+                  disabled={
+                    exporting || ["JPG", "PDF", "DXPROJ"].includes(format)
+                  }
+                  onChange={(e) => setTransparent(e.target.checked)}
+                />
+                <span>透明画布背景</span>
+                <small>
+                  {["JPG", "PDF", "DXPROJ"].includes(format)
+                    ? "当前格式不支持此选项"
+                    : "保留图片及所有图层"}
+                </small>
+              </label>
+              <div className="ed-export-summary">
+                <Layers size={17} />
+                <span>
+                  第 1 页 · {design.nodes.filter((n) => !n.hidden).length}{" "}
+                  个可见图层
+                </span>
+                <span>
+                  {W * exportScale} × {H * exportScale}
+                </span>
+              </div>
+              {exportProgress && (
+                <p className="ed-export-progress" role="status">
+                  {exportProgress}
+                </p>
               )}
-            </button>
-            <p className="ed-export-footnote">文件保存在你的设备中，无水印。</p>
-          </section>
-        </div>
+              {exporting && (
+                <p className="ed-export-progress">
+                  关闭弹窗后任务继续，可在创作动态查看。
+                  <button
+                    className="ed-button"
+                    onClick={cancelExport}
+                    disabled={
+                      !exportJob ||
+                      cancelling ||
+                      !["queued", "running"].includes(exportJob.status)
+                    }
+                  >
+                    {cancelling ? "正在请求取消…" : "取消导出任务"}
+                  </button>
+                </p>
+              )}
+              {exportError && (
+                <p role="alert" className="ed-error">
+                  {exportError}
+                </p>
+              )}
+              <button
+                className="ed-button ed-primary ed-export-submit"
+                onClick={exportFile}
+                disabled={exporting}
+              >
+                {exporting ? (
+                  <>
+                    <span className="ed-spinner" />
+                    正在准备作品…
+                  </>
+                ) : (
+                  <>
+                    <Download size={18} />
+                    导出 {format}
+                  </>
+                )}
+              </button>
+              <p className="ed-export-footnote">
+                生成后请求下载文件，不添加水印。
+              </p>
+            </section>
+          </div>
+        </ModalFrame>
       )}
     </div>
   );

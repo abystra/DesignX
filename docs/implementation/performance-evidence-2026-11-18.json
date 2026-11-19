@@ -179,8 +179,8 @@
   },
   "ci": {
     "url": "https://github.com/abystra/DesignX/actions/runs/44490232054",
-    "status": "in_progress",
-    "conclusion": null
+    "status": "completed",
+    "conclusion": "success"
   },
   "limits": [
     "Cold rendering has one-time generation cost per revision; measured separately from warm cache",

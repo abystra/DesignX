@@ -1,3 +1,4 @@
+import ModalFrame from "./ui/ModalFrame.jsx";
 import { materialFor } from "../lib/creation-entry.js";
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowDownWideNarrow, ArrowLeft, ArrowUpRight, Check, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderPlus, Grid2X2, Heart, Image, Layers, List, MoreHorizontal, Palette, Pencil, Plus, RotateCcw, Search, Sparkles, Trash2, Upload, X } from 'lucide-react';
@@ -25,23 +26,34 @@ function Thumb({ item, poster = false }) {
   </div>;
 }
 function Dialog({ title, description, children, onClose, footer }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const prev = document.activeElement;
-    ref.current?.querySelector('input, button, select, textarea')?.focus();
-    const onKey = e => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'Tab') {
-        const nodes = [...(ref.current?.querySelectorAll('button,input,select,textarea,[tabindex="0"]') || [])].filter(n => !n.disabled);
-        if (!nodes.length) return;
-        if (e.shiftKey && document.activeElement === nodes[0]) { e.preventDefault(); nodes[nodes.length - 1].focus(); }
-        else if (!e.shiftKey && document.activeElement === nodes[nodes.length - 1]) { e.preventDefault(); nodes[0].focus(); }
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('keydown', onKey); prev?.focus?.(); };
-  }, []);
-  return <div className="ws-modal-shade" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}><section ref={ref} className="ws-modal" role="dialog" aria-modal="true" aria-label={title}><header><div><h2>{title}</h2>{description && <p>{description}</p>}</div><button className="ws-icon-btn" aria-label="关闭弹窗" onClick={onClose}><X size={20} /></button></header>{children}{footer && <footer>{footer}</footer>}</section></div>;
+  return (
+    <ModalFrame title={title} onClose={onClose}>
+      <div
+        className="ws-modal-shade"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <section className="ws-modal">
+          <header>
+            <div>
+              <h2>{title}</h2>
+              {description && <p>{description}</p>}
+            </div>
+            <button
+              className="ws-icon-btn"
+              aria-label="关闭弹窗"
+              onClick={onClose}
+            >
+              <X size={20} />
+            </button>
+          </header>
+          {children}
+          {footer && <footer>{footer}</footer>}
+        </section>
+      </div>
+    </ModalFrame>
+  );
 }
 function Empty({ title, detail, onAction, action }) { return <div className="ws-empty"><div><Search size={25} strokeWidth={1.5} /></div><h3>{title}</h3><p>{detail}</p>{onAction && <button className="ws-secondary" onClick={onAction}>{action}</button>}</div>; }
 
@@ -116,7 +128,15 @@ export default function Workspace({ mode = 'projects', onOpenProject, onToast, o
   useEffect(() => {
     if (!menu) return;
     const close = e => { if (!e.target.closest('.ws-menu-wrap')) setMenu(null); };
-    const escape = e => { if (e.key === 'Escape') setMenu(null); };
+    const trigger=document.querySelector('.ws-menu-wrap > button[aria-expanded="true"]'), wrap=trigger?.parentElement;
+    const escape = e => {
+      if(e.isComposing || e.keyCode===229)return;
+      if(e.key==='Escape'){setMenu(null);trigger?.focus();return;}
+      if(!wrap?.contains(document.activeElement)||!['ArrowDown','ArrowUp','Home','End'].includes(e.key))return;
+      const buttons=[...wrap.querySelectorAll('.ws-dropdown button:not([disabled])')];if(!buttons.length)return;
+      e.preventDefault();const index=buttons.indexOf(document.activeElement);
+      buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:e.key==='ArrowDown'?(index+1)%buttons.length:(index-1+buttons.length)%buttons.length]?.focus();
+    };
     document.addEventListener('pointerdown', close); document.addEventListener('keydown', escape);
     return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape); };
   }, [menu]);
@@ -142,6 +162,7 @@ export default function Workspace({ mode = 'projects', onOpenProject, onToast, o
     await refreshLists(); setDialog(null); onToast?.('作品已更新');
   });
   const openDialog = (type, item) => {
+    document.querySelector('.ws-menu-wrap > button[aria-expanded="true"]')?.focus();
     setDialog({ type, item }); setFormValue(type === 'rename' ? item.title : type === 'rename-folder' ? item.name : ''); setFormError(''); setSelectedFolder(item?.folderId || ''); setMenu(null);
     if (type === 'reference' || type === 'delete-reference') { referenceBase.current = { value: referencesRef.current, revision: referenceRevision.current }; referenceId.current = crypto.randomUUID(); setReferenceConflict(null); }
   };

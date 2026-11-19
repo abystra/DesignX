@@ -36,8 +36,13 @@ try {
   }
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'media' });
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'import' });
-  await child('apps/renderer/src/main.ts');
-  if(process.env.DESIGNX_PERFORMANCE_ONLY==='true'){
+  const renderer=await child('apps/renderer/src/main.ts');
+  // Control only this suite's isolated renderer; no production fault hooks.
+  globalThis.DESIGNX_RENDERER_FIXTURE={pause:()=>renderer.kill('SIGSTOP'),resume:()=>renderer.kill('SIGCONT')};
+  if(process.env.DESIGNX_UI_ONLY==='true'){
+    await import('./ui_journey.mjs');
+    await import('./library_journey.mjs');
+  }else if(process.env.DESIGNX_PERFORMANCE_ONLY==='true'){
     await import('../perf/library-performance.mjs');
   }else if(process.env.DESIGNX_PREVIEWS_ONLY==='true'){
     await import('./previews_journey.mjs');
@@ -61,6 +66,7 @@ try {
     await import('./preferences_journey.mjs');
     await import('./previews_journey.mjs');
     await import('./templates_journey.mjs');
+    await import('./ui_journey.mjs');
     await import('./recovery_journey.mjs');
     await import('./large_import_journey.mjs');
     await import('./render_consistency.mjs');
@@ -68,6 +74,7 @@ try {
 } catch (error) {
   console.error(error); console.error(logs.slice(-5000)); process.exitCode = 1;
 } finally {
+  globalThis.DESIGNX_RENDERER_FIXTURE?.resume();
   for (const processHandle of children) processHandle.kill('SIGTERM');
   for (let n = 0; n < 40 && children.some(processHandle => processHandle.exitCode === null); n++) await delay(100);
   for (const processHandle of children) if (processHandle.exitCode === null) processHandle.kill('SIGKILL');

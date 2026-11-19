@@ -1,0 +1,222 @@
+{
+  "goal": "G6",
+  "date": "2026-11-18",
+  "environment": "Codex managed cloud, isolated local PostgreSQL/S3, Chromium real browser",
+  "codeCommit": null,
+  "status": "workspace-validated; production pending",
+  "baselineArtifacts": "tests/e2e/.artifacts/ui-before-1795078410055",
+  "uiArtifacts": "tests/e2e/.artifacts/ui-after-1795079315023",
+  "uiJourney": {
+    "base": "http://127.0.0.1:40741",
+    "checks": [
+      "template, versions and export native dialogs isolate background, cycle focus and restore it; IME does not save/delete",
+      "15 viewport/breakpoint checks including 320 px and 720 × 500 equivalent to 200% of 1440 × 1000; no document overflow and 44 px primary controls",
+      "320 px drawers edit long Chinese text, upload ready image, toggle layer, save/reload; reduced-height input simulation (not physical keyboard)",
+      "real queued export cancellation, accepted-response loss and idempotent retry produce exactly two jobs and one 600 × 800 download",
+      "project menu arrows/Escape and rename modal return focus to the project trigger",
+      "legacy Studio desktop/mobile chat and canvas remain navigable; new-creation dialog keyboard closes",
+      "Chromium touch emulation adds text and saves; not a physical phone"
+    ],
+    "errors": [],
+    "limits": [
+      "Physical phone/software keyboard, Safari device and screen reader not available. Reduced viewport simulates available height only."
+    ],
+    "layout": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "viewport": 1440,
+        "body": 1440,
+        "header": 1440,
+        "title": 240,
+        "buttonHeight": 44
+      },
+      {
+        "width": 1024,
+        "height": 768,
+        "viewport": 1024,
+        "body": 1024,
+        "header": 1024,
+        "title": 215,
+        "buttonHeight": 44
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "viewport": 390,
+        "body": 390,
+        "header": 390,
+        "title": 250,
+        "buttonHeight": 44
+      },
+      {
+        "width": 320,
+        "height": 568,
+        "viewport": 320,
+        "body": 320,
+        "header": 320,
+        "title": 216,
+        "buttonHeight": 44
+      },
+      {
+        "width": 599,
+        "height": 768,
+        "viewport": 599,
+        "body": 599,
+        "header": 599,
+        "title": 495,
+        "buttonHeight": 44
+      },
+      {
+        "width": 600,
+        "height": 768,
+        "viewport": 600,
+        "body": 600,
+        "header": 600,
+        "title": 496,
+        "buttonHeight": 44
+      },
+      {
+        "width": 849,
+        "height": 768,
+        "viewport": 849,
+        "body": 849,
+        "header": 849,
+        "title": 745,
+        "buttonHeight": 44
+      },
+      {
+        "width": 850,
+        "height": 768,
+        "viewport": 850,
+        "body": 850,
+        "header": 850,
+        "title": 746,
+        "buttonHeight": 44
+      },
+      {
+        "width": 851,
+        "height": 768,
+        "viewport": 851,
+        "body": 851,
+        "header": 851,
+        "title": 212.5625,
+        "buttonHeight": 44
+      },
+      {
+        "width": 1099,
+        "height": 768,
+        "viewport": 1099,
+        "body": 1099,
+        "header": 1099,
+        "title": 215,
+        "buttonHeight": 44
+      },
+      {
+        "width": 1100,
+        "height": 768,
+        "viewport": 1100,
+        "body": 1100,
+        "header": 1100,
+        "title": 215,
+        "buttonHeight": 44
+      },
+      {
+        "width": 1101,
+        "height": 768,
+        "viewport": 1101,
+        "body": 1101,
+        "header": 1101,
+        "title": 215,
+        "buttonHeight": 44
+      },
+      {
+        "width": 1449,
+        "height": 1000,
+        "viewport": 1449,
+        "body": 1449,
+        "header": 1449,
+        "title": 240,
+        "buttonHeight": 44
+      },
+      {
+        "width": 1450,
+        "height": 1000,
+        "viewport": 1450,
+        "body": 1450,
+        "header": 1450,
+        "title": 240,
+        "buttonHeight": 44
+      },
+      {
+        "width": 720,
+        "height": 500,
+        "viewport": 720,
+        "body": 720,
+        "header": 720,
+        "title": 616,
+        "buttonHeight": 44
+      }
+    ]
+  },
+  "webkitAttempt": "tests/e2e/.artifacts/ui-after-1795079033788/results.json",
+  "checks": {
+    "typecheck": "passed",
+    "check": "passed",
+    "build": "passed",
+    "unit": 108,
+    "api": 112,
+    "fullBrowserLog": "/tmp/designx-g6-full-browser.log",
+    "fullBrowser": [
+      "account 6",
+      "poster 11",
+      "library 10",
+      "preferences 8",
+      "previews 6",
+      "templates 5",
+      "UI 6 before final menu/layout refinement",
+      "recovery 7",
+      "valid/oversized imports 3",
+      "render 3"
+    ],
+    "finalFocused": [
+      "UI 7 with project menu and Studio 18-view matrix",
+      "library 10"
+    ],
+    "renderArtifacts": "tests/e2e/.artifacts/render-1795079257559",
+    "renderChangedPixelRatios": [
+      0,
+      0.00025,
+      0
+    ],
+    "performanceBudget": {
+      "status": "passed",
+      "initialGzipBytes": 123187,
+      "listDOM": 744,
+      "fullDocumentRequests": 0,
+      "warmListMs": 365,
+      "coldSixPreviewsMs": 6792,
+      "artifacts": "tests/e2e/.artifacts/performance-optimized-1795079371720"
+    }
+  },
+  "visualReview": [
+    "editor desktop/320",
+    "export 320 scroll",
+    "Studio chat 390 and canvas 320",
+    "rotation label and shared thumbnail corrected"
+  ],
+  "regressionFixes": [
+    "Mobile add-text opened overlapping drawers; now transfers to property drawer",
+    "Mobile field 14px specificity override; now verified >=16px",
+    "Studio canvas/zoom hit areas overlapped; separated into rows on phones",
+    "Project menu/rename dialog restores trigger focus"
+  ],
+  "release": null,
+  "production": null,
+  "limits": [
+    "WebKit downloaded but unavailable because host GTK4/Graphene/Harfbuzz ICU/Manette/Hyphen/GLES libraries are missing",
+    "Physical phone/software keyboard, Safari device and screen reader not verified",
+    "720x500 simulates 200% CSS viewport area, not OS font enlargement",
+    "Legacy Board SDK controls are not claimed globally accessible"
+  ]
+}
