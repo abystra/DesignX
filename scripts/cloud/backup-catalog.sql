@@ -13,5 +13,5 @@ SELECT json_build_object(
  'version',1,'snapshot',pg_export_snapshot(),'database',current_database(),'createdAt',now(),
  'counts',json_build_object('users',(SELECT count(*) FROM users),'workspaces',(SELECT count(*) FROM workspaces),'projects',(SELECT count(*) FROM projects),'documents',(SELECT count(*) FROM documents),'versions',(SELECT count(*) FROM document_versions),'assetVersions',(SELECT count(*) FROM asset_versions)),
  'objects',coalesce((SELECT json_agg(unique_objects ORDER BY bucket,key) FROM unique_objects),'[]'::json)
-);
+)::jsonb;
 -- The orchestrator keeps this transaction open until pg_dump --snapshot exits.

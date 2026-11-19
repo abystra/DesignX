@@ -10,9 +10,21 @@ import { PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-s
 import { config } from '../../../packages/server-infra/src/config.js';
 import { storage, putObject, getObject, deleteObject } from '../../../packages/server-infra/src/storage.js';
 import { captureObjects, publishBackup, downloadBackup, restoreObjects, pruneBackups } from '../../../scripts/backup-objects.mjs';
+import { migrate } from '../../../db/migrate.js';
+import { pool } from '../../../packages/server-infra/src/db.js';
 const execute=promisify(execFile), directories:string[]=[];
 async function directory(){const path=await mkdtemp(join(tmpdir(),'designx-backup-test-'));directories.push(path);return path;}
-test.after(async()=>{for(const path of directories)await rm(path,{recursive:true,force:true});storage.destroy();});
+test.after(async()=>{for(const path of directories)await rm(path,{recursive:true,force:true});storage.destroy();await pool.end();});
+test('snapshot catalog has one-line JSONB framing while its exported transaction stays open',async()=>{
+ await migrate();const client=await pool.connect();
+ try{
+  const sql=(await readFile('scripts/cloud/backup-catalog.sql','utf8')).replaceAll(":'default_bucket'","'"+config.s3Bucket+"'");
+  const results:any=await client.query({text:sql,types:{getTypeParser:()=>((text:string)=>text)}});
+  const result=results.at(-1),raw=Object.values(result.rows[0])[0] as string;
+  assert.equal(result.fields[0].dataTypeID,3802,'JSONB output avoids json_agg composite record newlines');
+  assert.equal(raw.split('\n').length,1);assert.ok(JSON.parse(raw).snapshot);
+ }finally{await client.query('ROLLBACK');client.release();}
+});
 test('object backup survives source loss, remote download restores bytes only into empty namespaces',async()=>{
  const path=await directory(), key='backup-test/'+randomUUID(), bytes=Buffer.from('immutable recovery fixture');
  await putObject(key,bytes,'image/png');

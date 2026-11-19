@@ -22,6 +22,10 @@ def run(args, **kwargs):
     result = subprocess.run(args, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
     if result.returncode:
         # Child errors may contain connection strings. Keep secrets out of the journal.
+        if ROOT.is_dir():
+            diagnostic = ROOT / 'last-error.log'
+            diagnostic.write_bytes(result.stderr[-32768:])
+            diagnostic.chmod(0o600)
         raise RuntimeError(f'{Path(args[0]).name} failed ({result.returncode}); stage recorded in status.json')
     return result.stdout.decode().strip()
 
@@ -49,12 +53,17 @@ def psql(database, sql):
     return run(['sudo', '-u', 'postgres', 'psql', '-XqAt', '--set=ON_ERROR_STOP=1', '--dbname', database], input=sql.encode(), cwd='/tmp')
 
 def objects(image, mode, directory, argument=None):
-    args = ['docker', 'run', '--rm', '--network', 'host', '--user', '0:0', '--env-file', '/etc/designx/app.env',
+    container = 'designx-ops-' + uuid.uuid4().hex
+    args = ['docker', 'run', '--rm', '--name', container, '--network', 'host', '--user', '0:0', '--env-file', '/etc/designx/app.env',
             '--read-only', '--tmpfs', '/tmp', '--security-opt', 'no-new-privileges', '--cap-drop', 'ALL',
             '--volume', str(directory) + ':/backup', image, 'node', '--import', 'tsx', 'scripts/backup-objects.mjs', mode, '/backup']
     if argument:
         args.append(argument)
-    return json.loads(run(args, timeout=3600))
+    try:
+        return json.loads(run(args, timeout=3600))
+    finally:
+        # A timed-out Docker client does not stop its daemon-owned container.
+        subprocess.run(['docker', 'rm', '--force', container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
 
 def backup():
     values, database, image = settings()
@@ -132,7 +141,7 @@ def health():
         problems.append('stale-or-failed-jobs')
     backup_state = json.loads((ROOT / 'status.json').read_text()) if (ROOT / 'status.json').exists() else {}
     age = time.time() - (backup_state.get('lastSuccessAt') or 0)
-    if age > 30 * 3600 or backup_state.get('status') == 'failed':
+    if age > 30 * 3600 or backup_state.get('status') == 'failed' or (backup_state.get('status') == 'running' and time.time() - backup_state.get('startedAt', 0) > 2 * 3600):
         problems.append('backup-stale-or-failed')
     report = {'at': time.time(), 'status': 'degraded' if problems else 'ok', 'problems': problems, 'services': services, 'queues': queues, 'backupAgeSeconds': round(age), 'externalNotificationConfigured': False}
     write_json(ROOT / 'health.json', report)
