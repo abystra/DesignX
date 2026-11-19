@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-18",
+  "timezone": "America/Los_Angeles",
+  "environment": "Codex managed cloud; isolated PostgreSQL and S3 tests",
+  "applicationCommit": "3145aab68a43970a161dfc46d4cac44c098a4f89",
+  "release": "/srv/designx/releases/3145aab68a43-20261119080537",
+  "image": "sha256:e9f5eb45cdd9acdac2c8d8fa52e005529194dd1d0b877340d42620073172e9e5",
+  "tests": {
+    "unit": 106,
+    "api": 105,
+    "typecheck": "passed",
+    "check": "passed",
+    "build": "passed",
+    "browser": {
+      "account": 6,
+      "poster": 11,
+      "library": 10,
+      "preferences": 8,
+      "recovery": 7,
+      "largeImport": 3,
+      "render": 3
+    }
+  },
+  "production": {
+    "base": "https://designx.velax.cn",
+    "commit": "3145aab68a43970a161dfc46d4cac44c098a4f89",
+    "checks": [
+      "two independent sessions preserve project favorites and real filtered library",
+      "stale template lists add different favorites without replacement",
+      "real brand revision conflict retains and explicitly merges both edits",
+      "reference conflict keeps draft and both records after explicit rebase",
+      "existing personal poster still opens and downloads real 600x800 PNG"
+    ],
+    "errors": [],
+    "cleanup": true
+  },
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44484686251",
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "artifacts": "tests/e2e/.artifacts/preferences-1795075202686",
+  "limits": [
+    "Physical phone keyboard, Safari and screen reader not verified",
+    "Existing brand display visual migration remains G6"
+  ],
+  "productionHarnessCorrection": "First run stopped on an ambiguous locator when two favorites were visible; scoped locator and repeated, both runs cleaned owned fixtures."
+}
