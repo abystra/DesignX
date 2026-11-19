@@ -55,4 +55,4 @@ corepack pnpm templates:check --base HEAD
 
 应用 `5c6b853a3eeff1304d77a39fd9109782e4bf0e26` 已推送并部署至 `/srv/designx/releases/5c6b853a3eef-20261119082324`。正式域名真实 Chromium 通过模板搜索/来源预览、冻结版本创建、修改保存重开、PNG 与 PDF 下载、旧版本拒绝且无多余项目、收藏筛选和旧 Studio 加入模板，脚本错误为零，专用账号与对象已清理。
 
-[精确提交 CI](https://github.com/abystra/DesignX/actions/runs/44487160365) 正在运行，后续核对最终结果。G5 接续首屏和缩略图性能。
+[精确提交 CI](https://github.com/abystra/DesignX/actions/runs/44487160365) 已通过，已核对最终结果。G5 接续首屏和缩略图性能。

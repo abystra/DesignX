@@ -9,7 +9,7 @@ export async function runBusinessJob(queueJob:any,handler:(job:any)=>Promise<any
   const row=(await tx.query('SELECT * FROM jobs WHERE id=$1 FOR UPDATE',[jobId])).rows[0];
   if(!row||row.queue_id!==queueJob.id||['cancelled','succeeded'].includes(row.status)||(row.kind==='ai.turn'&&row.status==='failed'))return null;
   const updated=(await tx.query("UPDATE jobs SET status='running',progress=5,error=NULL,attempts=attempts+1,execution_token=$2,updated_at=now() WHERE id=$1 RETURNING *",[jobId,id()])).rows[0];
-  await emit(tx,workspaceId,'job.updated',jobDto(updated));return updated;
+  if(updated.kind!=='render.thumbnail')await emit(tx,workspaceId,'job.updated',jobDto(updated));return updated;
  });
  if(!job)return;
  try{

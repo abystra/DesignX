@@ -63,8 +63,8 @@
   },
   "ci": {
     "url": "https://github.com/abystra/DesignX/actions/runs/44487160365",
-    "status": "in_progress",
-    "conclusion": null
+    "status": "completed",
+    "conclusion": "success"
   },
   "limits": [
     "Physical phone keyboard, Safari and screen reader not verified",

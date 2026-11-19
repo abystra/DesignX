@@ -59,7 +59,7 @@ try {
   assert.ok(bounded.items.every(p => !p.design && !p.brief));
   await home(); await ready();
   assert.equal(await page.locator('.ws-project-card').count(), 24);
-  await page.locator('.ws-project-card .dx-artboard').first().waitFor();
+  await page.locator('.ws-project-card .dx-preview-image').first().waitFor();
   await page.screenshot({ path: new URL('projects-desktop.png', output).pathname, fullPage: true });
   let failNext = true;
   await page.route('**/api/projects/page?**', async route => {

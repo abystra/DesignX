@@ -84,7 +84,7 @@ import {
   initialPersistenceBaseline,
 } from "./board-state";
 import { templates } from "../data/templates";
-import { initialDesign } from "./Editor";
+import { initialDesign } from "../data/template-design.js";
 import BoardWorld, { DesignPreview } from "./BoardWorld";
 import TldrawBoard from "./TldrawBoard";
 export { DesignPreview } from "./BoardWorld";

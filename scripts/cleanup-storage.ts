@@ -13,6 +13,7 @@ async function unreferenced(tx:Tx,bucket:string,key:string){
   OR EXISTS(SELECT 1 FROM storage_migrations m WHERE m.old_bucket=$1 AND (m.old_object_key=$2 OR m.old_thumbnail_key=$2))
   OR EXISTS(SELECT 1 FROM upload_sessions u WHERE u.staging_key=$2 AND u.status='uploading' AND u.expires_at>now())
   OR EXISTS(SELECT 1 FROM generation_outputs o WHERE o.staging_key=$2 AND (o.state<>'ready' OR o.updated_at>now()-interval '7 days'))
+  OR EXISTS(SELECT 1 FROM jobs j JOIN documents d ON d.id=j.payload->>'documentId' JOIN projects p ON p.id=j.project_id WHERE j.kind='render.thumbnail' AND j.status='succeeded' AND p.deleted_at IS NULL AND d.revision=(j.payload->>'revision')::int AND j.result->>'objectKey'=$2 AND j.result->>'storageBucket'=$1)
   OR EXISTS(SELECT 1 FROM jobs j WHERE j.status IN ('queued','running','failed') AND (j.payload::text LIKE '%'||$2||'%' OR j.result::text LIKE '%'||$2||'%'))`,[bucket,key])).rowCount;
 }
 try{

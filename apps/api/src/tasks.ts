@@ -13,12 +13,13 @@ const jobStatusColumns='id,project_id,kind,status,progress,error,result,attempts
 export async function taskRoutes(app:FastifyInstance) {
  app.get('/api/jobs',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   const projectId=req.query.projectId||req.query.project_id;
-  const rows=projectId?(await tx.query(`SELECT ${jobStatusColumns} FROM jobs WHERE project_id=$1 AND EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL) ORDER BY created_at DESC LIMIT 200`,[projectId])).rows:(await tx.query(`SELECT ${jobStatusColumns} FROM jobs WHERE project_id IS NULL OR EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL) ORDER BY created_at DESC LIMIT 200`)).rows;
+  const rows=projectId?(await tx.query(`SELECT ${jobStatusColumns} FROM jobs WHERE kind<>'render.thumbnail' AND project_id=$1 AND EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL) ORDER BY created_at DESC LIMIT 200`,[projectId])).rows:(await tx.query(`SELECT ${jobStatusColumns} FROM jobs WHERE kind<>'render.thumbnail' AND (project_id IS NULL OR EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL)) ORDER BY created_at DESC LIMIT 200`)).rows;
   return rows.map(jobDto);
  }));
  app.get('/api/jobs/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{const job=(await tx.query(`SELECT ${jobStatusColumns} FROM jobs WHERE id=$1 AND (project_id IS NULL OR EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL))`,[req.params.id])).rows[0];if(!job)notFound();return jobDto(job);}));
  app.post('/api/jobs/:id/retry',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   const current=(await tx.query("SELECT * FROM jobs WHERE id=$1 AND (project_id IS NULL OR EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL)) FOR UPDATE",[req.params.id])).rows[0];if(!current)notFound();
+  if(current.kind==='render.thumbnail')throw new HttpError(409,'PREVIEW_ACTION_REQUIRED','请从作品列表重试预览');
   if(current.kind.startsWith('generation.'))throw new HttpError(409,'GENERATION_EXPLICIT_ACTION_REQUIRED','请使用生成记录的再次生成或重试摄取操作');
   if(current.kind==='ai.turn'&&(await tx.query("SELECT 1 FROM ai_attempts WHERE turn_id=$1 AND outcome='unknown'",[current.id])).rowCount)throw new HttpError(409,'AI_RECONCILIATION_REQUIRED','此回合执行结果未知，请核对工具副作用后显式创建新回合');
   if(!['failed','cancelled'].includes(current.status))throw new HttpError(409,'INVALID_JOB_STATE','只有失败或取消的任务可以重试');
@@ -31,7 +32,8 @@ export async function taskRoutes(app:FastifyInstance) {
  app.post('/api/jobs/:id/cancel',async(req:any)=>{
   const result=await tenantTransaction(req.identity.workspace.id,async tx=>{
    const current=(await tx.query("SELECT * FROM jobs WHERE id=$1 AND (project_id IS NULL OR EXISTS (SELECT 1 FROM projects p WHERE p.id=jobs.project_id AND p.deleted_at IS NULL)) FOR UPDATE",[req.params.id])).rows[0];if(!current)notFound();
-   if(current.kind.startsWith('generation.'))throw new HttpError(409,'GENERATION_EXPLICIT_ACTION_REQUIRED','请从生成记录取消，以同时记录取消意图和配额');
+   if(current.kind==='render.thumbnail')throw new HttpError(409,'PREVIEW_ACTION_REQUIRED','请从作品列表重试预览');
+  if(current.kind.startsWith('generation.'))throw new HttpError(409,'GENERATION_EXPLICIT_ACTION_REQUIRED','请从生成记录取消，以同时记录取消意图和配额');
    if(['succeeded','failed','cancelled'].includes(current.status))return current;
    const job=(await tx.query("UPDATE jobs SET status='cancelled',error=NULL,updated_at=now() WHERE id=$1 RETURNING *",[current.id])).rows[0];
    await emit(tx,req.identity.workspace.id,'job.updated',jobDto(job));return job;

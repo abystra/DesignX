@@ -1,0 +1,179 @@
+{
+  "date": "2026-11-18",
+  "environment": "Codex managed cloud, isolated PostgreSQL/S3/Chromium",
+  "commit": null,
+  "tests": {
+    "unit": 108,
+    "api": 111,
+    "typecheck": "passed",
+    "build": "passed",
+    "structure": "passed",
+    "fullBrowser": {
+      "account": 6,
+      "poster": 11,
+      "library": 10,
+      "preferences": 8,
+      "previews": 6,
+      "templates": 5,
+      "recovery": 7,
+      "largeImport": 3,
+      "render": 3
+    },
+    "additionalRendererUpgradeApi": 4,
+    "postUpgradeGuardBrowser": {
+      "previews": 6,
+      "library": 10,
+      "render": 3
+    }
+  },
+  "performance": {
+    "baselineArtifact": "tests/e2e/.artifacts/performance-baseline-1795077492277",
+    "optimizedArtifact": "tests/e2e/.artifacts/performance-optimized-1795077524843",
+    "baseline": {
+      "baseline": true,
+      "fixture": "1006 projects; latest 24 each have 1000 nodes; 96-card scroll; 5 concurrent clients; loopback Chromium, no CPU/network throttle; G4/G5 frontend compare uses same G5 API",
+      "measurements": [
+        {
+          "label": "cold-home",
+          "elapsedMs": 957,
+          "taskMs": 685,
+          "scriptMs": 219,
+          "layoutMs": 232,
+          "domNodes": 347,
+          "requests": 27,
+          "scriptBytes": 2445115,
+          "scriptGzipBytes": 735548,
+          "fullDocumentRequests": 0,
+          "fullDocumentBytes": 0,
+          "previewImages": 0
+        },
+        {
+          "label": "cold-large-library",
+          "elapsedMs": 656,
+          "taskMs": 530,
+          "scriptMs": 200,
+          "layoutMs": 66,
+          "domNodes": 20760,
+          "requests": 32,
+          "scriptBytes": 0,
+          "scriptGzipBytes": 0,
+          "fullDocumentRequests": 8,
+          "fullDocumentBytes": 849405,
+          "previewImages": 0
+        },
+        {
+          "label": "warm-large-library",
+          "elapsedMs": 781,
+          "taskMs": 543,
+          "scriptMs": 138,
+          "layoutMs": 84,
+          "domNodes": 20760,
+          "requests": 32,
+          "scriptBytes": 2445115,
+          "scriptGzipBytes": 735548,
+          "fullDocumentRequests": 8,
+          "fullDocumentBytes": 849405,
+          "previewImages": 0
+        },
+        {
+          "label": "5-concurrent-metadata-reads",
+          "samplesMs": [
+            19,
+            14,
+            12,
+            12,
+            13
+          ]
+        }
+      ],
+      "errors": []
+    },
+    "optimized": {
+      "baseline": false,
+      "fixture": "1006 projects; latest 24 each have 1000 nodes; 96-card scroll; 5 concurrent clients; loopback Chromium, no CPU/network throttle; G4/G5 frontend compare uses same G5 API",
+      "measurements": [
+        {
+          "label": "cold-home",
+          "elapsedMs": 788,
+          "taskMs": 648,
+          "scriptMs": 188,
+          "layoutMs": 255,
+          "domNodes": 347,
+          "requests": 27,
+          "scriptBytes": 427433,
+          "scriptGzipBytes": 123060,
+          "fullDocumentRequests": 0,
+          "fullDocumentBytes": 0,
+          "previewImages": 0
+        },
+        {
+          "label": "cold-large-library",
+          "elapsedMs": 6468,
+          "taskMs": 226,
+          "scriptMs": 51,
+          "layoutMs": 35,
+          "domNodes": 744,
+          "requests": 49,
+          "scriptBytes": 0,
+          "scriptGzipBytes": 0,
+          "fullDocumentRequests": 0,
+          "fullDocumentBytes": 0,
+          "previewImages": 6
+        },
+        {
+          "label": "warm-large-library",
+          "elapsedMs": 335,
+          "taskMs": 99,
+          "scriptMs": 20,
+          "layoutMs": 19,
+          "domNodes": 744,
+          "requests": 38,
+          "scriptBytes": 0,
+          "scriptGzipBytes": 0,
+          "fullDocumentRequests": 0,
+          "fullDocumentBytes": 0,
+          "previewImages": 6
+        },
+        {
+          "label": "5-concurrent-metadata-reads",
+          "samplesMs": [
+            17,
+            15,
+            10,
+            12,
+            11
+          ]
+        },
+        {
+          "label": "dynamic-editor-chunk-failure",
+          "result": "explicit reload keeps route and opens persisted project"
+        }
+      ],
+      "errors": []
+    },
+    "budgets": "all passed; loopback 1440x1000, 1006 projects, 24 x 1000-node works, 96-card scroll, 5 concurrent scoped metadata reads",
+    "visualReview": "reviewed corrected full-aspect cached images; grid intrinsic-height clipping fixed"
+  },
+  "release": null,
+  "production": null,
+  "ci": null,
+  "limits": [
+    "Cold rendering has one-time generation cost per revision; measured separately from warm cache",
+    "No claim of million-record scale or production multi-user load",
+    "Physical phones, Safari and screen reader remain G6 external device checks",
+    "Legacy Studio chunk remains large but is deferred"
+  ],
+  "previewJourney": {
+    "base": "http://127.0.0.1:35569",
+    "checks": [
+      "library uses a real private image without downloading the document",
+      "lazy Editor opens; saved revision receives a new real thumbnail",
+      "image delivery failure remains visible and explicit menu retry restores the preview",
+      "another viewport reuses the authorized preview and keeps mobile list usable",
+      "lazy legacy Studio and Board still open",
+      "deleted project denies the existing private image URL"
+    ],
+    "errors": []
+  },
+  "previewArtifacts": "tests/e2e/.artifacts/previews-1795077830528"
+}

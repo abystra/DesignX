@@ -123,7 +123,7 @@ export async function projectPage(tx: Tx, workspaceId: string, input: unknown) {
     rows: [page],
   } = await tx.query(
     `WITH matches AS NOT MATERIALIZED (
-    SELECT p.id,p.title,p.workspace_mode,p.type,p.creation_source,p.ai_source,p.image,p.color,p.folder_id,
+    SELECT p.id,p.title,p.workspace_mode,p.type,(p.creation_source-'source') AS creation_source,p.ai_source,p.image,p.color,p.folder_id,
       p.created_at,p.updated_at,p.last_opened_at,p.deleted_at,d.id AS document_id,d.revision
     FROM projects p LEFT JOIN documents d ON d.id=p.primary_artboard_id
     WHERE ${conditions.join(" AND ")}

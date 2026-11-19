@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy } from "react";
 import {
   Home,
   Sparkles,
@@ -41,7 +41,8 @@ import {
   Layers,
   Settings2,
 } from "lucide-react";
-import Editor from "./components/Editor.jsx";
+import DeferredRoute from "./components/DeferredRoute.jsx";
+const Editor = lazy(() => import("./components/Editor.jsx"));
 import { projectDrafts } from "./lib/draft-cache";
 import Workspace from "./components/Workspace.jsx";
 import AccountSettings from "./components/AccountSettings.jsx";
@@ -57,7 +58,7 @@ import JobPanel from "./components/JobPanel.jsx";
 import DesignThumbnail from "./components/DesignThumbnail.jsx";
 import Catalog from "./components/Catalog.jsx";
 import Workbench from "./components/Workbench.jsx";
-import AIStudio from "./components/AIStudio.jsx";
+const AIStudio = lazy(() => import("./components/AIStudio.jsx"));
 import { templates, templateRegistry } from "./data/templates.js";
 import {
   useCapabilities,
@@ -883,7 +884,7 @@ export default function App({
         )}
         {studio && (
           <div style={{ display: editing ? "none" : "contents" }}>
-            <AIStudio
+            <DeferredRoute onBack={() => { setStudio(null); navigate("projects"); }}><AIStudio
               key={studio.id}
               session={studio}
               onBack={() => navigate("home")}
@@ -892,11 +893,11 @@ export default function App({
               onSave={save}
               onToast={notify}
               editedProject={editedProject}
-            />
+            /></DeferredRoute>
           </div>
         )}
         {editing ? (
-          <Editor
+          <DeferredRoute key={editing.id} onBack={() => { setEditing(null); setStudio(null); navigate("projects"); }}><Editor
             key={editing.id}
             project={editing}
             draftOwner={`${sessionUser.id}:${workspace.id}`}
@@ -911,7 +912,7 @@ export default function App({
             }}
             onSave={save}
             onToast={notify}
-          />
+          /></DeferredRoute>
         ) : studio ? null : (
           <>
             <aside className="sidebar">

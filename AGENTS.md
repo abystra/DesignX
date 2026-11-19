@@ -170,6 +170,7 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 - 收藏使用偏好条目原子增删及幂等键；品牌、参考等整体偏好必须携带 If-Match revision，冲突保留输入并由用户明确合并/采用最新。禁止重新加入无条件整体 PUT。读取兼容、近期上限及回退边界见 [G3 偏好并发](docs/implementation/preferences-release.md)。
 - 公共工具目录只列真实手动入口和 `/api/capabilities` 配方。提示词明确标注为预设，能力关闭时在创建项目之前阻止进入。
 - 模板使用 `src/data/template-registry.json` 的不可变版本、摘要与发布状态；新版本由 `scripts/templates.ts` 校验/发布，下架保留历史版本与素材。预览和创建传相同版本，服务端冻结文档及来源；不能修改已发布记录或用标题推断 AI 来源。操作手册见 [G4 模板发布](docs/implementation/templates-release.md)。品牌 Logo 使用素材 ID、版本 ID 和不可变 URL 的统一合同。
+- Editor、Studio/Board 按入口延迟加载；项目卡片通过 `/api/projects/:id/preview` 读取共享 Renderer 的私有、版本绑定图片，不恢复为逐卡下载完整文档。预览失败可显式重试，缓存鉴权先于 304；保留当前版本的 GC 引用保护。合同与性能预算见 [G5 性能记录](docs/implementation/performance-release.md)。
 - 项目/素材目录使用 `/api/projects/page`、`/api/assets/page` 的游标分页与服务端筛选；不要先取 1000 条再在浏览器过滤，也不要自动遍历全库填满选择器。上传状态读取单素材；错误与空结果分开。B1 合同及限制见 [资料库分页与搜索](docs/implementation/library-search-release.md)。
 - `pnpm test:poster` 自动创建隔离数据库、S3 和 Web/API/Media/Renderer，执行普通账号、个人海报、1000 条以上资料库旅程与共享渲染对照；需要本机 PostgreSQL、已有 SeaweedFS 镜像和 Playwright Chromium。
 

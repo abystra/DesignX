@@ -26,12 +26,24 @@ try {
   await migrate(); app = await buildApp({ logger: false });
   await app.listen({ port: 0, host: '127.0.0.1' });
   const apiPort = app.server.address().port;
-  web = await viteServer({ configFile: false, server: { watch: { ignored: ['**/tests/e2e/.artifacts/**'] }, host: '127.0.0.1', port: webPort, strictPort: true, proxy: { '/api': `http://127.0.0.1:${apiPort}` } } });
-  await web.listen();
+  if(process.env.DESIGNX_PERFORMANCE_ONLY==='true'){
+    const {preview}=await import('vite');
+    const server=await preview({configFile:false,root:process.env.DESIGNX_PERF_ROOT||process.cwd(),preview:{host:'127.0.0.1',port:webPort,strictPort:true,proxy:{'/api':`http://127.0.0.1:${apiPort}`}}});
+    web={close:()=>new Promise(resolve=>server.httpServer.close(resolve))};
+  }else{
+    web = await viteServer({ configFile: false, server: { watch: { ignored: ['**/tests/e2e/.artifacts/**'] }, host: '127.0.0.1', port: webPort, strictPort: true, proxy: { '/api': `http://127.0.0.1:${apiPort}` } } });
+    await web.listen();
+  }
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'media' });
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'import' });
   await child('apps/renderer/src/main.ts');
-  if (process.env.DESIGNX_TEMPLATES_ONLY === 'true') {
+  if(process.env.DESIGNX_PERFORMANCE_ONLY==='true'){
+    await import('../perf/library-performance.mjs');
+  }else if(process.env.DESIGNX_PREVIEWS_ONLY==='true'){
+    await import('./previews_journey.mjs');
+    await import('./library_journey.mjs');
+    await import('./render_consistency.mjs');
+  }else if (process.env.DESIGNX_TEMPLATES_ONLY === 'true') {
     await import('./templates_journey.mjs');
     await import('./render_consistency.mjs');
   }
@@ -47,6 +59,7 @@ try {
     await import('./poster_journey.mjs');
     await import('./library_journey.mjs');
     await import('./preferences_journey.mjs');
+    await import('./previews_journey.mjs');
     await import('./templates_journey.mjs');
     await import('./recovery_journey.mjs');
     await import('./large_import_journey.mjs');

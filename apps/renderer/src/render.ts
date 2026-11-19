@@ -1,3 +1,4 @@
+import {previewRendererVersion} from '../../../packages/server-domain/src/previews.js';
 import {builtinImageSource} from '../../../src/data/templates.js';
 import { config } from '../../../packages/server-infra/src/config.js';
 import { registerCandidate } from '../../../packages/server-domain/src/assets.js';
@@ -12,7 +13,8 @@ import { updateJob } from '../../../packages/server-domain/src/jobs.js';
 import { assetUrlPattern } from '../../../packages/server-domain/src/common.js';
 import { renderDocumentHtml } from '../../../packages/doc-render/src/server.js';
 import { assertActive } from '../../worker/src/process.js';
-let browser:Browser|undefined;
+let browser:Browser|undefined,launch:Promise<Browser>|undefined;
+async function getBrowser(){if(browser?.isConnected())return browser;if(!launch)launch=chromium.launch({headless:true}).then(value=>browser=value).finally(()=>{launch=undefined;});return launch;}
 export async function closeBrowser(){await browser?.close();browser=undefined;}
 export async function embedSources(workspaceId:string,design:any,assetVersions?:any[]){
  const sources=new Map<string,string>();
@@ -38,13 +40,14 @@ export async function embedSources(workspaceId:string,design:any,assetVersions?:
  return sources;
 }
 export async function renderExport(job:any){
+ if(job.kind==='render.thumbnail'&&job.payload.rendererFingerprint!==previewRendererVersion())throw new Error('渲染版本已更新，请重新打开作品列表生成最新预览');
  const {design,format,scale=1,transparent=false,title}=job.payload;
  const sources=await embedSources(job.workspace_id,design,job.payload.assetVersions);
  const html=renderDocumentHtml(design,{transparent:format==='jpeg'?false:transparent,resolveAsset:src=>sources.get(src)||src});
  await updateJob(job.workspace_id,job.id,{progress:30},job.execution_token);
  const rendererVersion='designx-renderer-v2.3';
  const cacheKey=createHash('sha256').update(JSON.stringify({rendererVersion,format,scale,transparent,title,documentId:job.payload.documentId,revision:job.payload.revision,assets:job.payload.assetVersions,documents:job.payload.documents})).update(html).digest('hex');
- const cached=await tenantTransaction(job.workspace_id,async tx=>(await tx.query("SELECT result FROM jobs WHERE workspace_id=$1 AND kind='render.export' AND status='succeeded' AND result->>'cacheKey'=$2 ORDER BY created_at DESC LIMIT 1",[job.workspace_id,cacheKey])).rows[0]?.result);
+ const cached=await tenantTransaction(job.workspace_id,async tx=>(await tx.query("SELECT result FROM jobs WHERE workspace_id=$1 AND kind=$3 AND status='succeeded' AND result->>'cacheKey'=$2 ORDER BY created_at DESC LIMIT 1",[job.workspace_id,cacheKey,job.kind])).rows[0]?.result);
  let cachedObject:any;
  if(cached?.sha256){try{const object=await getObject(cached.objectKey,{bucket:cached.storageBucket||process.env.LEGACY_S3_BUCKET||undefined});if(createHash('sha256').update(object.bytes).digest('hex')===cached.sha256)cachedObject=object;}catch(error:any){if(error.$metadata?.httpStatusCode!==404&&error.name!=='NoSuchKey'&&error.name!=='NotFound')throw error;}}
  let bytes:Buffer,mime:string,extension=format==='jpeg'?'jpg':format;
@@ -64,8 +67,7 @@ export async function renderExport(job:any){
   const style=html.slice(html.indexOf('<style>')+7,html.lastIndexOf('</style>'));
   bytes=Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${design.width*scale}" height="${design.height*scale}" viewBox="0 0 ${design.width} ${design.height}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>${style}</style>${body}</div></foreignObject></svg>`);mime='image/svg+xml';
  }else{
-  if(!browser||!browser.isConnected())browser=await chromium.launch({headless:true});
-  const context=await browser.newContext({viewport:{width:Math.ceil(design.width),height:Math.ceil(design.height)},deviceScaleFactor:scale});
+  const context=await (await getBrowser()).newContext({viewport:{width:Math.ceil(design.width),height:Math.ceil(design.height)},deviceScaleFactor:scale});
   try{
    const page=await context.newPage();
    // No renderer network access: all authorized media/fonts have been embedded by the trusted worker.
@@ -81,7 +83,7 @@ export async function renderExport(job:any){
   }finally{await context.close();}
  }
  await assertActive(job);
- const objectKey=`${job.workspace_id}/exports/${job.id}/${job.execution_token}.${extension}`;
+ const objectKey=`${job.workspace_id}/${job.kind==='render.thumbnail'?'previews':'exports'}/${job.id}/${job.execution_token}.${extension}`;
  await tenantTransaction(job.workspace_id,async tx=>{
   const active=await tx.query("SELECT id FROM jobs WHERE id=$1 AND execution_token=$2 AND status='running' FOR UPDATE",[job.id,job.execution_token]);if(!active.rowCount)throw new Error('导出执行权已失效');
   await registerCandidate(tx,job.workspace_id,config.s3Bucket,objectKey,'export');
