@@ -22,3 +22,7 @@ runtime/matfs/dist/
 runtime/runner/**/__pycache__/
 runtime/runner/.pytest_cache/
 infra/e2b/dist/
+
+# Python bytecode in nested cloud tooling
+__pycache__/
+*.py[cod]
