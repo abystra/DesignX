@@ -2,7 +2,7 @@
   "date": "2026-11-19",
   "timezone": "America/Los_Angeles",
   "environment": "Codex managed cloud; isolated PostgreSQL and disposable S3; Chromium",
-  "status": "local checks passed; committed release and production verification pending",
+  "status": "deployed; targeted tests, full CI, production browser and strict TLS checks passed",
   "policy": "public registration closed by default; existing login retained; no production account mutation",
   "tests": {
     "typecheck": "passed",
@@ -39,10 +39,56 @@
     ],
     "visualReview": "desktop and 320px reviewed; closure notice spaced below login button",
     "check": "passed",
-    "build": "passed"
+    "build": "passed",
+    "fullCI": {
+      "unit": 109,
+      "api": 121,
+      "browser": "complete poster/account/library/preferences/templates/UI/feedback/recovery/import/render and closed-registration journeys passed",
+      "performance": "passed",
+      "pythonRunner": "passed",
+      "goMatfs": "passed"
+    }
   },
-  "deployment": null,
-  "production": null,
+  "deployment": {
+    "strictTLS": true,
+    "release": "/srv/designx/releases/c4280e714d2f-20261119120226",
+    "image": "sha256:c149e9946e8e563269d68b3f98f0939156feb054c59189a72f1ec226eb53ecbe",
+    "options": [
+      200,
+      {
+        "registrationEnabled": false
+      }
+    ],
+    "registration": [
+      403,
+      {
+        "error": "REGISTRATION_CLOSED",
+        "message": "当前暂不开放注册，请使用已有账号登录"
+      }
+    ],
+    "health": [
+      200,
+      {
+        "status": "ok",
+        "aiEnabled": false
+      }
+    ]
+  },
+  "production": {
+    "base": "https://designx.velax.cn",
+    "mode": "after",
+    "checks": [
+      "Production options closed; direct registration returns 403 REGISTRATION_CLOSED before validation",
+      "Existing login form and login validation endpoint remain available; successful credentials tested in isolation",
+      "No registration entry on four production viewports; login controls fit 320px"
+    ],
+    "errors": [],
+    "accountMutation": false,
+    "health": {
+      "status": "ok",
+      "aiEnabled": false
+    }
+  },
   "baseline": {
     "base": "https://designx.velax.cn",
     "mode": "before",
@@ -51,5 +97,24 @@
     ],
     "errors": [],
     "accountMutation": false
-  }
+  },
+  "codeCommit": "c4280e714d2f1602950bcf89606e101ffe2995b7",
+  "cleanup": {
+    "ownedPostgresRemoved": "designx-registration-postgres",
+    "regressionDatabasesRemaining": 0,
+    "activeTestStorageContainers": 0
+  },
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44520152561",
+    "status": "completed",
+    "conclusion": "success",
+    "commit": "c4280e714d2f1602950bcf89606e101ffe2995b7"
+  },
+  "productionArtifacts": "/workspace/work/registration-production",
+  "limits": [
+    "Successful existing username and legacy email login verified in isolated services; no available production password was used and no production credentials were changed",
+    "Chromium desktop/tablet/mobile viewports; not physical phone or Safari acceptance",
+    "Production browser uses environment proxy certificate handling; independent aws-1 urllib strict TLS checks passed"
+  ],
+  "productionVisualReview": "Real domain 1024px and 320px captures reviewed: login form and registration closure notice readable, with no overlap; four viewport geometry assertions passed"
 }
