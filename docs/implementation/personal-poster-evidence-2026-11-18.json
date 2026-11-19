@@ -67,11 +67,56 @@
     "tests/e2e/.artifacts/render-1795065759862"
   ],
   "production": {
-    "status": "pending deployment"
+    "base": "https://designx.velax.cn",
+    "checks": [
+      {
+        "name": "poster home available with AI disabled",
+        "passed": true
+      },
+      {
+        "name": "template edit save reload through HTTPS domain",
+        "passed": true
+      },
+      {
+        "name": "server Renderer PNG download",
+        "passed": true,
+        "width": 600,
+        "height": 800
+      },
+      {
+        "name": "atomic stock poster creation",
+        "passed": true
+      },
+      {
+        "name": "13 MiB import reaches application validation",
+        "passed": true,
+        "status": 422
+      },
+      {
+        "name": "390px public home without horizontal overflow",
+        "passed": true
+      }
+    ],
+    "errors": [],
+    "cleanup": true,
+    "status": "passed",
+    "commit": "b76131a3cf49d987301944c8470141218195b31b",
+    "release": "/srv/designx/releases/b76131a3cf49-20261119052328"
   },
   "limitations": [
     "No live model/provider calls",
     "No production email or backup recovery exercise",
     "200% reflow verified using equivalent CSS viewport; no physical mobile soft keyboard or screen reader test"
-  ]
+  ],
+  "development": {
+    "environment": "Codex managed cloud",
+    "initialization": "scripts/cloud/dev.py setup passed; migration 0013 applied",
+    "services": "Web/API/Generation/Media/Agent/Import/Renderer running",
+    "tunnel": "chisel reverse tunnel into E2B; Web 200 and API health verified",
+    "aiEnabled": false
+  },
+  "ci": {
+    "status": "rerunning after browser polling correction",
+    "finding": "Playwright 1.64.1 waitForFunction treats the Promise returned by an async predicate as truthy; replaced with bounded response polling and immutable-version assertions. Asset readiness and version publication were already atomic."
+  }
 }

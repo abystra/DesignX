@@ -30,6 +30,8 @@ test('real upload enters S3 and is decoded by a separate media worker',async()=>
  const payload=Buffer.concat([Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="test.png"\r\nContent-Type: image/png\r\n\r\n`),bytes,Buffer.from(`\r\n--${boundary}--\r\n`)]);
  const response=await request('POST','/api/assets',payload,0,{'content-type':`multipart/form-data; boundary=${boundary}`});assert.equal(response.statusCode,202,response.body);asset=response.json();
  asset=await until(async()=>(await request('GET','/api/assets')).json().find((a:any)=>a.id===asset.id),a=>a?.status==='ready');
+ assert.ok(asset.versionId,'Ready uploads publish their immutable version in the same transaction');
+ assert.equal(asset.image,`/api/assets/${asset.id}/versions/${asset.versionId}/file`);
  assert.equal(asset.width,240);assert.equal(asset.height,180);
  const file=await request('GET',asset.image);assert.equal(file.statusCode,200,file.body);assert.equal((await sharp(file.rawPayload).metadata()).width,240);
  assert.equal((await request('GET',asset.image,undefined,1)).statusCode,404);

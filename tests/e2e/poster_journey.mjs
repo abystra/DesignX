@@ -1,6 +1,7 @@
 // Personal poster release: real API, media ingestion, saved documents and download.
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
@@ -61,9 +62,20 @@ try {
   const image = await sharp({ create: { width: 240, height: 160, channels: 3, background: '#356448' } }).png().toBuffer();
   await page.getByLabel('上传素材图片').setInputFiles({ name: 'poster-logo.png', mimeType: 'image/png', buffer: image });
   await page.getByRole('button', { name: '预览 poster-logo', exact: true }).waitFor();
-  await page.waitForFunction(async () => (await (await fetch('/api/assets')).json()).some(asset => asset.title === 'poster-logo' && asset.status === 'ready'));
+  // Poll the actual response: waitForFunction treats an async predicate's Promise
+  // as truthy in our Playwright version and can finish while the asset is pending.
+  let asset;
+  const uploadDeadline = Date.now() + 60000;
+  do {
+    asset = (await api('/assets')).find(item => item.title === 'poster-logo');
+    assert.notEqual(asset?.status, 'failed', asset?.error || 'Upload failed');
+    if (asset?.status === 'ready') break;
+    await delay(250);
+  } while (Date.now() < uploadDeadline);
+  assert.equal(asset?.status, 'ready', 'Uploaded material did not become ready');
+  assert.ok(asset.versionId, 'Ready material must already have its immutable version');
+  assert.equal(asset.image, `/api/assets/${asset.id}/versions/${asset.versionId}/file`);
   await page.locator('.ws-page[aria-busy=false]').waitFor();
-  const asset = (await api('/assets')).find(asset => asset.title === 'poster-logo');
   await page.getByRole('tab', { name: '品牌套件' }).click();
   await page.getByLabel('品牌名称', { exact: true }).fill('周末咖啡');
   await page.evaluate(() => window.dispatchEvent(new Event('designx:refresh')));
