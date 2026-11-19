@@ -892,6 +892,8 @@ export default function AIStudio({
   useEffect(() => {
     const onKey = (e) => {
       if (!viewport.current?.getClientRects().length) return;
+      // Native Board shortcuts run in capture phase, before ModalFrame can stop bubbling.
+      if (e.target.closest?.("dialog[open]")) return;
       if (e.isComposing || e.keyCode === 229) return;
       const editing = e.target.closest?.(
         'input,textarea,select,[contenteditable="true"]',

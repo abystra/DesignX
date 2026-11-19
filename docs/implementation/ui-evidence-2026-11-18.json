@@ -3,11 +3,11 @@
   "date": "2026-11-18",
   "environment": "Codex managed cloud, isolated local PostgreSQL/S3, Chromium real browser",
   "codeCommit": null,
-  "status": "workspace-validated; production pending",
+  "status": "follow-up validated; production follow-up pending",
   "baselineArtifacts": "tests/e2e/.artifacts/ui-before-1795078410055",
-  "uiArtifacts": "tests/e2e/.artifacts/ui-after-1795079315023",
+  "uiArtifacts": "tests/e2e/.artifacts/ui-after-1795079842726",
   "uiJourney": {
-    "base": "http://127.0.0.1:40741",
+    "base": "http://127.0.0.1:41897",
     "checks": [
       "template, versions and export native dialogs isolate background, cycle focus and restore it; IME does not save/delete",
       "15 viewport/breakpoint checks including 320 px and 720 × 500 equivalent to 200% of 1440 × 1000; no document overflow and 44 px primary controls",
@@ -197,7 +197,12 @@
       "warmListMs": 365,
       "coldSixPreviewsMs": 6792,
       "artifacts": "tests/e2e/.artifacts/performance-optimized-1795079371720"
-    }
+    },
+    "followup": [
+      "UI 7 + library 10 passed",
+      "preview 6 + library 10 + render 3 passed",
+      "typecheck/check/build passed"
+    ]
   },
   "visualReview": [
     "editor desktop/320",
@@ -209,7 +214,8 @@
     "Mobile add-text opened overlapping drawers; now transfers to property drawer",
     "Mobile field 14px specificity override; now verified >=16px",
     "Studio canvas/zoom hit areas overlapped; separated into rows on phones",
-    "Project menu/rename dialog restores trigger focus"
+    "Project menu/rename dialog restores trigger focus",
+    "Production showed native Board capture listener closing background panel on modal Escape; now skips open dialogs, covered by retained-panel assertion"
   ],
   "release": null,
   "production": null,
@@ -218,5 +224,12 @@
     "Physical phone/software keyboard, Safari device and screen reader not verified",
     "720x500 simulates 200% CSS viewport area, not OS font enlargement",
     "Legacy Board SDK controls are not claimed globally accessible"
-  ]
+  ],
+  "initialApplicationCommit": "2fc168fb19cd0bc233697cef045e9015ab013a7f",
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44493908430",
+    "status": "completed",
+    "conclusion": "failure",
+    "cause": "one-shot preview image fault was consumed before the awaited stable error; fault now persists until explicit retry"
+  }
 }

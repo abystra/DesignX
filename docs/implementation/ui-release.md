@@ -4,7 +4,7 @@
 
 ## 组件与行为
 
-- `components/ui/ModalFrame` 使用原生 dialog 顶层提供背景隔离，统一可访问名称、Tab/Shift+Tab、Escape、焦点恢复与 IME 保护。模板/搜索、Workspace 对话框、导入、Editor 版本/导出、Studio 新创作共用；各业务继续决定关闭后的任务处理。
+- `components/ui/ModalFrame` 使用原生 dialog 顶层提供背景隔离，统一可访问名称、Tab/Shift+Tab、Escape、焦点恢复与 IME 保护。模板/搜索、Workspace 对话框、导入、Editor 版本/导出、Studio 新创作共用；各业务继续决定关闭后的任务处理。原生 Board 的捕获阶段快捷键也跳过打开的 dialog，避免在弹窗关闭时改变背景面板。
 - Editor/Studio 应用控件迁移到共享语义前景/操作 token，普通白字主操作使用深珊瑚；辅助文字至少 12px，编辑字段/动作 14px，窄屏输入 16px。文档内容独立。旧示意“咖啡模板”配色卡改为真实色板，不再暗示更换作品内容。
 - Editor 窄屏采用作品名行、可横向滚动的操作栏、单个工具/属性抽屉；保存和导出置前，关键按钮保持 44px。添加文字转入属性抽屉；modeless 抽屉焦点进入/关闭恢复。允许画布滚动，不通过全局隐藏页面横向溢出遮掩布局问题。
 - 弹窗按 VisualViewport 可用高度和 safe-area 滚动；格式选项在窄屏保持两列，可滚动到确认动作。应用壳也响应可用高度，物理软键盘尚待设备验收。

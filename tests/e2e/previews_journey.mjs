@@ -95,7 +95,6 @@ try {
   let fail = true;
   await page.route("**/api/previews/*/file", async (route) => {
     if (fail) {
-      fail = false;
       await route.fulfill({ status: 503, body: "fixture image failure" });
     } else await route.continue();
   });
@@ -106,6 +105,7 @@ try {
   await page
     .getByRole("button", { name: "版本缩略图 更多操作", exact: true })
     .click();
+  fail = false; // Keep the fault active until the user explicitly retries.
   await page.getByRole("button", { name: "重试作品预览", exact: true }).click();
   await imageReady();
   await page.unroute("**/api/previews/*/file");
