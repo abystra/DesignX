@@ -108,16 +108,56 @@
   },
   "visualReview": "Desktop 1440px and mobile 390/320px account screenshots checked; final browser verifies persisted sidebar workspace and real avatar initial.",
   "production": {
-    "status": "pending deployment"
+    "status": "deployed and verified",
+    "commit": "a595823096a7330a352b58334f79b279d0e6e8f9",
+    "release": "/srv/designx/releases/a595823096a7-20261119064716",
+    "image": "sha256:6954aa033f71758b1bcf4a1a602c82fa64a08e005e5a42a2aefe54e8ed155e14",
+    "migration": "0015 applied",
+    "health": "API, Worker, Renderer and nginx checks passed",
+    "base": "https://designx.velax.cn",
+    "checks": [
+      {
+        "name": "HTTPS username registration without email and protected durable session cookie",
+        "passed": true
+      },
+      {
+        "name": "profile and workspace names persist after reload",
+        "passed": true
+      },
+      {
+        "name": "password change keeps current device and invalidates other sessions",
+        "passed": true
+      },
+      {
+        "name": "390px account management, device revocation and re-login preserve the poster",
+        "passed": true
+      },
+      {
+        "name": "new username account edits, saves, reloads and downloads a real 600x800 PNG",
+        "passed": true
+      }
+    ],
+    "errors": [],
+    "cleanup": true
   },
   "development": {
     "migration": "0015 applied",
     "tunnel": "default chisel",
-    "services": "Web/API/Generation/Media/Agent/Import/Renderer running"
+    "services": "Web/API/Generation/Media/Agent/Import/Renderer running",
+    "tunnelVerification": "E2B loopback Web returned 200; API health ok with AI disabled"
   },
   "limitations": [
     "No self-service forgotten password, email verification/delivery, SMS or OAuth in first-release scope",
     "Account deletion, unsaved cross-device draft recovery and backup restore exercise remain separate work",
     "Physical mobile keyboard, screen reader and Safari not independently verified"
-  ]
+  ],
+  "commit": "a595823096a7330a352b58334f79b279d0e6e8f9",
+  "testResourceCleanup": "Disposable local databases/buckets/S3 containers and owned PostgreSQL test container removed; dedicated public verification account/workspace/jobs/registered storage objects removed.",
+  "ci": {
+    "commit": "a595823096a7330a352b58334f79b279d0e6e8f9",
+    "runId": 44474693053,
+    "url": "https://github.com/abystra/DesignX/actions/runs/44474693053",
+    "conclusion": "success",
+    "coverage": "typecheck, unit, API, account/poster/library/render browsers, structural checks, build, Python Runner, Go matfs"
+  }
 }
