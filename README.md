@@ -6,6 +6,8 @@ AI 实现采用 **E2B 官方 SDK → 指定 Codex 模板内 Harness → Codex SD
 
 当前产品完成度和下一阶段实施以 [C 端产品审计](docs/implementation/product-readiness-audit.md) 为准。该报告区分真实链路、静态预设、线上未开放能力和缺失功能，记录了线上复现问题、改造顺序与验收标准。项目已能独立部署，仍需完成面向普通用户的产品闭环。
 
+页面、组件及交互开发遵循 [UI 开发规范](docs/ui-standards.md) 和 [AGENTS.md](AGENTS.md) 中的必守摘要，包含统一色系、字体/布局尺度、组件状态、真实业务反馈、作品渲染与响应式验收。规范是后续开发目标，现有样式按组件逐步迁移。
+
 基础链路提交为 `44fcd0e`、`ead7d15`、`2bcc3f0`。本轮分三步交付：Board 便签/分区 `5f7a263`，持久化项目导入 `2291383`，最后汇总验收与文档。架构目录描述的长期目标不等于全部实现，具体完成度见 [阶段进度](docs/implementation/progress.md)。
 
 ## 本地启动
