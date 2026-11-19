@@ -2,8 +2,8 @@
   "goal": "G7",
   "date": "2026-11-18",
   "environment": "Codex managed cloud; isolated local PostgreSQL/S3; real Chromium browser",
-  "status": "related API and UI validated; remaining regression/production pending",
-  "codeCommit": null,
+  "status": "7f5c87c production and restore passed; final narrow-task-panel CSS follow-up awaiting release",
+  "codeCommit": "7f5c87cfedadd62ea33665621d127be9509d35bc",
   "tests": {
     "unit": 108,
     "api": 120,
@@ -11,26 +11,224 @@
     "typecheck": "passed",
     "check": "passed",
     "build": "passed",
-    "focusedBrowser": "tests/e2e/.artifacts/feedback-1795081076701/results.json",
+    "focusedBrowser": "tests/e2e/.artifacts/feedback-1795081379569/results.json",
     "fullBrowser": {
-      "log": "/tmp/designx-g7-browser-full.log",
-      "passedBeforeTaskOverlayFix": [
-        "account 6",
-        "poster 11",
-        "library 10",
-        "preferences 8",
-        "previews 6",
-        "templates 5",
-        "UI 7"
-      ],
-      "interruption": "new failed-task feedback action was occluded by sidebar at 320px; JobPanel moved to fixed portal and all 9 feedback checks passed afterwards"
+      "status": "passed",
+      "commit": "a3376700b7cbad46097ec857a1a12e3c23dad793",
+      "log": "/tmp/designx-g7-final-isolated-browser.log",
+      "checks": {
+        "account": 6,
+        "poster": 11,
+        "library": 10,
+        "preferences": 8,
+        "previews": 6,
+        "templates": 5,
+        "ui": 7,
+        "feedback": 9,
+        "recovery": 7,
+        "largeImports": 3,
+        "render": 3
+      }
     },
-    "focusedBrowserChecks": 9
+    "focusedBrowserChecks": 9,
+    "recovery": "7 passed; /tmp/designx-g7-recovery.log",
+    "largeImports": "valid 13344330 and 40032468 bytes; oversize rejected",
+    "finalRender": "previews 6/library 10/render 3; /tmp/designx-g7-final-render.log",
+    "renderChangedPixelRatios": [
+      0,
+      0.00025,
+      0
+    ],
+    "renderArtifacts": "tests/e2e/.artifacts/render-1795081198193",
+    "performance": {
+      "commit": "574febd0af4ab9a84b45c0dfa5a7b1b6407bcf4b",
+      "status": "passed",
+      "initialGzipBytes": 126673,
+      "listDOM": 750,
+      "fullDocumentRequests": 0,
+      "warmListMs": 355,
+      "coldSixPreviewsMs": 8178,
+      "artifacts": "tests/e2e/.artifacts/performance-optimized-1795081255796",
+      "transientInfrastructure": "Initial temporary S3 startup collided on a random Docker port; fixture removed and clean retry passed"
+    },
+    "finalFeedbackBrowser": "tests/e2e/.artifacts/feedback-1795081858937/results.json",
+    "finalFeedbackChecks": 9
   },
   "release": null,
-  "production": null,
+  "production": {
+    "base": "https://designx.velax.cn",
+    "commit": "7f5c87cfedadd62ea33665621d127be9509d35bc",
+    "checks": [
+      "formal domain template -> Chinese edit -> save/reload -> real 600x800 PNG -> reopen",
+      "320px real feedback draft survives reload; submission persists once and shows truthful received state",
+      "pinned server image operations CLI updates only fixture feedback; user sees reply and resolved status",
+      "different authenticated account cannot read fixture feedback or invoke a public processing endpoint",
+      "feedback number resolves an authorized export job without exposing its payload",
+      "all eight persisted lifecycle facts deduplicate; both fixture accounts explicitly excluded from product metrics",
+      "fixture feedback, replies and lifecycle facts survive real production backup into isolated restore database"
+    ],
+    "errors": [],
+    "cleanup": true,
+    "entry": "/assets/index-BFH1FMrO.js",
+    "paidAIEnabled": false,
+    "facts": {
+      "download_requested": 1,
+      "export_completed": 1,
+      "first_effective_edit": 1,
+      "project_created": 1,
+      "project_opened": 1,
+      "project_reopened": 1,
+      "registration_completed": 1,
+      "save_succeeded": 1
+    },
+    "metricFixtureExcluded": true,
+    "recovery": {
+      "mode": "current",
+      "checks": [
+        "New backup restores exact fixture feedback/replies, events, permanent milestones and exclusion settings; content digests match"
+      ],
+      "cleanup": true,
+      "backup": {
+        "runId": "20261119T094707Z-59e40a87",
+        "archiveBytes": 1068504,
+        "sha256": "5c6d64b0f6e88dd02936f027f922d781a81f37685285d53afaba6ca30854b7b0",
+        "backupBucket": "designx",
+        "backupKey": "_designx_backups/v1/20261119T094707Z-59e40a87/snapshot.tar.gz",
+        "offhostVerified": true,
+        "objectCount": 2,
+        "objectBytes": 995162,
+        "database": "designx_production",
+        "counts": {
+          "users": 3,
+          "projects": 2,
+          "versions": 3,
+          "documents": 4,
+          "workspaces": 3,
+          "assetVersions": 1
+        },
+        "release": "7f5c87cfedad-20261119094405",
+        "seconds": 2.62
+      },
+      "restore": {
+        "runId": "20261119T094707Z-59e40a87",
+        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
+        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "status": "ready-for-validation",
+        "schemaMigratedToCurrentRelease": true,
+        "restoreSeconds": 4.24
+      },
+      "result": {
+        "feedback": 2,
+        "updates": 1,
+        "events": 8,
+        "milestones": 4,
+        "excluded": true
+      },
+      "cleanupPlan": {
+        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
+        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "objects": 2,
+        "applied": false
+      },
+      "cleanupResult": {
+        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
+        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "objects": 2,
+        "applied": true
+      }
+    }
+  },
   "operations": null,
-  "restores": null,
+  "restores": {
+    "legacy": {
+      "mode": "legacy",
+      "checks": [
+        "G2 archive migrated in UUID isolated restore DB; feedback schema available, no fabricated legacy registrations"
+      ],
+      "cleanup": true,
+      "restore": {
+        "runId": "20261119T074510Z-ae036094",
+        "database": "designx_restore_11f65f115e164cd99fe4ead0734049f7",
+        "prefix": "_designx_restore/11f65f11-5e16-4cd9-9fe4-ead0734049f7/",
+        "status": "ready-for-validation",
+        "schemaMigratedToCurrentRelease": true,
+        "restoreSeconds": 4.88
+      },
+      "result": {
+        "migration": 1,
+        "feedbackTable": "feedback",
+        "legacySettings": 1,
+        "registrationEvents": 0
+      },
+      "cleanupPlan": {
+        "database": "designx_restore_11f65f115e164cd99fe4ead0734049f7",
+        "prefix": "_designx_restore/11f65f11-5e16-4cd9-9fe4-ead0734049f7/",
+        "objects": 2,
+        "applied": false
+      },
+      "cleanupResult": {
+        "database": "designx_restore_11f65f115e164cd99fe4ead0734049f7",
+        "prefix": "_designx_restore/11f65f11-5e16-4cd9-9fe4-ead0734049f7/",
+        "objects": 2,
+        "applied": true
+      }
+    },
+    "current": {
+      "mode": "current",
+      "checks": [
+        "New backup restores exact fixture feedback/replies, events, permanent milestones and exclusion settings; content digests match"
+      ],
+      "cleanup": true,
+      "backup": {
+        "runId": "20261119T094707Z-59e40a87",
+        "archiveBytes": 1068504,
+        "sha256": "5c6d64b0f6e88dd02936f027f922d781a81f37685285d53afaba6ca30854b7b0",
+        "backupBucket": "designx",
+        "backupKey": "_designx_backups/v1/20261119T094707Z-59e40a87/snapshot.tar.gz",
+        "offhostVerified": true,
+        "objectCount": 2,
+        "objectBytes": 995162,
+        "database": "designx_production",
+        "counts": {
+          "users": 3,
+          "projects": 2,
+          "versions": 3,
+          "documents": 4,
+          "workspaces": 3,
+          "assetVersions": 1
+        },
+        "release": "7f5c87cfedad-20261119094405",
+        "seconds": 2.62
+      },
+      "restore": {
+        "runId": "20261119T094707Z-59e40a87",
+        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
+        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "status": "ready-for-validation",
+        "schemaMigratedToCurrentRelease": true,
+        "restoreSeconds": 4.24
+      },
+      "result": {
+        "feedback": 2,
+        "updates": 1,
+        "events": 8,
+        "milestones": 4,
+        "excluded": true
+      },
+      "cleanupPlan": {
+        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
+        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "objects": 2,
+        "applied": false
+      },
+      "cleanupResult": {
+        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
+        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "objects": 2,
+        "applied": true
+      }
+    }
+  },
   "limits": [
     "Physical phone keyboard, Safari device and screen reader unavailable",
     "External notification channel remains unconfigured; no mail dependency",
@@ -41,6 +239,28 @@
     "explicit field labels remain stable after long textarea input",
     "feedback modal uses shared centered shade",
     "failed-task popover uses page portal so narrow sidebar cannot cover its actions",
-    "corrupt/expired session drafts safely discarded"
-  ]
+    "corrupt/expired session drafts safely discarded",
+    "test-only API instance restart isolates added browser batch registration budgets without relaxing production limits",
+    "remove obsolete global important width after real production screenshot exposed task-panel left clipping at 320px; five viewport bounds and screenshots now pass"
+  ],
+  "applicationCommits": [
+    "66ac769",
+    "574febd",
+    "7f5c87c"
+  ],
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44499617915",
+    "status": "in_progress",
+    "conclusion": null,
+    "earlierFailures": [
+      {
+        "run": 44498386291,
+        "reason": "Large import browser registration exhausted shared IP budget after new feedback batch"
+      },
+      {
+        "run": 44499074132,
+        "reason": "Same test registration isolation; fixed in a337670"
+      }
+    ]
+  }
 }
