@@ -157,6 +157,8 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 
 首版主线已确定为个人海报：模板/素材 → 编辑 → 保存 → 导出。实施顺序、审计映射和验收记录见 [个人海报首版计划](docs/implementation/personal-poster-release.md)。后续会话先核对该计划的最新状态，不重新询问已确定的方向。
 
+后续未完成范围、代码缺口与待验收项的区分，以及可直接执行的 G1–G8 提示词见 [剩余工作与 Goal](docs/implementation/remaining-goals.md)。A、B1、B2 已有发布证据，不按原审计重复重做；G1–G7 完善手动海报产品，G8 真实 AI 单独启动。每项完成后同步状态与证据。
+
 - 首版账号使用普通用户名和密码，邮件投递/邮箱验证/邮件找回已由用户明确排除，不再询问邮件服务配置或视为上线依赖。旧邮箱账号仍作为登录标识兼容；账户设置、改密与会话撤销见 [B2 普通账号](docs/implementation/account-release.md)。禁止仅凭用户名重置密码。
 - 新建个人海报使用 `workspaceMode=editor`，旧项目/多画板默认 `studio`；列表、搜索和刷新必须遵守持久化入口。
 - 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。
