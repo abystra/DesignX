@@ -1,0 +1,1985 @@
+{
+  "schemaVersion": 1,
+  "versions": [
+    {
+      "id": "t1",
+      "title": "慢一点，也很好",
+      "subtitle": "秋日咖啡 · 品牌海报",
+      "category": "海报设计",
+      "style": "简约",
+      "image": "/assets/templates/8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55.jpg",
+      "theme": "coffee",
+      "color": "#e9e5d8",
+      "tag": "编辑精选",
+      "en": "SLOW\nMOMENTS",
+      "label": "SLOW COFFEE CLUB",
+      "description": "温暖的米色与留白，留住一杯咖啡的松弛感。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#e9e5d8",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "秋日咖啡 · 品牌海报",
+            "src": "/assets/templates/8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.34
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "SLOW COFFEE CLUB",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "SLOW\nMOMENTS",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 216.2,
+            "size": 94,
+            "color": "#ffffff",
+            "weight": 700,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "慢一点，也很好",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "badge",
+            "type": "circle",
+            "label": "品牌贴纸",
+            "x": 429,
+            "y": 342,
+            "w": 130,
+            "h": 130,
+            "color": "#e9e5d8",
+            "opacity": 1
+          },
+          {
+            "id": "badge-text",
+            "type": "text",
+            "text": "A LITTLE\nCOFFEE\nA LOT OF JOY",
+            "x": 443,
+            "y": 374,
+            "w": 102,
+            "h": 63,
+            "size": 14,
+            "color": "#47533c",
+            "weight": 600,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+            "align": "center"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55.jpg",
+            "legacyFile": "/assets/coffee.jpg",
+            "sha256": "8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55",
+            "sourceUrl": "https://images.unsplash.com/photo-1442512595331-e89e73853f31",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "87db10f41dfbc74b4cc183ee4462239058069fa487944c99b3932267d950bfb5"
+    },
+    {
+      "id": "t1",
+      "title": "慢一点，也很好",
+      "subtitle": "秋日咖啡 · 品牌海报",
+      "category": "海报设计",
+      "style": "简约",
+      "image": "/assets/templates/8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55.jpg",
+      "theme": "coffee",
+      "color": "#e9e5d8",
+      "tag": "",
+      "en": "SLOW\nMOMENTS",
+      "label": "SLOW COFFEE CLUB",
+      "description": "温暖的米色与留白，留住一杯咖啡的松弛感。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#e9e5d8",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "秋日咖啡 · 品牌海报",
+            "src": "/assets/templates/8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.34
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "SLOW COFFEE CLUB",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "SLOW\nMOMENTS",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 216.2,
+            "size": 94,
+            "color": "#ffffff",
+            "weight": 700,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "慢一点，也很好",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "badge",
+            "type": "circle",
+            "label": "品牌贴纸",
+            "x": 429,
+            "y": 342,
+            "w": 130,
+            "h": 130,
+            "color": "#e9e5d8",
+            "opacity": 1
+          },
+          {
+            "id": "badge-text",
+            "type": "text",
+            "text": "A LITTLE\nCOFFEE\nA LOT OF JOY",
+            "x": 443,
+            "y": 374,
+            "w": 102,
+            "h": 63,
+            "size": 14,
+            "color": "#47533c",
+            "weight": 600,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+            "align": "center"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55.jpg",
+            "legacyFile": "/assets/coffee.jpg",
+            "sha256": "8470b6a1fc44d1d3ce1d1dd06a91e65f167ac33e3cb4f29594cc86fbb62b0e55",
+            "sourceUrl": "https://images.unsplash.com/photo-1442512595331-e89e73853f31",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "ff61ea291410d99248a87752aed764b7061dba17e35b668cf5b617001077e1cf"
+    },
+    {
+      "id": "t2",
+      "title": "给肌肤，自然的答案",
+      "subtitle": "自然护肤 · 商品主图",
+      "category": "电商设计",
+      "style": "自然",
+      "image": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+      "theme": "skin",
+      "color": "#e4e9dd",
+      "tag": "热门",
+      "en": "naturally,\nyours.",
+      "label": "BOTANICAL SKINCARE",
+      "description": "植物灵感与柔和配色，呈现日常护肤的纯净质感。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#e4e9dd",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "自然护肤 · 商品主图",
+            "src": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "x": 0,
+            "y": 200,
+            "w": 600,
+            "h": 600,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "BOTANICAL SKINCARE",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "naturally,\nyours.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#323a2e",
+            "weight": 400,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "给肌肤，自然的答案",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "legacyFile": "/assets/skincare.jpg",
+            "sha256": "a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d",
+            "sourceUrl": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "8abf7ca181a8033b854534f24a6389aa64804acb2f84fafa0a3b7fff605e6eb6"
+    },
+    {
+      "id": "t2",
+      "title": "给肌肤，自然的答案",
+      "subtitle": "自然护肤 · 商品主图",
+      "category": "电商设计",
+      "style": "自然",
+      "image": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+      "theme": "skin",
+      "color": "#e4e9dd",
+      "tag": "",
+      "en": "naturally,\nyours.",
+      "label": "BOTANICAL SKINCARE",
+      "description": "植物灵感与柔和配色，呈现日常护肤的纯净质感。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#e4e9dd",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "自然护肤 · 商品主图",
+            "src": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "x": 0,
+            "y": 200,
+            "w": 600,
+            "h": 600,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "BOTANICAL SKINCARE",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "naturally,\nyours.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#323a2e",
+            "weight": 400,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "给肌肤，自然的答案",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "legacyFile": "/assets/skincare.jpg",
+            "sha256": "a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d",
+            "sourceUrl": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "bab68d3aa643e07f960f476604e6f93e2e7a405107e8a4a5fbfc91879c18356c"
+    },
+    {
+      "id": "t3",
+      "title": "把日子过成喜欢的样子",
+      "subtitle": "生活方式 · 社媒图文",
+      "category": "社媒内容",
+      "style": "简约",
+      "image": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+      "theme": "interior",
+      "color": "#ede6db",
+      "tag": "",
+      "en": "A space\nto slow down.",
+      "label": "THE ART OF LIVING",
+      "description": "把自然光、家居与生活留白，放进一张有呼吸感的画面。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#ede6db",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "生活方式 · 社媒图文",
+            "src": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.18
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "THE ART OF LIVING",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "A space\nto slow down.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#ffffff",
+            "weight": 400,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "把日子过成喜欢的样子",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "legacyFile": "/assets/interior.jpg",
+            "sha256": "95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c",
+            "sourceUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "23789219ca00bc118db1c1b0970e9e251cc81626b6bd2a3bc1aa7b395cdc7d99"
+    },
+    {
+      "id": "t3",
+      "title": "把日子过成喜欢的样子",
+      "subtitle": "生活方式 · 社媒图文",
+      "category": "社媒内容",
+      "style": "简约",
+      "image": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+      "theme": "interior",
+      "color": "#ede6db",
+      "tag": "",
+      "en": "A space\nto slow down.",
+      "label": "THE ART OF LIVING",
+      "description": "把自然光、家居与生活留白，放进一张有呼吸感的画面。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#ede6db",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "生活方式 · 社媒图文",
+            "src": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.18
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "THE ART OF LIVING",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "A space\nto slow down.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#ffffff",
+            "weight": 400,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "把日子过成喜欢的样子",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "legacyFile": "/assets/interior.jpg",
+            "sha256": "95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c",
+            "sourceUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "0b624b018542b97c3783b8e27e8ebf97d887e896a3838d00b738b20bf0204018"
+    },
+    {
+      "id": "t4",
+      "title": "好好穿衣，慢慢生活",
+      "subtitle": "秋日穿搭 · 品牌画册",
+      "category": "服饰穿戴",
+      "style": "杂志",
+      "image": "/assets/templates/553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db.jpg",
+      "theme": "fashion",
+      "color": "#dddcc9",
+      "tag": "新上架",
+      "en": "EVERYDAY\nMUSE",
+      "label": "AUTUMN EDIT / 2026",
+      "description": "杂志式大标题和时尚摄影，让日常穿搭更有表达。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#dddcc9",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "秋日穿搭 · 品牌画册",
+            "src": "/assets/templates/553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db.jpg",
+            "x": 42,
+            "y": 185,
+            "w": 516,
+            "h": 512,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "AUTUMN EDIT / 2026",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "EVERYDAY\nMUSE",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#323a2e",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "好好穿衣，慢慢生活",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db.jpg",
+            "legacyFile": "/assets/fashion.jpg",
+            "sha256": "553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db",
+            "sourceUrl": "https://images.unsplash.com/photo-1483985988355-763728e1935b",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "07b693e74e7b375de6ad5e658b4aa295a48143991ba23db2870a725f17618180"
+    },
+    {
+      "id": "t4",
+      "title": "好好穿衣，慢慢生活",
+      "subtitle": "秋日穿搭 · 造型海报",
+      "category": "服饰穿戴",
+      "style": "杂志",
+      "image": "/assets/templates/553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db.jpg",
+      "theme": "fashion",
+      "color": "#dddcc9",
+      "tag": "",
+      "en": "EVERYDAY\nMUSE",
+      "label": "AUTUMN EDIT / 2026",
+      "description": "杂志式标题和摄影，用单张海报表达日常穿搭。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#dddcc9",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "秋日穿搭 · 造型海报",
+            "src": "/assets/templates/553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db.jpg",
+            "x": 42,
+            "y": 185,
+            "w": 516,
+            "h": 512,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "AUTUMN EDIT / 2026",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "EVERYDAY\nMUSE",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#323a2e",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "好好穿衣，慢慢生活",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db.jpg",
+            "legacyFile": "/assets/fashion.jpg",
+            "sha256": "553375a48ddd1e3d7d6dd140b67f3e2db88b242b8b4110160cd885253001e8db",
+            "sourceUrl": "https://images.unsplash.com/photo-1483985988355-763728e1935b",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "ca84eaeffed027588dc4f96da817b08cf00d857c5993284319dd2b15dfb1844f"
+    },
+    {
+      "id": "t5",
+      "title": "听见属于你的节奏",
+      "subtitle": "数码新品 · 电商套图",
+      "category": "电商设计",
+      "style": "现代",
+      "image": "/assets/templates/4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7.jpg",
+      "theme": "audio",
+      "color": "#dce5eb",
+      "tag": "",
+      "en": "FIND YOUR\nFREQUENCY.",
+      "label": "SOUND WITHOUT LIMITS",
+      "description": "科技蓝与简练版式，让产品的每个细节都被看见。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#dce5eb",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "数码新品 · 电商套图",
+            "src": "/assets/templates/4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.18
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "SOUND WITHOUT LIMITS",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "FIND YOUR\nFREQUENCY.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 165.6,
+            "size": 72,
+            "color": "#ffffff",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "听见属于你的节奏",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7.jpg",
+            "legacyFile": "/assets/headphones.jpg",
+            "sha256": "4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7",
+            "sourceUrl": "https://images.unsplash.com/photo-1546435770-a3e426bf472b",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "f2414e1787bbee4193c295d876158c5b3c930c47fe08e405af20f363a9770fb9"
+    },
+    {
+      "id": "t5",
+      "title": "听见属于你的节奏",
+      "subtitle": "数码新品 · 产品海报",
+      "category": "电商设计",
+      "style": "现代",
+      "image": "/assets/templates/4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7.jpg",
+      "theme": "audio",
+      "color": "#dce5eb",
+      "tag": "",
+      "en": "FIND YOUR\nFREQUENCY.",
+      "label": "SOUND WITHOUT LIMITS",
+      "description": "科技蓝与简练版式，呈现单款产品；可替换为自己的商品照片。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#dce5eb",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "数码新品 · 产品海报",
+            "src": "/assets/templates/4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.18
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "SOUND WITHOUT LIMITS",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "FIND YOUR\nFREQUENCY.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 165.6,
+            "size": 72,
+            "color": "#ffffff",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "听见属于你的节奏",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7.jpg",
+            "legacyFile": "/assets/headphones.jpg",
+            "sha256": "4eb54d52909e8f4a49107cee19d1f105ede7b0c39ce144e9be57a69c8e7438f7",
+            "sourceUrl": "https://images.unsplash.com/photo-1546435770-a3e426bf472b",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "7cbac5531a7c1bbe34a51a6a1beb6ee30196cdf50c838dfdff0be8fe0363feff"
+    },
+    {
+      "id": "t6",
+      "title": "走进自然，自由呼吸",
+      "subtitle": "户外灵感 · 活动海报",
+      "category": "海报设计",
+      "style": "自然",
+      "image": "/assets/templates/9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a.jpg",
+      "theme": "nature",
+      "color": "#dee4d5",
+      "tag": "",
+      "en": "BACK TO\nNATURE",
+      "label": "TAKE A WALK. FIND YOURSELF.",
+      "description": "森系色彩和沉浸式摄影，开启一场与自然的对话。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#dee4d5",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "户外灵感 · 活动海报",
+            "src": "/assets/templates/9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.18
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "TAKE A WALK. FIND YOURSELF.",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "BACK TO\nNATURE",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#ffffff",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "走进自然，自由呼吸",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a.jpg",
+            "legacyFile": "/assets/nature.jpg",
+            "sha256": "9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a",
+            "sourceUrl": "https://images.unsplash.com/photo-1472396961693-142e6e269027",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "3c08274b4eec59deccf9ecca3009693696c9e7b2f2f2e0c425ba01374ee8b86f"
+    },
+    {
+      "id": "t6",
+      "title": "走进自然，自由呼吸",
+      "subtitle": "户外灵感 · 活动海报",
+      "category": "海报设计",
+      "style": "自然",
+      "image": "/assets/templates/9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a.jpg",
+      "theme": "nature",
+      "color": "#dee4d5",
+      "tag": "",
+      "en": "BACK TO\nNATURE",
+      "label": "TAKE A WALK. FIND YOURSELF.",
+      "description": "森系色彩和沉浸式摄影，开启一场与自然的对话。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#dee4d5",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "户外灵感 · 活动海报",
+            "src": "/assets/templates/9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a.jpg",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "opacity": 1
+          },
+          {
+            "id": "photo-shade",
+            "type": "rect",
+            "label": "文字衬底",
+            "x": 0,
+            "y": 0,
+            "w": 600,
+            "h": 800,
+            "color": "#13251c",
+            "opacity": 0.18
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "TAKE A WALK. FIND YOURSELF.",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "BACK TO\nNATURE",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 184,
+            "size": 80,
+            "color": "#ffffff",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "走进自然，自由呼吸",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#ffffff",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a.jpg",
+            "legacyFile": "/assets/nature.jpg",
+            "sha256": "9326be7b9f3c2f8f4ad0ee912f4ded488a0ac7cb8e5359f11ef3787051a88f5a",
+            "sourceUrl": "https://images.unsplash.com/photo-1472396961693-142e6e269027",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "cb18d7d4052a5de1545d2f6690a7f12e03dbad49bf0f65686aaf4846cc0a76b9"
+    },
+    {
+      "id": "t7",
+      "title": "在日常里，发现不平凡",
+      "subtitle": "品牌提案 · 演示文稿",
+      "category": "办公设计",
+      "style": "杂志",
+      "image": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+      "theme": "editorial",
+      "color": "#efc9b5",
+      "tag": "",
+      "en": "Ideas\nfor better\nliving.",
+      "label": "STUDIO / BRAND PROPOSAL",
+      "description": "以编辑式布局讲述品牌观点，让提案更有说服力。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#efc9b5",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "品牌提案 · 演示文稿",
+            "src": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "x": 0,
+            "y": 200,
+            "w": 600,
+            "h": 600,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "STUDIO / BRAND PROPOSAL",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "Ideas\nfor better\nliving.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 289.79999999999995,
+            "size": 84,
+            "color": "#323a2e",
+            "weight": 700,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "在日常里，发现不平凡",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "legacyFile": "/assets/interior.jpg",
+            "sha256": "95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c",
+            "sourceUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "490685457aff6035872b8fb8be80fea65530f6721519a95c042e0e6a9d04bd79"
+    },
+    {
+      "id": "t7",
+      "title": "在日常里，发现不平凡",
+      "subtitle": "生活方式 · 品牌观点海报",
+      "category": "办公设计",
+      "style": "杂志",
+      "image": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+      "theme": "editorial",
+      "color": "#efc9b5",
+      "tag": "",
+      "en": "Ideas\nfor better\nliving.",
+      "label": "STUDIO / BRAND PROPOSAL",
+      "description": "编辑式单张海报，表达品牌观点和生活灵感。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#efc9b5",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "生活方式 · 品牌观点海报",
+            "src": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "x": 0,
+            "y": 200,
+            "w": 600,
+            "h": 600,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "STUDIO / BRAND PROPOSAL",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "Ideas\nfor better\nliving.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 289.79999999999995,
+            "size": 84,
+            "color": "#323a2e",
+            "weight": 700,
+            "font": "Georgia, serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "在日常里，发现不平凡",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c.jpg",
+            "legacyFile": "/assets/interior.jpg",
+            "sha256": "95bd80c34c40d7314a20d17bbab7fa6bf11228d2d48d7ca84595f1dc3c2b6f3c",
+            "sourceUrl": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "06056225fd6946ace483dd52f0b87a38c8e18c1a45336b93c5f10b7c77c28226"
+    },
+    {
+      "id": "t8",
+      "title": "你的品牌，值得被记住",
+      "subtitle": "品牌视觉 · 品牌手册",
+      "category": "品牌设计",
+      "style": "现代",
+      "image": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+      "theme": "brand",
+      "color": "#eadbc8",
+      "tag": "",
+      "en": "LESS,\nBUT\nBETTER.",
+      "label": "A BRAND NEW PERSPECTIVE",
+      "description": "从色彩、字体到物料，构建一致而鲜明的品牌表达。",
+      "version": 1,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#eadbc8",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "品牌视觉 · 品牌手册",
+            "src": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "x": 0,
+            "y": 200,
+            "w": 600,
+            "h": 600,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "A BRAND NEW PERSPECTIVE",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "LESS,\nBUT\nBETTER.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 358.79999999999995,
+            "size": 104,
+            "color": "#323a2e",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "你的品牌，值得被记住",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "legacyFile": "/assets/skincare.jpg",
+            "sha256": "a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d",
+            "sourceUrl": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "8757254f61bbd57181a3bec8b2e5070312aebf5ed809cde4c0bf5570c7e69913"
+    },
+    {
+      "id": "t8",
+      "title": "你的品牌，值得被记住",
+      "subtitle": "品牌视觉 · 理念海报",
+      "category": "品牌设计",
+      "style": "现代",
+      "image": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+      "theme": "brand",
+      "color": "#eadbc8",
+      "tag": "",
+      "en": "LESS,\nBUT\nBETTER.",
+      "label": "A BRAND NEW PERSPECTIVE",
+      "description": "用单张海报展示品牌理念，自由调整文字、图片和配色。",
+      "version": 2,
+      "ratio": "3:4",
+      "design": {
+        "width": 600,
+        "height": 800,
+        "background": "#eadbc8",
+        "nodes": [
+          {
+            "id": "photo",
+            "type": "image",
+            "label": "品牌视觉 · 理念海报",
+            "src": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "x": 0,
+            "y": 200,
+            "w": 600,
+            "h": 600,
+            "opacity": 1
+          },
+          {
+            "id": "brand",
+            "type": "text",
+            "text": "A BRAND NEW PERSPECTIVE",
+            "x": 38,
+            "y": 35,
+            "w": 530,
+            "h": 24,
+            "size": 14,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "title",
+            "type": "text",
+            "text": "LESS,\nBUT\nBETTER.",
+            "x": 35,
+            "y": 93,
+            "w": 540,
+            "h": 358.79999999999995,
+            "size": 104,
+            "color": "#323a2e",
+            "weight": 700,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          },
+          {
+            "id": "subtitle",
+            "type": "text",
+            "text": "你的品牌，值得被记住",
+            "x": 38,
+            "y": 730,
+            "w": 510,
+            "h": 37,
+            "size": 25,
+            "color": "#323a2e",
+            "weight": 500,
+            "font": "\"Noto Sans SC Variable\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif"
+          }
+        ]
+      },
+      "source": {
+        "layout": {
+          "basis": "本仓库原型构造的版式和文案，不代表真实商家",
+          "evidence": "docs/design-spec.md#7-资料与素材追溯"
+        },
+        "images": [
+          {
+            "file": "/assets/templates/a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d.jpg",
+            "legacyFile": "/assets/skincare.jpg",
+            "sha256": "a30118ccd186d2057801d7a933e3a2ed51cba381ce6fb27d086ac3d3b643287d",
+            "sourceUrl": "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108",
+            "author": null,
+            "basis": "仓库来源记录及 Unsplash 一般图片许可",
+            "evidence": "docs/design-spec.md#7-资料与素材追溯",
+            "licenseUrl": "https://unsplash.com/license",
+            "termsUrl": "https://unsplash.com/terms",
+            "licenseCheckedOn": "2026-11-18",
+            "limitations": "摄影师未核实；不包含可识别人物肖像、商标或画中作品的额外授权，请按使用场景核对。"
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Noto Sans SC Variable",
+            "package": "@fontsource-variable/noto-sans-sc",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/noto-sans-sc/LICENSE"
+          },
+          {
+            "family": "Source Serif 4 Variable",
+            "legacyAlias": "Georgia",
+            "package": "@fontsource-variable/source-serif-4",
+            "version": "5.3.1",
+            "license": "OFL-1.1",
+            "evidence": "node_modules/@fontsource-variable/source-serif-4/LICENSE"
+          }
+        ]
+      },
+      "digest": "d24c86a05f3a89340fbf1972c3822a9314501444733640718f1e072f2ffb45d6"
+    }
+  ],
+  "releases": {
+    "t1": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t2": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t3": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t4": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t5": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t6": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t7": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    },
+    "t8": {
+      "version": 2,
+      "state": "published",
+      "reason": "G4 冻结文档、来源与图片摘要，说明单张海报用途",
+      "changedOn": "2026-11-18"
+    }
+  }
+}

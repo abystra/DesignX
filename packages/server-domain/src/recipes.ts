@@ -58,6 +58,7 @@ export async function placeGenerationOutput(tx:Tx,workspaceId:string,attempt:any
  if(!board)reason='board_missing';
  if(request.targetDocumentId){const target=(await tx.query('SELECT revision FROM documents WHERE id=$1 AND project_id=$2',[request.targetDocumentId,attempt.project_id])).rows[0];if(!target||!board?.content.results.some((r:any)=>r.id===request.targetDocumentId))reason='target_deleted';else if(target.revision!==request.baseRevision)reason='target_changed';}
  if(reason){await tx.query("UPDATE generation_outputs SET placement_status='library',placement_reason=$1 WHERE id=$2",[reason,output.id]);return;}
+ await tx.query("UPDATE projects SET ai_source=jsonb_build_object('kind','image','generationId',$2::text) WHERE id=$1",[attempt.project_id,attempt.request_id]);
  if(request.recipe){
   const recipe=RecipeInput.parse(request.recipe);const result=await appendArtboards(tx,workspaceId,attempt.project_id,[{title:`${recipe.parameters.headline} · ${attempt.ordinal+1}`,design:composeRecipe(recipe.parameters,asset.image)}],{recipeId:recipe.recipeId,recipeVersion:1,generationId:attempt.request_id,assetVersionId:asset.assetVersionId});
   await tx.query("UPDATE generation_outputs SET placement_status='board',document_ids=$1 WHERE id=$2",[JSON.stringify(result.artboards.map(a=>a.id)),output.id]);return;

@@ -31,7 +31,11 @@ try {
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'media' });
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'import' });
   await child('apps/renderer/src/main.ts');
-  if (process.env.DESIGNX_PREFERENCES_ONLY === 'true') {
+  if (process.env.DESIGNX_TEMPLATES_ONLY === 'true') {
+    await import('./templates_journey.mjs');
+    await import('./render_consistency.mjs');
+  }
+  else if (process.env.DESIGNX_PREFERENCES_ONLY === 'true') {
     await import('./preferences_journey.mjs');
   }
   else if (process.env.DESIGNX_RECOVERY_ONLY === 'true') {
@@ -43,6 +47,7 @@ try {
     await import('./poster_journey.mjs');
     await import('./library_journey.mjs');
     await import('./preferences_journey.mjs');
+    await import('./templates_journey.mjs');
     await import('./recovery_journey.mjs');
     await import('./large_import_journey.mjs');
     await import('./render_consistency.mjs');

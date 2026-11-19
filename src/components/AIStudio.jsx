@@ -1707,7 +1707,7 @@ export default function AIStudio({
     await createArtboards([
       {
         title: template.title,
-        design: initialDesign(template),
+        templateId: template.id, templateVersion: template.version, templateDigest: template.digest,
         position: nextPosition(),
       },
     ]);

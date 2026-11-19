@@ -284,3 +284,11 @@
 .poster-home .section-heading .text-button { font-size: 14px; }
 .poster-home .secondary { color: var(--dx-text-primary); border-color: var(--dx-border-control); }
 .app-shell .sidebar .nav-item { min-height: 44px; }
+
+.template-source { font-size:14px; line-height:1.6; color:var(--dx-text-secondary); margin:16px 0; }
+.template-source summary { cursor:pointer; min-height:44px; display:list-item; }
+.template-source p { overflow-wrap:anywhere; }
+.template-source a { color:var(--dx-action); text-decoration:underline; }
+.ed-source-info { font-size:14px; line-height:1.6; padding:12px; color:var(--dx-text-primary); border-bottom:1px solid var(--dx-border-subtle); }
+.ed-source-info summary { cursor:pointer; min-height:44px; }
+.ed-source-info p { overflow-wrap:anywhere; }

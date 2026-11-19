@@ -36,8 +36,8 @@
   },
   "ci": {
     "url": "https://github.com/abystra/DesignX/actions/runs/44484686251",
-    "status": "in_progress",
-    "conclusion": null
+    "status": "completed",
+    "conclusion": "success"
   },
   "artifacts": "tests/e2e/.artifacts/preferences-1795075202686",
   "limits": [

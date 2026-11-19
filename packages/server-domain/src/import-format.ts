@@ -15,7 +15,7 @@ export const IMPORT_LIMITS = {
   totalPixels: 100_000_000,
   outputBytes: 64 * 1024 * 1024,
 };
-export const portableAssetPattern = /^(?:\/api\/assets\/[a-zA-Z0-9-]+(?:\/versions\/[a-zA-Z0-9-]+)?\/(?:file|thumbnail)|\/assets\/(?:coffee|skincare|interior|fashion|headphones|nature)\.jpg)$/;
+export const portableAssetPattern = /^(?:\/api\/assets\/[a-zA-Z0-9-]+(?:\/versions\/[a-zA-Z0-9-]+)?\/(?:file|thumbnail)|\/assets\/(?:(?:coffee|skincare|interior|fashion|headphones|nature)|templates\/[a-f0-9]{64})\.jpg)$/;
 const assetFields = new Set(['src', 'image', 'url', 'thumbnail', 'logo', 'logoUrl']);
 const humanFields = new Set(['text', 'prompt', 'draft', 'title', 'name', 'description', 'subtitle', 'label']);
 const rootSchema = z.object({

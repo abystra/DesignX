@@ -6,8 +6,9 @@
   "scripts": {
     "verify:ai-runtime": "node --env-file=.env.ai.local --import tsx scripts/verify-ai-runtime.ts",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "build": "node --import tsx scripts/templates.ts validate && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "templates:check": "node --import tsx scripts/templates.ts validate",
     "check": "node scripts/check-prototype.mjs && node scripts/check-studio.mjs && node scripts/check-studio-session.mjs",
     "dev:web": "vite",
     "dev:api": "tsx watch apps/api/src/main.ts",

@@ -141,6 +141,7 @@ export async function importProject(job:any){
       if(active?.status!=='running'||active.execution_token!==job.execution_token)throw new Error('导入已取消或由新执行接管');
       // All rows and the job's successful result commit together. A redelivery cannot create a second project.
       await tx.query('INSERT INTO projects(id,workspace_id,title,type,image,color,primary_artboard_id) VALUES($1,$2,$3,$4,$5,$6,$7)',[projectId,workspaceId,packet.title||'导入项目','设计作品',primaryDesign.nodes.find((node:any)=>node.type==='image')?.src||null,primaryDesign.background,primaryId]);
+      await tx.query('UPDATE projects SET creation_source=$1 WHERE id=$2',[JSON.stringify({kind:"import",jobId:job.id}),projectId]);
       for(const asset of prepared){
         await tx.query("INSERT INTO assets(id,workspace_id,title,mime,bytes,width,height,object_key,thumbnail_key,status,storage_bucket) VALUES($1,$2,$3,'image/png',$4,$5,$6,$7,$8,'ready',$9)",[asset.id,workspaceId,asset.title,asset.bytes.length,asset.width,asset.height,asset.key,asset.thumbnailKey,config.s3Bucket]);
         await tx.query("INSERT INTO asset_versions(id,workspace_id,asset_id,object_key,thumbnail_key,bucket,bytes,sha256,mime,width,height,source) VALUES($1,$2,$3,$4,$5,$6,$7,$8,'image/png',$9,$10,$11)",[asset.versionId,workspaceId,asset.id,asset.key,asset.thumbnailKey,config.s3Bucket,asset.bytes.length,asset.hash,asset.width,asset.height,JSON.stringify({kind:'import',attemptId:job.id})]);

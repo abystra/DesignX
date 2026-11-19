@@ -1,3 +1,4 @@
+import {resolveTemplate,templateOrigin} from '../../../packages/server-domain/src/templates.js';
 import { cancelGeneration } from '../../../packages/server-domain/src/generations.js';
 import { projectPage } from '../../../packages/server-domain/src/library-pages.js';
 import { recordOps } from '../../../packages/server-domain/src/document-ops.js';
@@ -48,9 +49,11 @@ export async function projectRoutes(app:FastifyInstance) {
  });
  app.post('/api/projects/:id/artboards',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   const projectId=params(req).id;await getProjectMetadata(tx,projectId,false,true);
-  const body=req.body||{},design=validateDesign(body.design||blankDesign()),title=z.string().trim().min(1).max(200).parse(body.title||'自由画板');
+  const body=req.body||{},template=resolveTemplate(body),design=validateDesign(template?.design||body.design||blankDesign()),title=z.string().trim().min(1).max(200).parse(body.title||'自由画板');
   const position=BoardPositionSchema.parse(body.position||{x:0,y:0});
   const doc=(await tx.query("INSERT INTO documents(id,workspace_id,project_id,kind,title,content) VALUES($1,$2,$3,'artboard',$4,$5) RETURNING *",[id(),req.identity.workspace.id,projectId,title,JSON.stringify(design)])).rows[0];
+  doc.creation_source=template?templateOrigin(template):{kind:'manual'};
+  await tx.query('UPDATE documents SET creation_source=$1 WHERE id=$2',[JSON.stringify(doc.creation_source),doc.id]);
   await syncAssetRefs(tx,req.identity.workspace.id,doc.id,design);await saveVersion(tx,req.identity.workspace.id,doc,'初始版本');
   const dto=artboardDto(doc,position);
   const board=(await tx.query("UPDATE documents SET content=jsonb_set(content,'{results}',coalesce(content->'results','[]'::jsonb)||$1::jsonb),revision=revision+1 WHERE project_id=$2 AND kind='board' RETURNING revision",[JSON.stringify([{...dto,design:undefined}]),projectId])).rows[0];

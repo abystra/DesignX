@@ -1,3 +1,4 @@
+import {builtinImageSource} from '../../../src/data/templates.js';
 import { randomUUID } from 'node:crypto';
 import { ArtboardSchema } from '../../doc-core/src/index.js';
 import type { Tx } from '../../server-infra/src/db.js';
@@ -13,7 +14,6 @@ export async function emit(tx: Tx, workspaceId: string, type: string, payload: u
  return rows[0].id;
 }
 export const assetUrlPattern = /^\/api\/assets\/([a-zA-Z0-9-]+)(?:\/versions\/([a-zA-Z0-9-]+))?\/(?:file|thumbnail)$/;
-const samplePattern = /^\/assets\/(coffee|skincare|interior|fashion|headphones|nature)\.jpg$/;
 export async function validateSources(tx: Tx, design: any) {
  const assetIds=new Set<string>();
  for (const node of design.nodes || []) {
@@ -23,7 +23,7 @@ export async function validateSources(tx: Tx, design: any) {
      assetIds.add(match[1]);
      if(match[2] && !(await tx.query('SELECT id FROM asset_versions WHERE id=$1 AND asset_id=$2',[match[2],match[1]])).rowCount)throw new HttpError(400,'INVALID_ASSET_VERSION','素材版本无效');
    }
-   else if (!samplePattern.test(node.src)) throw new HttpError(400,'INVALID_ASSET','请先上传图片到素材库');
+   else if (!builtinImageSource(node.src)) throw new HttpError(400,'INVALID_ASSET','请先上传图片到素材库');
  }
  for (const assetId of assetIds) {
    const result=await tx.query("SELECT id FROM assets WHERE id=$1 AND deleted_at IS NULL AND status='ready' FOR SHARE",[assetId]);

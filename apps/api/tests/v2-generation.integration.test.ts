@@ -37,6 +37,7 @@ test.after(async()=>{await app.close();await stopQueue();await pool.end();await 
 test('idempotent generation, duplicate deliveries and real media produce one immutable image Board item',async()=>{
  const p=await project(),key=randomUUID(),g=await start(p.id,{},key);assert.equal((await start(p.id,{},key)).id,g.id);
  const baseline=calls,jobs=await submit(g);await submit(g);assert.equal(calls,baseline+1);await ingest(g);await ingest(g);
+ assert.equal((await api('GET',`/api/projects/${p.id}`)).json().aiSource.generationId,g.id);
  const result=await read(g);assert.equal(result.status,'succeeded');assert.equal(result.outputs.length,1);assert.equal(result.outputs[0].placementStatus,'board');
  const board=(await api('GET',`/api/projects/${p.id}/studio`)).json();const image=board.snapshot.results.find((r:any)=>r.kind==='image');assert.ok(image);assert.equal(image.assetVersionId,result.outputs[0].assetVersionId);assert.equal(image.documentId,undefined);
  assert.equal((await api('PUT',`/api/projects/${p.id}/studio`,{snapshot:board.snapshot,baseRevision:board.revision})).statusCode,200);
@@ -63,7 +64,7 @@ test('project scoped input is frozen across versions and revoked permission bloc
 });
 test('deleted/changed target keeps generated media in library, and cancel during provider call prevents attachment',async()=>{
  const p=await project(),g=await start(p.id,{targetDocumentId:p.documentId,baseRevision:p.revision});await submit(g);
- await api('PATCH',`/api/projects/${p.id}/artboards/${p.documentId}`,{baseRevision:p.revision,design:{...p.design,background:'#000000'}});await ingest(g);assert.equal((await read(g)).outputs[0].placementStatus,'library');
+ await api('PATCH',`/api/projects/${p.id}/artboards/${p.documentId}`,{baseRevision:p.revision,design:{...p.design,background:'#000000'}});await ingest(g);assert.equal((await read(g)).outputs[0].placementStatus,'library');assert.equal((await api('GET',`/api/projects/${p.id}`)).json().aiSource,null);
  const cancelled=await start(p.id);await submit(cancelled,{...provider,generate:async(input)=>{await api('POST',`/api/generations/${cancelled.id}/cancel`,{});return provider.generate(input);}});assert.equal((await read(cancelled)).status,'cancelled');assert.equal((await read(cancelled)).outputs.length,0);
 });
 test('Recipe creates independently editable text/brand layers and resize preserves source',async()=>{

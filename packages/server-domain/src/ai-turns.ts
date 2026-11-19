@@ -343,8 +343,8 @@ export async function commitTurn(
     ).rows[0];
     await recordOps(tx, job.workspace_id, updated, board.content);
     boardRevision = updated.revision;
-    await tx.query("UPDATE projects SET updated_at=now() WHERE id=$1", [
-      job.project_id,
+    await tx.query("UPDATE projects SET updated_at=now(),ai_source=jsonb_build_object('kind','agent','turnId',$2::text) WHERE id=$1", [
+      job.project_id,job.id,
     ]);
     for (const documentId of artboardIds)
       await emit(tx, job.workspace_id, "artboard.created", {
@@ -454,11 +454,11 @@ export async function applyProposal(
   );
   await saveVersion(tx, workspaceId, updated, "应用 AI 提案");
   await tx.query(
-    "UPDATE projects SET updated_at=now(),image=CASE WHEN primary_artboard_id=$1 THEN $2 ELSE image END WHERE id=$3",
+    "UPDATE projects SET updated_at=now(),ai_source=jsonb_build_object('kind','agent','turnId',$4::text),image=CASE WHEN primary_artboard_id=$1 THEN $2 ELSE image END WHERE id=$3",
     [
       doc.id,
       proposal.design.nodes.find((n: any) => n.type === "image")?.src || null,
-      turn.project_id,
+      turn.project_id,turnId,
     ],
   );
   const proposals = turn.proposals.map((p: any) =>

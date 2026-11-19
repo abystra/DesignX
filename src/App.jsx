@@ -58,7 +58,7 @@ import DesignThumbnail from "./components/DesignThumbnail.jsx";
 import Catalog from "./components/Catalog.jsx";
 import Workbench from "./components/Workbench.jsx";
 import AIStudio from "./components/AIStudio.jsx";
-import { templates } from "./data/templates.js";
+import { templates, templateRegistry } from "./data/templates.js";
 import {
   useCapabilities,
   capabilityFor,
@@ -325,11 +325,11 @@ function TemplatesPage({ onSelect, favorites, toggleFavorite }) {
   const [sort, setSort] = useState("编辑精选");
   let list = templates.filter(
     (t) =>
-      (cat === "全部" || t.category === cat) &&
+      (cat === "全部" || (cat === "我的收藏" ? favorites.includes(t.id) : t.category === cat)) &&
       (style === "所有风格" || t.style === style) &&
       `${t.title}${t.subtitle}`.includes(q),
   );
-  if (sort === "最近上新") list = [...list].reverse();
+  if (sort === "最近上新") list = [...list].sort((a,b) => templateRegistry.releases[b.id].changedOn.localeCompare(templateRegistry.releases[a.id].changedOn) || a.id.localeCompare(b.id));
   return (
     <div className="templates-page">
       <div className="page-intro">
@@ -359,6 +359,7 @@ function TemplatesPage({ onSelect, favorites, toggleFavorite }) {
       <div className="inspiration-tabs">
         {[
           "全部",
+          "我的收藏",
           "电商设计",
           "海报设计",
           "社媒内容",
@@ -522,6 +523,7 @@ export default function App({
   const creationRequest = useRef(null);
   const [creating, setCreating] = useState(false);
   const [creationError, setCreationError] = useState("");
+  const [templateChanged, setTemplateChanged] = useState(false);
   function notify(text) {
     setToast(text);
     clearTimeout(timer.current);
@@ -581,7 +583,7 @@ export default function App({
       workspaceMode,
       brief: item.prompt || item.draft || "",
       ...(item.template
-        ? { templateId: item.template.id }
+        ? { templateId: item.template.id, templateVersion: item.template.version, templateDigest: item.template.digest }
         : { design: initialDesign({ blank: true, ratio: item.ratio }) }),
       ...(materialFor(item) ? { material: materialFor(item) } : {}),
     };
@@ -591,6 +593,7 @@ export default function App({
     const request = creationRequest.current;
     creatingRef.current = true;
     setCreating(true);
+    setTemplateChanged(false);
     setCreationError("");
     try {
       const project =
@@ -626,6 +629,7 @@ export default function App({
         .catch(() => {});
     } catch (error) {
       setCreationError(error.message);
+      setTemplateChanged(["TEMPLATE_CHANGED","TEMPLATE_UNAVAILABLE"].includes(error.data?.error));
     } finally {
       creatingRef.current = false;
       setCreating(false);
@@ -853,13 +857,14 @@ export default function App({
           <span>{creating ? "正在创建作品…" : creationError}</span>
           {creationError && (
             <>
-              {creationRequest.current && (
+              {creationRequest.current && !templateChanged && (
                 <button
                   onClick={() => openStudio(creationRequest.current.item)}
                 >
                   重试创建
                 </button>
               )}
+              {templateChanged && <button onClick={() => { location.hash = "templates"; location.reload(); }}>刷新模板列表</button>}
               <button onClick={() => setCreationError("")}>关闭提示</button>
             </>
           )}
@@ -1148,7 +1153,7 @@ export default function App({
             <dl>
               <div>
                 <dt>画布比例</dt>
-                <dd>3 : 4</dd>
+                <dd>{template.design.width} × {template.design.height} px</dd>
               </div>
               <div>
                 <dt>设计内容</dt>
@@ -1159,6 +1164,12 @@ export default function App({
                 <dd>{template.subtitle}</dd>
               </div>
             </dl>
+            <details className="template-source">
+              <summary>模板版本 {template.version} · 来源与使用依据</summary>
+              <p>{template.source.layout.basis}</p>
+              {template.source.images.map(image => <p key={image.sha256}><a href={image.sourceUrl} target="_blank" rel="noreferrer">摄影来源</a> · <a href={image.licenseUrl} target="_blank" rel="noreferrer">Unsplash 许可</a><br />{image.limitations}</p>)}
+              <p>字体：Noto Sans SC / Source Serif 4，OFL-1.1 随包许可。此模板为单张可编辑海报。</p>
+            </details>
             <button
               className="primary"
               disabled={creating}

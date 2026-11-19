@@ -1,6 +1,6 @@
 import { resolveMaterial } from "./materials.js";
 import { initialDesign } from "../../../src/data/template-design.js";
-import { templates } from "../../../src/data/templates.js";
+import {resolveTemplate,templateOrigin} from "./templates.js";
 import { recordOps } from './document-ops.js';
 import { BoardSchema } from '../../doc-core/src/board.js';
 import { z } from 'zod';
@@ -16,20 +16,23 @@ async function readProject(tx:Tx,projectId:string,includeDeleted:boolean,include
  const {rows}=await tx.query(`SELECT p.*, ${includeDesign?'d.content AS design,':''}d.revision,d.id as document_id FROM projects p LEFT JOIN documents d ON d.id=p.primary_artboard_id WHERE p.id=$1 ${includeDeleted?'':'AND p.deleted_at IS NULL'} ${lock?'FOR UPDATE OF p':''}`,[projectId]);
  if(!rows[0])notFound();return rows[0];
 }
-export function projectDto(p:any) {return {id:p.id,projectId:p.id,documentId:p.document_id,title:p.title,workspaceMode:p.workspace_mode,brief:p.creation_note,type:p.type,image:p.image,color:p.color,folderId:p.folder_id,design:p.design,revision:p.revision,persisted:true,updatedAt:p.updated_at,createdAt:p.created_at,lastOpenedAt:p.last_opened_at?new Date(p.last_opened_at).getTime():0,deletedAt:p.deleted_at};}
-export function artboardDto(d:any,position={x:0,y:0}) {return {id:d.id,documentId:d.id,projectId:d.project_id,title:d.title,type:'设计作品',design:d.content,revision:d.revision,image:d.content?.nodes?.find((n:any)=>n.type==='image')?.src,persisted:true,position};}
+export function projectDto(p:any) {return {id:p.id,projectId:p.id,documentId:p.document_id,title:p.title,workspaceMode:p.workspace_mode,brief:p.creation_note,type:p.ai_source?'AI 辅助作品':'设计作品',creationSource:p.creation_source,aiSource:p.ai_source,image:p.image,color:p.color,folderId:p.folder_id,design:p.design,revision:p.revision,persisted:true,updatedAt:p.updated_at,createdAt:p.created_at,lastOpenedAt:p.last_opened_at?new Date(p.last_opened_at).getTime():0,deletedAt:p.deleted_at};}
+export function artboardDto(d:any,position={x:0,y:0}) {return {id:d.id,documentId:d.id,projectId:d.project_id,title:d.title,type:'设计作品',creationSource:d.creation_source,design:d.content,revision:d.revision,image:d.content?.nodes?.find((n:any)=>n.type==='image')?.src,persisted:true,position};}
 export async function createProject(tx:Tx,workspaceId:string,input:any) {
  const title=z.string().trim().min(1).max(200).parse(input.title||'未命名创作');
  const brief=z.string().max(10000).default('').parse(input.brief);
  const workspaceMode=z.enum(['editor','studio']).default('studio').parse(input.workspaceMode);
- const template=input.templateId===undefined?null:templates.find(t=>t.id===input.templateId);
- if(input.templateId!==undefined&&!template)throw new HttpError(400,'INVALID_TEMPLATE','模板不可用，请重新选择');
+ const template=resolveTemplate(input);
  const material=input.material?await resolveMaterial(tx,input.material):null;
  const source=validateDesign(template?initialDesign(template):input.design||blankDesign());
  const design=validateDesign(material?{...source,nodes:[...source.nodes,{id:'material',type:'image',label:'创作素材',src:material.src,x:0,y:0,w:source.width,h:source.height,fit:'contain'}]}:source);
+ const origin=template?templateOrigin(template):material?{kind:'material',material:material.assetId?{kind:'asset',id:material.assetId,versionId:material.versionId}:{kind:'stock',id:input.material.id}}:{kind:'manual'};
  const projectId=id(),documentId=id(),boardId=id();
- await tx.query('INSERT INTO projects(id,workspace_id,title,image,color,primary_artboard_id,workspace_mode,creation_note) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[projectId,workspaceId,title,design.nodes.find((n:any)=>n.type==='image')?.src||null,input.color||design.background,documentId,workspaceMode,brief]);
+ await tx.query('INSERT INTO projects(id,workspace_id,title,image,color,primary_artboard_id,workspace_mode,creation_note,creation_source) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',[projectId,workspaceId,title,design.nodes.find((n:any)=>n.type==='image')?.src||null,input.color||design.background,documentId,workspaceMode,brief,JSON.stringify(origin)]);
  const doc=(await tx.query("INSERT INTO documents(id,workspace_id,project_id,kind,title,content) VALUES($1,$2,$3,'artboard',$4,$5) RETURNING *",[documentId,workspaceId,projectId,title,JSON.stringify(design)])).rows[0];
+ doc.creation_source=origin;
+ await tx.query('UPDATE documents SET creation_source=$1 WHERE id=$2',[JSON.stringify(origin),documentId]);
+ if(material?.versionId)await tx.query("UPDATE projects SET ai_source=jsonb_build_object('kind','material','assetVersionId',$2::text) WHERE id=$1 AND EXISTS(SELECT 1 FROM generation_outputs WHERE asset_version_id=$2 AND state='ready')",[projectId,material.versionId]);
  await syncAssetRefs(tx,workspaceId,documentId,design);await saveVersion(tx,workspaceId,doc,'初始版本');
  const snapshot={id:projectId,title,results:[artboardDto(doc)],messages:[],assets:[],attached:[],draft:'',view:{x:70,y:100,zoom:1},selected:documentId};
  await tx.query("INSERT INTO documents(id,workspace_id,project_id,kind,title,content) VALUES($1,$2,$3,'board',$4,$5)",[boardId,workspaceId,projectId,title,JSON.stringify(snapshot)]);
@@ -61,7 +64,7 @@ export async function studioSnapshot(tx:Tx,projectId:string) {
 }
 async function hydrateStudio(tx:Tx,projectId:string,board:any) {
  const memberIds=(board.content.results||[]).map((result:any)=>result.id);
- const docs=(await tx.query("SELECT id,project_id,title,content,revision FROM documents WHERE project_id=$1 AND kind='artboard' AND id=ANY($2::text[])",[projectId,memberIds])).rows;
+ const docs=(await tx.query("SELECT id,project_id,title,content,revision,creation_source FROM documents WHERE project_id=$1 AND kind='artboard' AND id=ANY($2::text[])",[projectId,memberIds])).rows;
  const byId=new Map(docs.map(d=>[d.id,d]));
  const results=[];
  for(const r of board.content.results||[]){

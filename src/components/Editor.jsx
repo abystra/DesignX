@@ -37,7 +37,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import "./editor.css";
-import { templates } from "../data/templates";
+
 import { api, uploadAsset, waitForJob, refreshWorkspace } from "../lib/api";
 import {
   NodeContent,
@@ -1094,7 +1094,7 @@ export default function Editor({
     setZoom(Math.max(20, Math.min(150, value)));
   };
   const nav = [
-    { id: "templates", icon: LayoutTemplate, label: "模板" },
+    { id: "templates", icon: LayoutTemplate, label: "配色" },
     { id: "text", icon: Type, label: "文字" },
     { id: "elements", icon: Shapes, label: "元素" },
     { id: "uploads", icon: Upload, label: "上传" },
@@ -1305,6 +1305,11 @@ export default function Editor({
           </div>
         </nav>
         <aside className="ed-library">
+          <details className="ed-source-info">
+            <summary>作品来源</summary>
+            <p>{project.creationSource?.kind === 'template' ? `模板：${project.creationSource.title} · 版本 ${project.creationSource.version}` : ({manual:'手动创作',material:'从素材开始',import:'导入作品'})[project.creationSource?.kind] || '历史作品，创建来源未记录'}</p>
+            {project.aiSource && <p>有已发布的 AI 创作记录</p>}
+          </details>
           {project.brief && (
             <details className="ed-creation-note">
               <summary>创作参考</summary>
@@ -1322,10 +1327,10 @@ export default function Editor({
           </div>
           {tab === "templates" && (
             <>
-              <p className="ed-panel-description">一份灵感，许多种可能。</p>
+              <p className="ed-panel-description">为当前作品调整配色，保留已有内容。</p>
               <div className="ed-search-like">
                 <LayoutTemplate size={15} />
-                精选咖啡海报 <span>3</span>
+                配色方案 <span>3</span>
               </div>
               <div className="ed-template-grid">
                 {[

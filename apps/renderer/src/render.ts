@@ -1,3 +1,4 @@
+import {builtinImageSource} from '../../../src/data/templates.js';
 import { config } from '../../../packages/server-infra/src/config.js';
 import { registerCandidate } from '../../../packages/server-domain/src/assets.js';
 import { createHash } from 'node:crypto';
@@ -28,8 +29,9 @@ export async function embedSources(workspaceId:string,design:any,assetVersions?:
    }
    const object=await getObject(pinned.objectKey,{bucket:pinned.bucket||process.env.LEGACY_S3_BUCKET||undefined,maxBytes:100*1024*1024});bytes=object.bytes;mime=object.contentType;
    if(pinned.sha256&&createHash('sha256').update(bytes).digest('hex')!==pinned.sha256)throw new Error('导出素材摘要不匹配');
-  }else if(/^\/assets\/(coffee|skincare|interior|fashion|headphones|nature)\.jpg$/.test(node.src)){
+  }else if(builtinImageSource(node.src)){
    bytes=await readFile(new URL(`../../../public${node.src}`,import.meta.url));mime='image/jpeg';
+   if(createHash('sha256').update(bytes).digest('hex')!==builtinImageSource(node.src)?.sha256)throw new Error('内置图片摘要不匹配');
   }else throw new Error('导出仅允许已上传素材与内置示例');
   sources.set(node.src,`data:${mime};base64,${bytes.toString('base64')}`);
  }

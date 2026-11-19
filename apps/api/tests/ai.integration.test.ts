@@ -262,6 +262,7 @@ test("create commits all Artboards, versions, Board ops and successful job toget
   const completed = await turn(id),
     after = await board(p.id);
   assert.equal(completed.status, "succeeded");
+  assert.equal((await req("GET", `/projects/${p.id}`)).json().aiSource.turnId,id);
   assert.equal(completed.artboardIds.length, 3);
   assert.equal(after.snapshot.results.length, 4);
   assert.equal(after.revision, before.revision + 1);
@@ -420,6 +421,7 @@ test("revise proposals preserve original until apply; selection/replay work and 
     (await req("GET", `/documents/${p.documentId}`)).json().revision,
     1,
   );
+  assert.equal((await req("GET", `/projects/${p.id}`)).json().aiSource,null, "unapplied proposals do not claim AI provenance");
   const apply = (
     proposalId: string,
     baseRevision: number,
@@ -437,6 +439,7 @@ test("revise proposals preserve original until apply; selection/replay work and 
     first = await apply(proposal.proposals[0].id, 1, key);
   assert.equal(first.statusCode, 200, first.body);
   assert.equal(first.json().artboard.revision, 2);
+  assert.equal((await req("GET", `/projects/${p.id}`)).json().aiSource.turnId,id);
   assert.equal(
     (await apply(proposal.proposals[0].id, 1, key)).json().artboard.revision,
     2,
