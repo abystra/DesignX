@@ -9,7 +9,7 @@ const preferenceKeys=new Set(['favorites','template-favorites','asset-favorites'
 export async function libraryRoutes(app:FastifyInstance) {
  app.get('/api/templates',async()=>templates);
  app.get('/api/catalog',async()=>JSON.parse(await readFile(new URL('../../../src/data/catalog.json',import.meta.url),'utf8')));
- app.get('/api/folders',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>(await tx.query('SELECT id,name,color FROM folders ORDER BY created_at')).rows));
+ app.get('/api/folders',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>(await tx.query('SELECT f.id,f.name,f.color,(SELECT count(*)::int FROM projects p WHERE p.folder_id=f.id AND p.deleted_at IS NULL) AS "projectCount" FROM folders f ORDER BY f.created_at')).rows));
  app.post('/api/folders',async(req:any,reply)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   const body=z.object({name:z.string().trim().min(1).max(100),color:z.string().regex(/^#[0-9a-f]{6}$/i).default('#e6b49b')}).parse(req.body);
   const result=(await tx.query('INSERT INTO folders(id,workspace_id,name,color) VALUES($1,$2,$3,$4) RETURNING id,name,color',[id(),req.identity.workspace.id,body.name,body.color])).rows[0];reply.code(201);return result;

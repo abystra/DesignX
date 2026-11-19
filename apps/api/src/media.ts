@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { assetPage } from '../../../packages/server-domain/src/library-pages.js';
 import { z } from 'zod';
 import { tenantTransaction } from '../../../packages/server-infra/src/db.js';
 import { config } from '../../../packages/server-infra/src/config.js';
@@ -7,6 +8,11 @@ import { assetDto,HttpError,notFound,emit,jobDto } from '../../../packages/serve
 import { createUpload,completeUpload,getUpload,assetVersionDto,linkProjectAsset,activeProject,supportedImageTypes } from '../../../packages/server-domain/src/assets.js';
 
 export async function mediaRoutes(app:FastifyInstance) {
+ app.get('/api/assets/page',async(req:any)=>tenantTransaction(req.identity.workspace.id,tx=>assetPage(tx,req.identity.workspace.id,req.query)));
+ app.get('/api/assets/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
+  const row=(await tx.query('SELECT * FROM assets WHERE id=$1 AND deleted_at IS NULL',[req.params.id])).rows[0];
+  if(!row)notFound();return assetDto(row);
+ }));
  app.get('/api/assets',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>(await tx.query('SELECT * FROM assets WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 1000')).rows.map(assetDto)));
  app.post('/api/uploads',async(req:any,reply)=>{
   if(!config.storageDirectUploadsEnabled)throw new HttpError(503,'DIRECT_UPLOAD_DISABLED','直传暂未启用');

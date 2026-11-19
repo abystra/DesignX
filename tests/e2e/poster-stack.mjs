@@ -31,6 +31,7 @@ try {
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'media' });
   await child('apps/renderer/src/main.ts');
   await import('./poster_journey.mjs');
+  await import('./library_journey.mjs');
   await import('./render_consistency.mjs');
 } catch (error) {
   console.error(error); console.error(logs.slice(-5000)); process.exitCode = 1;

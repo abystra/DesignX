@@ -42,6 +42,9 @@ import {
 } from "lucide-react";
 import Editor from "./components/Editor.jsx";
 import Workspace from "./components/Workspace.jsx";
+import ProjectThumbnail from "./components/ProjectThumbnail.jsx";
+import LibraryPageStatus from "./components/LibraryPageStatus.jsx";
+import { useLibraryPage } from "./lib/use-library-page.js";
 import { api, uploadAsset, refreshWorkspace } from "./lib/api";
 import { initialDesign } from "./data/template-design.js";
 import { creationEntries, materialFor } from "./lib/creation-entry.js";
@@ -70,7 +73,7 @@ const NAV = [
   ["projects", "我的项目", FolderOpen],
   ["assets", "资产库", Images],
 ];
-export function Modal({ children, onClose, className = "" }) {
+export function Modal({ children, onClose, className = "", title = "设计操作" }) {
   const ref = useRef();
   useEffect(() => {
     const old = document.activeElement;
@@ -109,6 +112,7 @@ export function Modal({ children, onClose, className = "" }) {
         ref={ref}
         tabIndex={-1}
         role="dialog"
+        aria-label={title}
         aria-modal="true"
       >
         <button
@@ -282,12 +286,7 @@ function HomePage({
             {projects.slice(0, 3).map((project) => (
               <button key={project.id} onClick={() => onProject(project)}>
                 <span className="poster-project-preview">
-                  {project.design && (
-                    <DesignThumbnail
-                      design={project.design}
-                      title={project.title}
-                    />
-                  )}
+                  <ProjectThumbnail project={project} />
                 </span>
                 <span>
                   <strong>{project.title}</strong>
@@ -499,6 +498,7 @@ export default function App({
     [query, setQuery] = useState(""),
     [loading, setLoading] = useState(true),
     [loadError, setLoadError] = useState("");
+  const searchedProjects = useLibraryPage("/projects/page", { q: query, limit: 12 }, searchOpen && !!query.trim());
   const timer = useRef();
   const capabilities = useCapabilities();
   const publicEntries = creationEntries(capabilities.catalog, catalog.skills);
@@ -512,9 +512,9 @@ export default function App({
     timer.current = setTimeout(() => setToast(""), 4500);
   }
   async function reloadProjects() {
-    const list = await api("/projects");
-    setProjects(list);
-    return list;
+    const result = await api("/projects/page?limit=3");
+    setProjects(result.items);
+    return result.items;
   }
   async function restoreStudio(id, options = {}, loaded = {}) {
     const [project, board] = await Promise.all([
@@ -634,11 +634,11 @@ export default function App({
       setLoading(true);
       try {
         const [list, favs] = await Promise.all([
-          api("/projects"),
+          api("/projects/page?limit=3"),
           api("/preferences/template-favorites"),
         ]);
         if (!active) return;
-        setProjects(list);
+        setProjects(list.items);
         setFavorites(favs || []);
         setLoadError("");
         const route = location.hash.slice(1);
@@ -1043,17 +1043,6 @@ export default function App({
                   <Workspace
                     key={page}
                     mode={page}
-                    projects={
-                      page === "recent"
-                        ? projects
-                            .filter((p) => p.lastOpenedAt)
-                            .sort(
-                              (a, b) =>
-                                new Date(b.lastOpenedAt) -
-                                new Date(a.lastOpenedAt),
-                            )
-                        : projects
-                    }
                     onOpenProject={openProject}
                     onProjectsChanged={reloadProjects}
                     onToast={notify}
@@ -1120,7 +1109,7 @@ export default function App({
         </Modal>
       )}
       {searchOpen && (
-        <Modal onClose={() => setSearchOpen(false)} className="search-modal">
+        <Modal onClose={() => setSearchOpen(false)} className="search-modal" title="搜索项目与灵感">
           <div className="global-search">
             <Search size={22} />
             <input
@@ -1129,6 +1118,7 @@ export default function App({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="想找什么灵感？"
               aria-label="全局搜索"
+              maxLength={200}
             />
           </div>
           <h4>{query ? "搜索结果" : "快捷导航"}</h4>
@@ -1185,9 +1175,7 @@ export default function App({
                 </button>
               ))}
           {query &&
-            projects
-              .filter((p) => p.title.includes(query))
-              .map((p) => (
+            searchedProjects.items.map((p) => (
                 <button
                   className="search-result"
                   key={p.id}
@@ -1201,9 +1189,10 @@ export default function App({
                   <ArrowUpRight size={15} />
                 </button>
               ))}
-          {query &&
+          {query.trim() && <LibraryPageStatus page={searchedProjects} label="作品" />}
+          {query && searchedProjects.loaded && !searchedProjects.loading && !searchedProjects.error &&
             !publicEntries.some((t) => t.enabled && t.name.includes(query)) &&
-            !projects.some((p) => p.title.includes(query)) &&
+            searchedProjects.items.length === 0 &&
             !NAV.some((x) => x[1].includes(query)) &&
             !templates.some((t) =>
               `${t.title}${t.subtitle}`.includes(query),

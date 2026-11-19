@@ -1,0 +1,249 @@
+.dx-page-status {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  color: var(--dx-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.dx-page-status p {
+  margin: 0;
+}
+.dx-page-status [role="alert"] {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--dx-danger);
+}
+.dx-page-status button {
+  min-height: 44px;
+  border: 1px solid var(--dx-border-control);
+  border-radius: 8px;
+  background: var(--dx-bg-surface);
+  color: var(--dx-text-primary);
+  padding: 8px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+.dx-page-status button:hover {
+  background: var(--dx-bg-subtle);
+}
+.dx-page-status button:focus-visible,
+.dx-material-picker input:focus-visible,
+.dx-material-picker select:focus-visible {
+  outline: 2px solid var(--dx-focus);
+  outline-offset: 2px;
+}
+.dx-page-status button:disabled {
+  color: var(--dx-text-muted);
+  cursor: wait;
+}
+.dx-project-preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dx-preview-state {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  background: var(--dx-bg-subtle);
+  color: var(--dx-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dx-material-picker {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.dx-material-picker label {
+  display: grid;
+  gap: 8px;
+  color: var(--dx-text-primary);
+  font-size: 14px;
+}
+.dx-material-picker input,
+.dx-material-picker select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--dx-border-control);
+  border-radius: 8px;
+  background: var(--dx-bg-surface);
+  color: var(--dx-text-primary);
+  font: inherit;
+}
+.dx-material-picker .dx-page-status {
+  padding: 4px 0 12px;
+}
+@media (max-width: 600px) {
+  .dx-material-picker input,
+  .dx-material-picker select {
+    font-size: 16px;
+  }
+}
+/* Library controls changed by pagination/search follow the shared UI contract. */
+.ws-page {
+  --ws-ink: var(--dx-text-primary);
+  --ws-muted: var(--dx-text-secondary);
+  --ws-line: var(--dx-border-subtle);
+  --ws-accent: var(--dx-action);
+  --ws-paper: var(--dx-bg-surface);
+}
+.ws-page .ws-page-heading p,
+.ws-page .ws-dialog-label,
+.ws-page .ws-preview-prompt > p {
+  font-size: 14px;
+  color: var(--dx-text-secondary);
+}
+.ws-page .ws-eyebrow,
+.ws-page .ws-project-subtitle,
+.ws-page .ws-card-meta > span,
+.ws-page .ws-folder span,
+.ws-page .ws-toolbar-label > span,
+.ws-page .ws-section-title > span,
+.ws-page .ws-library-note,
+.ws-page .ws-error {
+  font-size: 12px;
+  color: var(--dx-text-muted);
+}
+.ws-page .ws-error {
+  color: var(--dx-danger);
+}
+.ws-page .ws-toolbar h2,
+.ws-page .ws-section-title h2 {
+  font-size: 20px;
+}
+.ws-page .ws-heading-actions,
+.ws-page .ws-toolbar-controls {
+  flex-wrap: wrap;
+}
+.ws-page .ws-filter-pills {
+  flex-wrap: wrap;
+}
+.ws-page .ws-filter-pills button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  color: var(--dx-text-secondary);
+}
+.ws-page .ws-filter-pills button.active {
+  background: var(--dx-selection-bg);
+  color: var(--dx-action);
+}
+.ws-page .ws-primary,
+.ws-page .ws-secondary,
+.ws-page .ws-filter-pills button,
+.ws-page .ws-section-tabs > button {
+  min-height: 44px;
+  font-size: 14px !important;
+}
+.ws-page .ws-primary {
+  background: var(--dx-action);
+}
+.ws-page .ws-primary:hover {
+  background: var(--dx-action-hover);
+}
+.ws-page .ws-project-grid,
+.ws-page .ws-asset-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+}
+.ws-page .ws-project-list {
+  grid-template-columns: 1fr;
+}
+.ws-page .ws-card-meta h3,
+.ws-page .ws-project-title > button {
+  font-size: 16px;
+}
+.ws-page .ws-project-title > button {
+  min-height: 44px;
+}
+.ws-page .ws-folder strong {
+  font-size: 14px;
+}
+.ws-page .ws-search {
+  min-height: 44px;
+  border-color: var(--dx-border-control);
+  color: var(--dx-text-secondary);
+}
+.ws-page .ws-search input,
+.ws-page .ws-sort select {
+  font-size: 14px !important;
+  min-width: 0;
+  color: var(--dx-text-primary);
+}
+.ws-page .ws-search input::placeholder {
+  color: var(--dx-text-muted);
+}
+.ws-page .ws-sort select {
+  min-height: 44px;
+  max-width: 100px;
+}
+.ws-page .ws-search:focus-within {
+  outline: 2px solid var(--dx-focus);
+  outline-offset: 2px;
+}
+.ws-page .ws-view-switch button,
+.ws-page .ws-icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+.ws-page .dx-page-status button {
+  border: 1px solid var(--dx-border-control);
+}
+.ws-page .dx-material-picker input,
+.ws-page .dx-material-picker select {
+  min-height: 44px;
+  font-size: 14px;
+  border: 1px solid var(--dx-border-control);
+}
+.ws-page .ws-reference-images button.active {
+  border-color: var(--dx-action);
+}
+.ws-page .ws-modal > header p {
+  color: var(--dx-text-secondary);
+  font-size: 14px;
+}
+.ws-page .ws-modal {
+  max-height: calc(100dvh - 32px);
+}
+.ws-page button:focus-visible,
+.ws-page select:focus-visible {
+  outline: 2px solid var(--dx-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .ws-page .ws-search input,
+  .ws-page .ws-sort select,
+  .ws-page .dx-material-picker input,
+  .ws-page .dx-material-picker select {
+    font-size: 16px !important;
+  }
+  .ws-page .ws-toolbar-controls {
+    width: 100%;
+  }
+  .ws-page .ws-search {
+    flex: 1 1 100%;
+  }
+  .ws-page .ws-search input {
+    width: 100%;
+  }
+  .ws-page .ws-page-heading h1 {
+    font-size: 24px;
+  }
+  .ws-page .ws-thumb,
+  .ws-page .ws-asset-open .ws-thumb {
+    height: 260px;
+  }
+  .ws-page .ws-project-list .ws-thumb {
+    height: 80px;
+  }
+}

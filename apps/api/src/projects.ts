@@ -1,4 +1,5 @@
 import { cancelGeneration } from '../../../packages/server-domain/src/generations.js';
+import { projectPage } from '../../../packages/server-domain/src/library-pages.js';
 import { recordOps } from '../../../packages/server-domain/src/document-ops.js';
 import { BoardPositionSchema } from '../../../packages/doc-core/src/board.js';
 import { idempotent } from '../../../packages/server-domain/src/idempotency.js';
@@ -11,6 +12,7 @@ const params=(req:any)=>req.params as Record<string,string>;
 const projectView=z.enum(['full','metadata']).default('full');
 const studioResponse=z.enum(['full','ack']).default('full');
 export async function projectRoutes(app:FastifyInstance) {
+ app.get('/api/projects/page',async(req:any)=>tenantTransaction(req.identity.workspace.id,tx=>projectPage(tx,req.identity.workspace.id,req.query)));
  app.get('/api/projects',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   const trash=(req.query as any)?.trash==='1';
   const metadata=projectView.parse(req.query?.view)==='metadata';

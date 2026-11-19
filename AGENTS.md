@@ -87,7 +87,7 @@
 
 ### 初始化与启动
 
-首次进入 Codex 环境执行初始化，再启动开发进程。
+首次进入 Codex 环境执行初始化，再启动开发进程。会话可能延续既有进程；启动前先核对 5173/3001 与已有 `scripts/cloud/start.mjs`，健康时复用，避免重复启动。需要重启时只停止本项目的启动进程，由其清理 Worker 和 E2B 隧道后再启动。
 
     python3 scripts/cloud/dev.py setup
     python3 scripts/cloud/dev.py start
@@ -161,7 +161,8 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 - 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。
 - 公共工具目录只列真实手动入口和 `/api/capabilities` 配方。提示词明确标注为预设，能力关闭时在创建项目之前阻止进入。
 - 模板文档构造复用 `src/data/template-design.js`；UI 预览与服务端创建保持一致。品牌 Logo 使用素材 ID、版本 ID 和不可变 URL 的统一合同。
-- `pnpm test:poster` 自动创建隔离数据库、S3 和 Web/API/Media/Renderer，执行个人海报旅程与共享渲染对照；需要本机 PostgreSQL、已有 SeaweedFS 镜像和 Playwright Chromium。
+- 项目/素材目录使用 `/api/projects/page`、`/api/assets/page` 的游标分页与服务端筛选；不要先取 1000 条再在浏览器过滤，也不要自动遍历全库填满选择器。上传状态读取单素材；错误与空结果分开。B1 合同及限制见 [资料库分页与搜索](docs/implementation/library-search-release.md)。
+- `pnpm test:poster` 自动创建隔离数据库、S3 和 Web/API/Media/Renderer，执行个人海报、1000 条以上资料库旅程与共享渲染对照；需要本机 PostgreSQL、已有 SeaweedFS 镜像和 Playwright Chromium。
 
 产品梳理见 docs/implementation/product-readiness-audit.md，线上抽查证据见同目录 product-readiness-evidence-2026-11-18.json。2026-11-18 的部署已有真实账户、项目、素材和导出链路，但线上 Agent/图片生成关闭，目录中的提示词预设不代表独立工具已实现。后续工作先核对当前部署和 /api/capabilities，再更新报告中的问题状态与验收证据。
 

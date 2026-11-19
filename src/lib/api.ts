@@ -74,9 +74,7 @@ export async function uploadAsset(file: File, projectId?: string) {
     const response = await api<any>("/assets", { method: "POST", body });
     const asset = response.asset || response;
     for (let i = 0; i < 120; i++) {
-      const ready = (await api<any[]>("/assets")).find(
-        (item) => item.id === asset.id,
-      );
+      const ready = await api<any>(`/assets/${asset.id}`);
       if (ready?.status === "ready") {
         if (projectId)
           await api(`/projects/${projectId}/assets`, {
@@ -115,9 +113,7 @@ export async function uploadAsset(file: File, projectId?: string) {
     if (state.asset?.status === "ready" || state.status === "ready") {
       const ready =
         state.asset ||
-        (await api<any[]>("/assets")).find(
-          (asset) => asset.id === session.assetId,
-        );
+        await api<any>(`/assets/${session.assetId}`);
       if (ready) {
         refreshWorkspace();
         return ready;

@@ -44,6 +44,8 @@ import {
 } from "lucide-react";
 import catalog from "../data/catalog.json";
 import { api, uploadAsset, waitForJob, refreshWorkspace } from "../lib/api";
+import { useLibraryPage } from "../lib/use-library-page";
+import LibraryPageStatus from "./LibraryPageStatus";
 import { useAiTurns } from "../lib/useAiTurns";
 import { resolveAiCount } from "../lib/ai-request";
 import {
@@ -296,7 +298,9 @@ export default function AIStudio({
   const [query, setQuery] = useState("");
   const [assetTab, setAssetTab] = useState("示例素材");
   const [recentSkills, setRecentSkills] = useState([]);
-  const [serverAssets, setServerAssets] = useState([]);
+  const [materialQuery, setMaterialQuery] = useState("");
+  const materialPage = useLibraryPage("/assets/page", { q: materialQuery, status: "ready" }, panel === "assets" && assetTab === "我的资产");
+  const serverAssets = materialPage.items.map(normalizeAsset);
   const [projectAssets, setProjectAssets] = useState([]);
   const [references, setReferences] = useState([]);
   const [popover, setPopover] = useState(null);
@@ -645,9 +649,8 @@ export default function AIStudio({
     let active = true;
     const load = async () => {
       try {
-        const [libraryAssets, linkedAssets, referenceData, skills] =
+        const [linkedAssets, referenceData, skills] =
           await Promise.all([
-            api("/assets"),
             api(`/projects/${projectId}/assets`),
             api("/preferences/references"),
             api("/preferences/studio-skills"),
@@ -656,9 +659,6 @@ export default function AIStudio({
         const normalize = normalizeAsset;
         setProjectAssets(
           linkedAssets.filter((a) => a.status === "ready").map(normalize),
-        );
-        setServerAssets(
-          libraryAssets.filter((a) => a.status === "ready").map(normalize),
         );
         setReferences(
           (Array.isArray(referenceData) ? referenceData : []).map(normalize),
@@ -2145,7 +2145,7 @@ export default function AIStudio({
               <div className="st-attachments">
                 {attached.map((a) => (
                   <div key={a.id}>
-                    <img src={a.url} alt={a.name} />
+                    <img src={a.thumbnail || a.url} alt={a.name} loading="lazy" />
                     <span>{a.name}</span>
                     <button
                       aria-label={`移除素材 ${a.name}`}
@@ -3167,12 +3167,13 @@ export default function AIStudio({
                     <b>上传素材，给灵感一个参照</b>
                     <span>JPG / PNG / WebP / GIF · 每张不超过 10 MB</span>
                   </button>
+                  {panel === "assets" && assetTab === "我的资产" && <div className="dx-material-picker"><label>搜索我的资产<input aria-label="搜索我的资产" type="search" maxLength={200} value={materialQuery} onChange={e => setMaterialQuery(e.target.value)} /></label></div>}
                   <div className="st-asset-grid">
                     {(panel === "files" ? assets : library).map((a) => (
                       <div className="st-library-item" key={a.id}>
                         <button onClick={() => attachAsset(a)}>
                           <div>
-                            <img src={a.url} alt={a.name} />
+                            <img src={a.thumbnail || a.url} alt={a.name} loading="lazy" />
                             <span>
                               <Plus size={13} />
                               引用到对话
@@ -3212,7 +3213,8 @@ export default function AIStudio({
                       </div>
                     ))}
                   </div>
-                  {!(panel === "files" ? assets : library).length && (
+                  {panel === "assets" && assetTab === "我的资产" && <LibraryPageStatus page={materialPage} label="素材" />}
+                  {!(panel === "files" ? assets : library).length && (assetTab !== "我的资产" || panel === "files" || materialPage.loaded && !materialPage.loading && !materialPage.error) && (
                     <div className="st-panel-empty">
                       <Images size={30} />
                       <h3>这里还没有素材</h3>

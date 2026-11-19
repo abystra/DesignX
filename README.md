@@ -112,4 +112,4 @@ python3 tests/e2e/ai_creation.py --allow-paid-ai
 
 当前支持本地联调与 aws-1 部署，部署验证范围以实际运行结果为准。`pnpm build` 只构建 Web 静态文件；aws-1 的 API、Worker、Renderer 镜像、进程管理和 Nginx 配置由 scripts/cloud/deploy.py 部署，自动 CI/CD 流水线仍需另行配置。邮箱验证/找回、OTP、通用自动冲突解决、定时素材 GC、多人实时协作、独立图片/视频模型、完整配方与计费未实现。低倍率仍渲染真实图层，无缩略图 LOD。生产需独立配置数据库角色、存储凭证、HTTPS、备份与 tldraw 许可，不能使用示例开发密码。
 
-个人海报首版的实施顺序、审计整改和验收见 [个人海报首版计划](docs/implementation/personal-poster-release.md)。
+个人海报首版的实施顺序、审计整改和验收见 [个人海报首版计划](docs/implementation/personal-poster-release.md)，项目/素材分页及服务端搜索见 [B1 资料库实施记录](docs/implementation/library-search-release.md)。`pnpm test:poster` 同时覆盖超过 1000 条数据的资料库浏览器旅程。

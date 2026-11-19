@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-18",
+  "timezone": "America/Los_Angeles",
+  "scope": "B1: paginated project and material library with server search",
+  "checks": {
+    "typecheck": "passed",
+    "unit": {
+      "passed": 103,
+      "failed": 0
+    },
+    "api": {
+      "passed": 89,
+      "failed": 0
+    },
+    "structuralChecks": "passed",
+    "build": "passed; existing large-chunk warning remains"
+  },
+  "library": {
+    "base": "http://127.0.0.1:44121",
+    "data": "isolated local services; 1006 projects and 1006 materials, synthetic account",
+    "checks": [
+      "bounded metadata, real visible previews, next-page failure keeps items and retry appends without duplicates",
+      "project list and global server search open the poster older than the legacy 1000-item cutoff",
+      "folder count/filter and recently opened name sort use complete server state",
+      "late search response cannot replace the current query results",
+      "failed server search stays an error and retry restores the matching result",
+      "old uploaded material found by server search is placed into a real saved poster",
+      "favorite material outside the initial page remains visible alongside the built-in favorite",
+      "brand and reference pickers search the entire material library and pin immutable versions",
+      "existing Studio material picker also uses paginated server search",
+      "paged project library reflows at desktop/tablet/mobile/breakpoints and 200% equivalent viewport"
+    ],
+    "timings": [
+      {
+        "operation": "24 project metadata items among 1006",
+        "durationMs": 7,
+        "responseBytes": 11438
+      }
+    ],
+    "errors": []
+  },
+  "poster": {
+    "base": "http://127.0.0.1:44121",
+    "data": "isolated local regression database and storage; real services, synthetic account",
+    "checks": [
+      "template → direct Editor → edit text → save → reload",
+      "project list and global search reopen the same editor",
+      "real renderer job downloads a 600 × 800 PNG",
+      "upload → save brand → apply font/colors and immutable Logo in editor",
+      "uploaded material is placed into the editable poster",
+      "stock reference creates a poster without INVALID_ASSET",
+      "text-only reference keeps the brief and creates no bogus asset link",
+      "lost create response retries with the same idempotency key and no duplicate project",
+      "tools reflect published operations and existing Studio projects retain their entry",
+      "home reflows at desktop/tablet/mobile, 320px, breakpoints and 200% equivalent viewport",
+      "390px blank poster creation, add text, edit and save through mobile panels"
+    ],
+    "errors": []
+  },
+  "render": {
+    "runId": "render-1795067935067",
+    "baseURL": "http://127.0.0.1:45885",
+    "mocked": false,
+    "results": [
+      {
+        "fixture": "chinese-latin-serif-and-wrapping",
+        "changedPixelRatio": 0,
+        "meanMaxChannelDelta": 0,
+        "width": 600,
+        "height": 500
+      },
+      {
+        "fixture": "rotation-opacity-contain-clipping",
+        "changedPixelRatio": 0.00025,
+        "meanMaxChannelDelta": 0.013135416666666667,
+        "width": 480,
+        "height": 400
+      },
+      {
+        "fixture": "explicit-source-serif-font",
+        "changedPixelRatio": 0,
+        "meanMaxChannelDelta": 0,
+        "width": 600,
+        "height": 500
+      }
+    ],
+    "pageErrors": []
+  },
+  "artifacts": [
+    "tests/e2e/.artifacts/library-1795068241901",
+    "tests/e2e/.artifacts/poster-1795068224366",
+    "tests/e2e/.artifacts/render-1795068255056"
+  ],
+  "development": {
+    "migration": "0014 applied",
+    "tunnel": "default chisel; E2B loopback Web 200 and API health ok",
+    "running": "Web/API/Generation/Media/Agent/Import/Renderer"
+  },
+  "production": {
+    "status": "pending deployment"
+  },
+  "limitations": [
+    "No mail provider configured in repository, Codex bindings or production app.env key inventory",
+    "Visible project previews still load authoritative documents; thumbnail image cache and large-document budgets deferred",
+    "Literal substring search tested on 1000+ records, not a large-scale performance SLA",
+    "No physical mobile keyboard, screen reader, live model or backup recovery exercise"
+  ],
+  "visualReview": "Desktop 1440px and mobile 390/320px screenshots reviewed; narrow category labels remain whole and wrap as buttons."
+}
