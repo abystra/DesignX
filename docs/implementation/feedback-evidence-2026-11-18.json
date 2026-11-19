@@ -2,8 +2,8 @@
   "goal": "G7",
   "date": "2026-11-18",
   "environment": "Codex managed cloud; isolated local PostgreSQL/S3; real Chromium browser",
-  "status": "7f5c87c production and restore passed; final narrow-task-panel CSS follow-up awaiting release",
-  "codeCommit": "7f5c87cfedadd62ea33665621d127be9509d35bc",
+  "status": "deployed; isolated and production journeys, final full CI, backup/restore and cleanup passed; device/external conditions listed separately",
+  "codeCommit": "8319ea3283433776d9803656e8e7892c45795e97",
   "tests": {
     "unit": 108,
     "api": 120,
@@ -28,7 +28,8 @@
         "recovery": 7,
         "largeImports": 3,
         "render": 3
-      }
+      },
+      "feedbackArtifacts": "tests/e2e/.artifacts/feedback-1795081751444/results.json"
     },
     "focusedBrowserChecks": 9,
     "recovery": "7 passed; /tmp/designx-g7-recovery.log",
@@ -52,12 +53,46 @@
       "transientInfrastructure": "Initial temporary S3 startup collided on a random Docker port; fixture removed and clean retry passed"
     },
     "finalFeedbackBrowser": "tests/e2e/.artifacts/feedback-1795081858937/results.json",
-    "finalFeedbackChecks": 9
+    "finalFeedbackChecks": 9,
+    "viewportFollowup": {
+      "status": "passed",
+      "browserChecks": 9,
+      "taskPanelViewports": [
+        [
+          1440,
+          1000
+        ],
+        [
+          1024,
+          768
+        ],
+        [
+          390,
+          844
+        ],
+        [
+          320,
+          568
+        ],
+        [
+          720,
+          500
+        ]
+      ],
+      "artifacts": "tests/e2e/.artifacts/feedback-1795081858937",
+      "check": "passed",
+      "build": "passed"
+    },
+    "exactReleaseCI": "Full typecheck/unit/API/browser/check/build/performance/Python Runner/Go matfs passed on 8319ea3"
   },
-  "release": null,
+  "release": {
+    "directory": "/srv/designx/releases/8319ea328343-20261119095136",
+    "image": "sha256:e7b8b5f759f3e86d871667bef82eb4163abbb4ef9310efac0a48a4ff7c550754",
+    "url": "https://designx.velax.cn"
+  },
   "production": {
     "base": "https://designx.velax.cn",
-    "commit": "7f5c87cfedadd62ea33665621d127be9509d35bc",
+    "commit": "8319ea3283433776d9803656e8e7892c45795e97",
     "checks": [
       "formal domain template -> Chinese edit -> save/reload -> real 600x800 PNG -> reopen",
       "320px real feedback draft survives reload; submission persists once and shows truthful received state",
@@ -69,7 +104,7 @@
     ],
     "errors": [],
     "cleanup": true,
-    "entry": "/assets/index-BFH1FMrO.js",
+    "entry": "/assets/index-Cbxv1gDn.js",
     "paidAIEnabled": false,
     "facts": {
       "download_requested": 1,
@@ -82,6 +117,12 @@
       "save_succeeded": 1
     },
     "metricFixtureExcluded": true,
+    "taskPanelBounds": {
+      "x": 16,
+      "y": 72,
+      "width": 288,
+      "height": 210
+    },
     "recovery": {
       "mode": "current",
       "checks": [
@@ -89,11 +130,11 @@
       ],
       "cleanup": true,
       "backup": {
-        "runId": "20261119T094707Z-59e40a87",
-        "archiveBytes": 1068504,
-        "sha256": "5c6d64b0f6e88dd02936f027f922d781a81f37685285d53afaba6ca30854b7b0",
+        "runId": "20261119T095434Z-cd6d71b7",
+        "archiveBytes": 1068520,
+        "sha256": "3d5023d48be5b2cbd0ebdb4ce3e3cda5403998ca7bb280b25fda940d5457233f",
         "backupBucket": "designx",
-        "backupKey": "_designx_backups/v1/20261119T094707Z-59e40a87/snapshot.tar.gz",
+        "backupKey": "_designx_backups/v1/20261119T095434Z-cd6d71b7/snapshot.tar.gz",
         "offhostVerified": true,
         "objectCount": 2,
         "objectBytes": 995162,
@@ -106,16 +147,16 @@
           "workspaces": 3,
           "assetVersions": 1
         },
-        "release": "7f5c87cfedad-20261119094405",
-        "seconds": 2.62
+        "release": "8319ea328343-20261119095136",
+        "seconds": 2.6
       },
       "restore": {
-        "runId": "20261119T094707Z-59e40a87",
-        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
-        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "runId": "20261119T095434Z-cd6d71b7",
+        "database": "designx_restore_5efeae80e6614f40b67ed43bd926ef0d",
+        "prefix": "_designx_restore/5efeae80-e661-4f40-b67e-d43bd926ef0d/",
         "status": "ready-for-validation",
         "schemaMigratedToCurrentRelease": true,
-        "restoreSeconds": 4.24
+        "restoreSeconds": 4.41
       },
       "result": {
         "feedback": 2,
@@ -125,20 +166,116 @@
         "excluded": true
       },
       "cleanupPlan": {
-        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
-        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "database": "designx_restore_5efeae80e6614f40b67ed43bd926ef0d",
+        "prefix": "_designx_restore/5efeae80-e661-4f40-b67e-d43bd926ef0d/",
         "objects": 2,
         "applied": false
       },
       "cleanupResult": {
-        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
-        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "database": "designx_restore_5efeae80e6614f40b67ed43bd926ef0d",
+        "prefix": "_designx_restore/5efeae80-e661-4f40-b67e-d43bd926ef0d/",
         "objects": 2,
         "applied": true
       }
     }
   },
-  "operations": null,
+  "operations": {
+    "installed": true,
+    "backupDailyUTC": "04:30 plus up to 15 minutes jitter",
+    "healthIntervalMinutes": 5,
+    "productRetentionDailyUTC": "06:00 plus up to 15 minutes jitter",
+    "externalNotificationConfigured": false,
+    "naturalNextDayTriggerObserved": false,
+    "retentionPlan": {
+      "apply": false,
+      "events": 0,
+      "feedback": 0
+    },
+    "retentionRun": {
+      "status": "ok",
+      "eventsDeleted": 0,
+      "feedbackDeleted": 0,
+      "completedAt": 1795082129.7701635
+    },
+    "finalBackupAfterFixtureCleanup": {
+      "runId": "20261119T095521Z-565cd1ac",
+      "status": "ok",
+      "startedAt": 1795082121.1043427,
+      "lastSuccessAt": 1795082124.8778582,
+      "stage": "complete",
+      "receipt": {
+        "runId": "20261119T095521Z-565cd1ac",
+        "archiveBytes": 1059865,
+        "sha256": "8af635e2a0ca6e9e30dd2aa91f6bb31848f5b4f6e966bb611bd23083d19a3cc0",
+        "backupBucket": "designx",
+        "backupKey": "_designx_backups/v1/20261119T095521Z-565cd1ac/snapshot.tar.gz",
+        "offhostVerified": true,
+        "objectCount": 2,
+        "objectBytes": 995162,
+        "database": "designx_production",
+        "counts": {
+          "users": 1,
+          "projects": 1,
+          "versions": 1,
+          "documents": 2,
+          "workspaces": 1,
+          "assetVersions": 1
+        },
+        "release": "8319ea328343-20261119095136",
+        "seconds": 2.56
+      },
+      "retention": {
+        "retained": [
+          "20261119T095521Z-565cd1ac"
+        ],
+        "removed": [
+          "20261119T095434Z-cd6d71b7"
+        ]
+      }
+    },
+    "finalHealth": {
+      "retentionStatus": "ok",
+      "at": 1795082131.1313527,
+      "status": "ok",
+      "problems": [],
+      "services": {
+        "api": {
+          "running": true,
+          "health": "healthy",
+          "startedAt": "2026-11-19T09:53:47.162585685Z"
+        },
+        "worker": {
+          "running": true,
+          "health": null,
+          "startedAt": "2026-11-19T09:53:47.164964463Z"
+        },
+        "renderer": {
+          "running": true,
+          "health": null,
+          "startedAt": "2026-11-19T09:53:47.158390446Z"
+        }
+      },
+      "queues": [],
+      "backupAgeSeconds": 6,
+      "externalNotificationConfigured": false
+    },
+    "finalDeployment": {
+      "release": "/srv/designx/releases/8319ea328343-20261119095136",
+      "image": "sha256:e7b8b5f759f3e86d871667bef82eb4163abbb4ef9310efac0a48a4ff7c550754",
+      "entry": "/assets/index-Cbxv1gDn.js",
+      "strictTLSHealth": {
+        "status": "ok",
+        "aiEnabled": false
+      },
+      "paidAIEnabled": false,
+      "capabilityProof": "authenticated production browser; unauthenticated strict-TLS endpoint returns 401",
+      "timers": [
+        "active",
+        "active",
+        "active"
+      ]
+    }
+  },
   "restores": {
     "legacy": {
       "mode": "legacy",
@@ -180,11 +317,11 @@
       ],
       "cleanup": true,
       "backup": {
-        "runId": "20261119T094707Z-59e40a87",
-        "archiveBytes": 1068504,
-        "sha256": "5c6d64b0f6e88dd02936f027f922d781a81f37685285d53afaba6ca30854b7b0",
+        "runId": "20261119T095434Z-cd6d71b7",
+        "archiveBytes": 1068520,
+        "sha256": "3d5023d48be5b2cbd0ebdb4ce3e3cda5403998ca7bb280b25fda940d5457233f",
         "backupBucket": "designx",
-        "backupKey": "_designx_backups/v1/20261119T094707Z-59e40a87/snapshot.tar.gz",
+        "backupKey": "_designx_backups/v1/20261119T095434Z-cd6d71b7/snapshot.tar.gz",
         "offhostVerified": true,
         "objectCount": 2,
         "objectBytes": 995162,
@@ -197,16 +334,16 @@
           "workspaces": 3,
           "assetVersions": 1
         },
-        "release": "7f5c87cfedad-20261119094405",
-        "seconds": 2.62
+        "release": "8319ea328343-20261119095136",
+        "seconds": 2.6
       },
       "restore": {
-        "runId": "20261119T094707Z-59e40a87",
-        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
-        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "runId": "20261119T095434Z-cd6d71b7",
+        "database": "designx_restore_5efeae80e6614f40b67ed43bd926ef0d",
+        "prefix": "_designx_restore/5efeae80-e661-4f40-b67e-d43bd926ef0d/",
         "status": "ready-for-validation",
         "schemaMigratedToCurrentRelease": true,
-        "restoreSeconds": 4.24
+        "restoreSeconds": 4.41
       },
       "result": {
         "feedback": 2,
@@ -216,14 +353,14 @@
         "excluded": true
       },
       "cleanupPlan": {
-        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
-        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "database": "designx_restore_5efeae80e6614f40b67ed43bd926ef0d",
+        "prefix": "_designx_restore/5efeae80-e661-4f40-b67e-d43bd926ef0d/",
         "objects": 2,
         "applied": false
       },
       "cleanupResult": {
-        "database": "designx_restore_4029d416faf64e8088a12383c987c989",
-        "prefix": "_designx_restore/4029d416-faf6-4e80-88a1-2383c987c989/",
+        "database": "designx_restore_5efeae80e6614f40b67ed43bd926ef0d",
+        "prefix": "_designx_restore/5efeae80-e661-4f40-b67e-d43bd926ef0d/",
         "objects": 2,
         "applied": true
       }
@@ -233,7 +370,9 @@
     "Physical phone keyboard, Safari device and screen reader unavailable",
     "External notification channel remains unconfigured; no mail dependency",
     "Fresh event collection only; no fabricated historical cohort or production conversion metrics",
-    "Download event means authorized GET bytes prepared, not proof of client receipt or device save"
+    "Download event means authorized GET bytes prepared, not proof of client receipt or device save",
+    "Natural next-day timer execution has not yet been observed; install and manual runs are separate evidence",
+    "Restored record integrity checked for G7; G2 separately covers restored-account login/edit/material/PNG journey on another host"
   ],
   "regressionFixes": [
     "explicit field labels remain stable after long textarea input",
@@ -246,12 +385,13 @@
   "applicationCommits": [
     "66ac769",
     "574febd",
-    "7f5c87c"
+    "7f5c87c",
+    "8319ea3283433776d9803656e8e7892c45795e97"
   ],
   "ci": {
-    "url": "https://github.com/abystra/DesignX/actions/runs/44499617915",
-    "status": "in_progress",
-    "conclusion": null,
+    "url": "https://github.com/abystra/DesignX/actions/runs/44500242860",
+    "status": "completed",
+    "conclusion": "success",
     "earlierFailures": [
       {
         "run": 44498386291,
@@ -261,6 +401,32 @@
         "run": 44499074132,
         "reason": "Same test registration isolation; fixed in a337670"
       }
-    ]
-  }
+    ],
+    "commit": "8319ea3283433776d9803656e8e7892c45795e97"
+  },
+  "timezone": "America/Los_Angeles",
+  "testIsolationCommit": "a3376700b7cbad46097ec857a1a12e3c23dad793",
+  "visualReview": {
+    "production": [
+      "/workspace/work/designx-g7-production-form-320.png",
+      "/workspace/work/designx-g7-production-status-320.png",
+      "/workspace/work/designx-g7-production-tasks-320.png"
+    ],
+    "result": "Reviewed settled-animation captures; form, truthful processing history and task panel readable at 320px; task panel x=16 width=288",
+    "isolatedTaskPanel": "tests/e2e/.artifacts/feedback-1795081858937/tasks-320.png"
+  },
+  "previousFullCI": {
+    "commit": "a3376700b7cbad46097ec857a1a12e3c23dad793",
+    "url": "https://github.com/abystra/DesignX/actions/runs/44499617915",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "localFixtureCleanup": {
+    "ownedPostgresRemoved": "designx-goals-postgres",
+    "verifiedLabel": "goals-20261118",
+    "remainingRegressionOrRestoreDatabases": 0,
+    "activeDisposableS3Containers": 0,
+    "developmentProcessesLeftRunning": true
+  },
+  "productionVerificationNote": "Chromium uses the environment HTTP proxy and its certificate handling; strict certificate validation independently passed via curl on aws-1. Capabilities verified through authenticated browser; unauthenticated endpoint correctly returns 401."
 }

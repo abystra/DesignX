@@ -23,7 +23,7 @@ python3 scripts/cloud/access.py ssh 'sudo -n python3 /srv/designx/current/script
 
 备份每天 04:30 UTC，随机延迟最多 15 分钟，停机后补跑。目标 RPO 为 24 小时 15 分钟以内；超过 30 小时无成功点或最近备份失败即呈异常。RTO 初始目标为 2 小时，包括重新部署/配置；演练的实际耗时单独记录，不把少量数据恢复时间扩大为任意规模承诺。
 
-健康任务每 5 分钟检查 API HTTP、三个容器、排队超过 10 分钟/运行超过 30 分钟的业务任务、最近 24 小时失败任务和备份年龄。结果在 root 私有 `health.json`/`status.json`，异常任务返回非零退出码并记录 systemd journal。`systemctl status designx-backup.service designx-health.service`、`journalctl -u designx-backup -u designx-health` 定位到阶段；有异常时通过 root 的 PostgreSQL 只读查询按 `kind`、`status`、时间和 workspace 定位 `jobs.id`。现有 `ops:report` 在普通生产角色下受 FORCE RLS 影响，不能把其零行当作全局健康；其租户化查询随 G7 运营报告补齐。未配置外部通知接收端；这不是已送达的告警，也不接入邮件替代。
+健康任务每 5 分钟检查 API HTTP、三个容器、排队超过 10 分钟/运行超过 30 分钟的业务任务、最近 24 小时失败任务和备份年龄。结果在 root 私有 `health.json`/`status.json`，异常任务返回非零退出码并记录 systemd journal。`systemctl status designx-backup.service designx-health.service`、`journalctl -u designx-backup -u designx-health` 定位到阶段；有异常时通过 root 的 PostgreSQL 只读查询按 `kind`、`status`、时间和 workspace 定位 `jobs.id`。G2 当时的 `ops:report` 在普通生产角色下受 FORCE RLS 影响；G7 已改为显式 scope 和逐租户查询，见 [反馈与运营手册](feedback-release.md)，不能使用旧版的零行推断全局健康。未配置外部通知接收端；这不是已送达的告警，也不接入邮件替代。
 
 安装器拒绝覆盖同名非 DesignX 管理的 systemd 单元。服务始终从 `/srv/designx/current` 执行；回退到不包含运维脚本的旧版本前先停止两个 timer，数据归档保留。应用表结构本批无迁移。
 
@@ -61,5 +61,11 @@ python3 scripts/cloud/access.py ssh 'sudo -n python3 /srv/designx/current/script
 - 演练恢复点覆盖 2 个账号/空间、2 个项目、4 个文档、3 个历史版本、2 个素材版本及 4 个原图/缩略图文件。归档 1,057,023 字节，备份 3.81 秒；R2 下载、校验、aws-1 新库及新对象路径恢复准备 5.37 秒。
 - 同一恢复包复制到另一台 Codex 主机的独立 PostgreSQL，应用使用独立非超级用户角色。原密码登录、文档与历史版本一致、图片字节读取、另一账号访问作品/图片均 404、真实 Editor 编辑保存刷新、图片解码显示、Renderer PNG 下载与珊瑚色图片像素全部通过；预览和导出截图人工核对。没有用在线生产库充当恢复库。
 - 两个 timer 均 enabled/active，健康 service Result=success；首个实际计划时间为 2026-11-20 04:37:58 UTC。未声称已观察到下一自然日自动备份运行；配置、手动运行和健康调度已验证。
-- 演练清理先 dry-run，删除仅该 UUID 路径 6 个对象及独立数据库；Codex 两次演练的库/临时登录角色均移除，生产验收账号/项目/文件清理成功。随后重新备份真实生产数据（1 个账号/空间、1 个项目），同日保留策略实际移除了旧演练恢复点，当前私有归档 SHA-256 为 `ce7e7602149ae4c6a866678b33c1232686d5f8ac5fd3b33a5e97edf207334e0f`。
+- 演练清理先 dry-run，删除仅该 UUID 路径 6 个对象及独立数据库；Codex 两次演练的库/临时登录角色均移除，生产验收账号/项目/文件清理成功。随后重新备份真实生产数据（1 个账号/空间、1 个项目），同日保留策略实际移除了旧演练恢复点，G2 收尾时的私有归档 SHA-256 为 `ce7e7602149ae4c6a866678b33c1232686d5f8ac5fd3b33a5e97edf207334e0f`。
 - 外部通知、独立账户第三份副本、整台替代主机自动配置与完整 RTO 实测仍未验收。这里的秒数只代表上述小规模数据恢复准备，不是全平台灾难切换承诺。
+
+## G7 后续兼容与当前恢复点
+
+G7 已把 `ops:report` 改为明确 `--workspace`/`--all` 和逐租户查询，并新增每日06:00 UTC产品事件/已结反馈保留调度。恢复脚本先核对原快照，再仅对UUID独立恢复库应用当前迁移，旧G2归档已实测升级且没有补造注册事实；新归档实测恢复反馈、回复、事件、milestone及排除设置，内容摘要一致。详见 [G7 证据](feedback-evidence-2026-11-18.json)。
+
+最终应用 `8319ea3` 的正式站验收清理后已重新备份：`20261119T095521Z-565cd1ac`，1,059,865 字节，SHA-256 `8af635e2a0ca6e9e30dd2aa91f6bb31848f5b4f6e966bb611bd23083d19a3cc0`，R2完整读回通过。保留策略只保留同日最新成功点，因此上文G2演练ID和本次含夹具的恢复点属于历史证据，不能假定仍可下载。当前点含1个真实账号/空间、1个项目、2个文档及1个素材版本，未含本批专用验收账号；timer和私有状态以服务器当前配置为准。
