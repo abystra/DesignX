@@ -2,8 +2,8 @@
   "goal": "G6",
   "date": "2026-11-18",
   "environment": "Codex managed cloud, isolated local PostgreSQL/S3, Chromium real browser",
-  "codeCommit": null,
-  "status": "follow-up validated; production follow-up pending",
+  "codeCommit": "13f3634b90b52c9ba945d5388b7343fb5af68ac4",
+  "status": "deployed; isolated and production journeys passed",
   "baselineArtifacts": "tests/e2e/.artifacts/ui-before-1795078410055",
   "uiArtifacts": "tests/e2e/.artifacts/ui-after-1795079842726",
   "uiJourney": {
@@ -217,8 +217,24 @@
     "Project menu/rename dialog restores trigger focus",
     "Production showed native Board capture listener closing background panel on modal Escape; now skips open dialogs, covered by retained-panel assertion"
   ],
-  "release": null,
-  "production": null,
+  "release": {
+    "path": "/srv/designx/releases/13f3634b90b5-20261119091822",
+    "image": "sha256:ff285fa583565793ac3bda494699b323b979ff0d52ffbba8b33f5ac722f74f6b"
+  },
+  "production": {
+    "base": "https://designx.velax.cn",
+    "commit": "13f3634b90b52c9ba945d5388b7343fb5af68ac4",
+    "checks": [
+      "production template modal creates Editor, edits Chinese, saves and reloads",
+      "version dialog Escape restores trigger focus",
+      "320px single drawer, 16px input and visible save persist actual added text",
+      "native modal background isolation and real 600x800 PNG delivery from 320px viewport",
+      "legacy Studio mobile chat/canvas and new-creation dialog remain reachable"
+    ],
+    "errors": [],
+    "cleanup": true,
+    "strictTLS": "aws-1 curl --resolve domain:443:127.0.0.1 /api/health passed without insecure flag; browser proxy CA exception only"
+  },
   "limits": [
     "WebKit downloaded but unavailable because host GTK4/Graphene/Harfbuzz ICU/Manette/Hyphen/GLES libraries are missing",
     "Physical phone/software keyboard, Safari device and screen reader not verified",
@@ -226,10 +242,15 @@
     "Legacy Board SDK controls are not claimed globally accessible"
   ],
   "initialApplicationCommit": "2fc168fb19cd0bc233697cef045e9015ab013a7f",
-  "ci": {
+  "initialCI": {
     "url": "https://github.com/abystra/DesignX/actions/runs/44493908430",
     "status": "completed",
     "conclusion": "failure",
     "cause": "one-shot preview image fault was consumed before the awaited stable error; fault now persists until explicit retry"
+  },
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44495167712",
+    "status": "in_progress",
+    "conclusion": null
   }
 }
