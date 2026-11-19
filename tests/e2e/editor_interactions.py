@@ -223,11 +223,17 @@ def main() -> int:
                 fail('transformations-and-inverse-history', error)
 
             def wait_for_cached_text(page, key, text):
-                page.wait_for_function('''async ({key,text}) => {
+                deadline = time.time() + 15
+                while time.time() < deadline:
+                    found = page.evaluate('''async ({key,text}) => {
                     const db = await new Promise((resolve,reject)=>{const r=indexedDB.open('designx-pending-documents',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
-                    const draft = await new Promise(resolve=>{const r=db.transaction('drafts').objectStore('drafts').get(key);r.onsuccess=()=>resolve(r.result)});
-                    db.close();return draft?.design.nodes.some(n=>n.text===text);
-                }''', arg={'key': key, 'text': text})
+                    const entries = await new Promise(resolve=>{const r=db.transaction('drafts').objectStore('drafts').getAll();r.onsuccess=()=>resolve(r.result)});
+                    db.close();return entries.some(draft => (!draft.scope || draft.scope.endsWith(':'+key)) && draft?.design.nodes.some(n=>n.text===text));
+                    }''', {'key': key, 'text': text})
+                    if found:
+                        return
+                    time.sleep(0.1)
+                raise AssertionError('Local draft was not persisted')
 
             try:
                 offline_project = create_project('unsent-draft')

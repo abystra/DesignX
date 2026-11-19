@@ -29,11 +29,20 @@ try {
   web = await viteServer({ configFile: false, server: { watch: { ignored: ['**/tests/e2e/.artifacts/**'] }, host: '127.0.0.1', port: webPort, strictPort: true, proxy: { '/api': `http://127.0.0.1:${apiPort}` } } });
   await web.listen();
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'media' });
+  await child('apps/worker/src/main.ts', { WORKER_ROLE: 'import' });
   await child('apps/renderer/src/main.ts');
-  await import('./account_journey.mjs');
-  await import('./poster_journey.mjs');
-  await import('./library_journey.mjs');
-  await import('./render_consistency.mjs');
+  if (process.env.DESIGNX_RECOVERY_ONLY === 'true') {
+    await import('./recovery_journey.mjs');
+    await import('./large_import_journey.mjs');
+  }
+  else {
+    await import('./account_journey.mjs');
+    await import('./poster_journey.mjs');
+    await import('./library_journey.mjs');
+    await import('./recovery_journey.mjs');
+    await import('./large_import_journey.mjs');
+    await import('./render_consistency.mjs');
+  }
 } catch (error) {
   console.error(error); console.error(logs.slice(-5000)); process.exitCode = 1;
 } finally {

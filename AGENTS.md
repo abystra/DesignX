@@ -94,6 +94,8 @@
 
 setup 安装锁定的 pnpm 依赖、Renderer 所需 Chromium 和已校验摘要的隧道工具，通过管理员 SSH 在 aws-1 的 designx 库中补齐租户角色，再执行仓库的幂等数据库迁移并验证数据库、Redis、R2。已有 designx 库由 workx 拥有。
 
+当前 Codex setup 将 Chromium 安装到 `/workspace/work/ms-playwright`。单独执行含 Renderer/浏览器的隔离测试时设置 `PLAYWRIGHT_BROWSERS_PATH=/workspace/work/ms-playwright`；不要因为默认用户缓存目录为空重复安装或跳过真实导出测试。
+
 start 在 Codex 工作区启动 Web、API、Generation、Media、Agent、Import 和 Renderer，共享到 aws-1 的数据库隧道。开发 Web 监听 0.0.0.0:5173，API 监听 127.0.0.1:3001。Node.js、Python 3、corepack、curl 是入口前提。
 
 对象存储默认使用现有 R2 designx 私有桶，S3_BUCKET 与 S3_STAGING_BUCKET 均为 designx，保持仓库既有开发约定。S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY 优先使用同名绑定，缺少时从 WORKX_R2_PARENT_ACCESS_KEY_ID / WORKX_R2_PARENT_SECRET_ACCESS_KEY 读取。S3_ENDPOINT 等显式环境变量可覆盖开发默认值。服务端 S3 请求使用环境中的 HTTP_PROXY / HTTPS_PROXY / NO_PROXY 规则。
@@ -162,6 +164,7 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 - 首版账号使用普通用户名和密码，邮件投递/邮箱验证/邮件找回已由用户明确排除，不再询问邮件服务配置或视为上线依赖。旧邮箱账号仍作为登录标识兼容；账户设置、改密与会话撤销见 [B2 普通账号](docs/implementation/account-release.md)。禁止仅凭用户名重置密码。
 - 新建个人海报使用 `workspaceMode=editor`，旧项目/多画板默认 `studio`；列表、搜索和刷新必须遵守持久化入口。
 - 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。
+- Editor 的保存与另存副本使用持久化请求键；本机草稿按账号/空间/文档及挂载实例隔离，禁止恢复为跨标签整体覆盖。异常恢复合同和限制见 [G1 作品恢复](docs/implementation/recovery-release.md)。
 - 公共工具目录只列真实手动入口和 `/api/capabilities` 配方。提示词明确标注为预设，能力关闭时在创建项目之前阻止进入。
 - 模板文档构造复用 `src/data/template-design.js`；UI 预览与服务端创建保持一致。品牌 Logo 使用素材 ID、版本 ID 和不可变 URL 的统一合同。
 - 项目/素材目录使用 `/api/projects/page`、`/api/assets/page` 的游标分页与服务端筛选；不要先取 1000 条再在浏览器过滤，也不要自动遍历全库填满选择器。上传状态读取单素材；错误与空结果分开。B1 合同及限制见 [资料库分页与搜索](docs/implementation/library-search-release.md)。

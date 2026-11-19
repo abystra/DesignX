@@ -42,6 +42,7 @@ import {
   Settings2,
 } from "lucide-react";
 import Editor from "./components/Editor.jsx";
+import { projectDrafts } from "./lib/draft-cache";
 import Workspace from "./components/Workspace.jsx";
 import AccountSettings from "./components/AccountSettings.jsx";
 import ProjectThumbnail from "./components/ProjectThumbnail.jsx";
@@ -75,7 +76,12 @@ const NAV = [
   ["projects", "我的项目", FolderOpen],
   ["assets", "资产库", Images],
 ];
-export function Modal({ children, onClose, className = "", title = "设计操作" }) {
+export function Modal({
+  children,
+  onClose,
+  className = "",
+  title = "设计操作",
+}) {
   const ref = useRef();
   useEffect(() => {
     const old = document.activeElement;
@@ -501,7 +507,11 @@ export default function App({
     [query, setQuery] = useState(""),
     [loading, setLoading] = useState(true),
     [loadError, setLoadError] = useState("");
-  const searchedProjects = useLibraryPage("/projects/page", { q: query, limit: 12 }, searchOpen && !!query.trim());
+  const searchedProjects = useLibraryPage(
+    "/projects/page",
+    { q: query, limit: 12 },
+    searchOpen && !!query.trim(),
+  );
   const timer = useRef();
   const capabilities = useCapabilities();
   const publicEntries = creationEntries(capabilities.catalog, catalog.skills);
@@ -647,7 +657,26 @@ export default function App({
         const route = location.hash.slice(1);
         if (route.startsWith("studio/")) await restoreStudio(route.slice(7));
         else if (route.startsWith("editor/")) {
-          const p = await api("/projects/" + route.slice(7));
+          let p;
+          try {
+            p = await api("/projects/" + route.slice(7));
+          } catch (error) {
+            if (![403, 404].includes(error.status)) throw error;
+            const drafts = await projectDrafts(
+              `${sessionUser.id}:${workspace.id}`,
+              route.slice(7),
+            );
+            const draft = drafts[0];
+            if (!draft?.project) throw error;
+            p = {
+              ...draft.project,
+              title: draft.title,
+              design: draft.design,
+              revision: draft.baseRevision,
+              persisted: false,
+              unavailable: true,
+            };
+          }
           if (active) setEditing(p);
         } else if (route === "studio") await openStudio();
       } catch (e) {
@@ -735,9 +764,18 @@ export default function App({
       p.projectId && p.documentId && p.id !== p.projectId
         ? await api(`/projects/${p.projectId}/artboards/${p.documentId}`, {
             method: "PATCH",
+            headers: p.saveRequestKey
+              ? { "Idempotency-Key": p.saveRequestKey }
+              : {},
             body,
           })
-        : await api("/projects/" + p.id, { method: "PATCH", body });
+        : await api("/projects/" + p.id, {
+            method: "PATCH",
+            body,
+            headers: p.saveRequestKey
+              ? { "Idempotency-Key": p.saveRequestKey }
+              : {},
+          });
     const savedProject = { ...p, ...result, persisted: true };
     setEditedProject(savedProject);
     // The document mutation is already committed. Accept its revision before
@@ -861,6 +899,12 @@ export default function App({
           <Editor
             key={editing.id}
             project={editing}
+            draftOwner={`${sessionUser.id}:${workspace.id}`}
+            onCopy={(copy) => {
+              setStudio(null);
+              setEditing(copy);
+              history.replaceState(null, "", "#editor/" + copy.id);
+            }}
             onBack={() => {
               setEditing(null);
               if (!studio) navigate("projects");
@@ -886,9 +930,12 @@ export default function App({
                 className="space-picker"
                 onClick={() => navigate("projects")}
               >
-                <span className="space-avatar">{sessionUser.name?.slice(0, 1) || "我"}</span>
+                <span className="space-avatar">
+                  {sessionUser.name?.slice(0, 1) || "我"}
+                </span>
                 <span>
-                  {workspace?.name || "我的创作空间"}<small>个人空间</small>
+                  {workspace?.name || "我的创作空间"}
+                  <small>个人空间</small>
                 </span>
                 <ChevronDown size={14} />
               </button>
@@ -935,7 +982,17 @@ export default function App({
                   <span>创作指南</span>
                   <ArrowUpRight size={14} />
                 </button>
-                <button className={"nav-item account-entry " + (page === "account" ? "active" : "")} onClick={() => navigate("account")} aria-label="账户设置"><Settings size={18} /><span>账户设置</span></button>
+                <button
+                  className={
+                    "nav-item account-entry " +
+                    (page === "account" ? "active" : "")
+                  }
+                  onClick={() => navigate("account")}
+                  aria-label="账户设置"
+                >
+                  <Settings size={18} />
+                  <span>账户设置</span>
+                </button>
                 <div className="profile">
                   <button
                     className="profile-avatar"
@@ -974,7 +1031,13 @@ export default function App({
                   )}
                   <span>工作空间</span>
                   <ChevronRight size={13} />
-                  <b>{task ? task.name : page === "account" ? "账户设置" : current?.[1] || "创作指南"}</b>
+                  <b>
+                    {task
+                      ? task.name
+                      : page === "account"
+                        ? "账户设置"
+                        : current?.[1] || "创作指南"}
+                  </b>
                 </div>
                 <div className="header-actions">
                   <button
@@ -1025,7 +1088,12 @@ export default function App({
                     onToast={notify}
                   />
                 ) : page === "account" ? (
-                  <AccountSettings user={sessionUser} workspace={workspace} onSessionChange={onSessionChange} onLogout={onLogout} />
+                  <AccountSettings
+                    user={sessionUser}
+                    workspace={workspace}
+                    onSessionChange={onSessionChange}
+                    onLogout={onLogout}
+                  />
                 ) : page === "home" ? (
                   <HomePage
                     onNavigate={navigate}
@@ -1115,7 +1183,11 @@ export default function App({
         </Modal>
       )}
       {searchOpen && (
-        <Modal onClose={() => setSearchOpen(false)} className="search-modal" title="搜索项目与灵感">
+        <Modal
+          onClose={() => setSearchOpen(false)}
+          className="search-modal"
+          title="搜索项目与灵感"
+        >
           <div className="global-search">
             <Search size={22} />
             <input
@@ -1182,21 +1254,26 @@ export default function App({
               ))}
           {query &&
             searchedProjects.items.map((p) => (
-                <button
-                  className="search-result"
-                  key={p.id}
-                  onClick={() => {
-                    setSearchOpen(false);
-                    openProject(p);
-                  }}
-                >
-                  <FolderOpen size={18} />
-                  <span>{p.title}</span>
-                  <ArrowUpRight size={15} />
-                </button>
-              ))}
-          {query.trim() && <LibraryPageStatus page={searchedProjects} label="作品" />}
-          {query && searchedProjects.loaded && !searchedProjects.loading && !searchedProjects.error &&
+              <button
+                className="search-result"
+                key={p.id}
+                onClick={() => {
+                  setSearchOpen(false);
+                  openProject(p);
+                }}
+              >
+                <FolderOpen size={18} />
+                <span>{p.title}</span>
+                <ArrowUpRight size={15} />
+              </button>
+            ))}
+          {query.trim() && (
+            <LibraryPageStatus page={searchedProjects} label="作品" />
+          )}
+          {query &&
+            searchedProjects.loaded &&
+            !searchedProjects.loading &&
+            !searchedProjects.error &&
             !publicEntries.some((t) => t.enabled && t.name.includes(query)) &&
             searchedProjects.items.length === 0 &&
             !NAV.some((x) => x[1].includes(query)) &&

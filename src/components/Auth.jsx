@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { api } from "../lib/api";
 import App from "../App";
@@ -12,6 +12,16 @@ export default function Auth() {
     [error, setError] = useState(""),
     [showPassword, setShowPassword] = useState(false),
     [serviceError, setServiceError] = useState(false);
+  const currentSession = useRef(session);
+  currentSession.current = session;
+  const [expiredSession, setExpiredSession] = useState(false);
+  useEffect(() => {
+    if (session?.user.id) {
+      try {
+        sessionStorage.setItem("designx:last-user", session.user.id);
+      } catch {}
+    }
+  }, [session?.user.id]);
   useEffect(() => {
     api("/auth/me")
       .then(setSession)
@@ -19,7 +29,25 @@ export default function Auth() {
         if (e.status !== 401) setServiceError(true);
       })
       .finally(() => setChecking(false));
-    const expired = () => setSession(null);
+    const expired = () => {
+      let userId = currentSession.current?.user.id;
+      try {
+        userId ||= sessionStorage.getItem("designx:last-user");
+      } catch {}
+      if (userId) {
+        try {
+          sessionStorage.setItem(
+            "designx:resume",
+            JSON.stringify({
+              userId,
+              hash: location.hash,
+            }),
+          );
+        } catch {}
+        setExpiredSession(true);
+      }
+      setSession(null);
+    };
     window.addEventListener("designx:unauthorized", expired);
     return () => window.removeEventListener("designx:unauthorized", expired);
   }, []);
@@ -40,7 +68,20 @@ export default function Auth() {
         method: "POST",
         body: data,
       });
-      location.hash = "home";
+      let destination = "#home";
+      try {
+        const resume = JSON.parse(
+          sessionStorage.getItem("designx:resume") || "null",
+        );
+        if (
+          resume?.userId === next.user.id &&
+          /^#(?:editor|studio)\/[a-zA-Z0-9_-]+$/.test(resume.hash)
+        )
+          destination = resume.hash;
+        sessionStorage.removeItem("designx:resume");
+      } catch {}
+      history.replaceState(null, "", destination);
+      setExpiredSession(false);
       setSession(next);
     } catch (e) {
       setError(e.message);
@@ -51,6 +92,11 @@ export default function Auth() {
   async function logout() {
     await api("/auth/logout", { method: "POST" });
     location.hash = "home";
+    try {
+      sessionStorage.removeItem("designx:resume");
+      sessionStorage.removeItem("designx:last-user");
+    } catch {}
+    setExpiredSession(false);
     setRegister(false);
     setError("");
     setSession(null);
@@ -105,6 +151,11 @@ export default function Auth() {
         <form onSubmit={submit} aria-busy={busy}>
           <span className="eyebrow">YOUR CREATIVE WORKSPACE</span>
           <h2>{register ? "开始你的创作旅程" : "欢迎回来"}</h2>
+          {expiredSession && (
+            <p role="status">
+              登录已失效。使用同一账号登录后，可继续恢复本机未同步的作品。
+            </p>
+          )}
           <p>
             {register
               ? "创建账户，保存属于你的每一份灵感。"

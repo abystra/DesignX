@@ -53,6 +53,23 @@ test('Board save hydrates authoritative Artboards and checks revision',async()=>
  assert.equal(response.json().snapshot.results[0].position.x,130);assert.equal(response.json().snapshot.draft,'草稿内容');
  assert.equal((await request('PUT',`/api/projects/${project.id}/studio`,{snapshot:current.snapshot,baseRevision:current.revision})).statusCode,409);
 });
+test('save request replay is durable, content bound and still checks access',async()=>{
+ const p=(await request('POST','/api/projects',{title:'Replay save',workspaceMode:'editor'})).json();
+ for(const path of [`/api/projects/${p.id}`,`/api/projects/${p.id}/artboards/${p.documentId}`]){
+  const current=(await request('GET',`/api/projects/${p.id}`)).json();
+  const key=randomUUID(),body={title:'Acknowledged once',design:{...current.design,background:'#abcdef'},baseRevision:current.revision};
+  const calls=await Promise.all([0,1].map(()=>request('PATCH',path,body,0,{'idempotency-key':key})));
+  assert.ok(calls.every(r=>r.statusCode===200),calls.map(r=>r.body).join('\n'));
+  assert.equal(calls[0].json().revision,current.revision+1);
+  assert.equal(calls[1].json().revision,current.revision+1);
+  assert.equal((await request('GET',`/api/projects/${p.id}`)).json().revision,current.revision+1);
+  assert.equal((await request('PATCH',path,{...body,title:'Changed replay'},0,{'idempotency-key':key})).statusCode,409);
+  assert.equal((await request('PATCH',path,body,1,{'idempotency-key':key})).statusCode,404);
+  await request('DELETE',`/api/projects/${p.id}`);
+  assert.equal((await request('PATCH',path,body,0,{'idempotency-key':key})).statusCode,404);
+  await request('POST',`/api/projects/${p.id}/restore`,{});
+ }
+});
 test('folders, preferences, trash and restore persist without localStorage',async()=>{
  const folder=(await request('POST','/api/folders',{name:`Folder ${unique}`})).json();
  assert.equal((await request('PATCH',`/api/projects/${project.id}`,{title:'Renamed',folderId:folder.id})).statusCode,200);

@@ -21,7 +21,10 @@ export async function projectRoutes(app:FastifyInstance) {
  }));
  app.post('/api/projects',async(req:any,reply)=>{const result=await tenantTransaction(req.identity.workspace.id,tx=>idempotent(tx,req.identity.workspace.id,req.headers['idempotency-key'],{route:'project.create',body:req.body},()=>createProject(tx,req.identity.workspace.id,req.body||{})));reply.code(201);return result;});
  app.get('/api/projects/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>projectDto(await (projectView.parse(req.query?.view)==='metadata'?getProjectMetadata:getProject)(tx,params(req).id))));
- app.patch('/api/projects/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,tx=>patchProject(tx,req.identity.workspace.id,params(req).id,req.body||{})));
+ app.patch('/api/projects/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
+  await getProjectMetadata(tx,params(req).id);
+  return idempotent(tx,req.identity.workspace.id,req.headers['idempotency-key'],{route:'project.patch',projectId:params(req).id,body:req.body},()=>patchProject(tx,req.identity.workspace.id,params(req).id,req.body||{}));
+ }));
  app.delete('/api/projects/:id',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   await getProject(tx,params(req).id,false,true);
   const generations=(await tx.query("SELECT id FROM creative_requests WHERE project_id=$1 AND execution_status IN ('queued','running','unknown')",[params(req).id])).rows;
@@ -55,7 +58,10 @@ export async function projectRoutes(app:FastifyInstance) {
   await emit(tx,req.identity.workspace.id,'artboard.created',{projectId,documentId:doc.id});return {...dto,boardRevision:board.revision};
  }));
  app.patch('/api/projects/:id/artboards/:artboardId',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
-  const p=params(req),body=req.body||{};await getProjectMetadata(tx,p.id,false,true);
+  const p=params(req),body=req.body||{};await getProjectMetadata(tx,p.id);
+  if(!(await tx.query("SELECT 1 FROM documents WHERE id=$1 AND project_id=$2 AND kind='artboard'",[p.artboardId,p.id])).rowCount)notFound();
+  return idempotent(tx,req.identity.workspace.id,req.headers['idempotency-key'],{route:'artboard.patch',projectId:p.id,documentId:p.artboardId,body},async()=>{
+  await getProjectMetadata(tx,p.id,false,true);
   const current=(await tx.query("SELECT * FROM documents WHERE id=$1 AND project_id=$2 AND kind='artboard' FOR UPDATE",[p.artboardId,p.id])).rows[0];if(!current)notFound();
   if(body.baseRevision!==current.revision)throw new HttpError(409,'DOC_REVISION_CONFLICT','画板已更新，请重新载入');
   const design=validateDesign(body.design||current.content);await syncAssetRefs(tx,req.identity.workspace.id,current.id,design);
@@ -64,6 +70,7 @@ export async function projectRoutes(app:FastifyInstance) {
   await saveVersion(tx,req.identity.workspace.id,doc);
   await tx.query('UPDATE projects SET updated_at=now(),image=CASE WHEN primary_artboard_id=$1 THEN $2 ELSE image END WHERE id=$3',[current.id,design.nodes.find((n:any)=>n.type==='image')?.src||null,p.id]);
   await emit(tx,req.identity.workspace.id,'document.committed',{projectId:p.id,documentId:doc.id,revision:doc.revision});return artboardDto(doc,body.position);
+  });
  }));
  app.get('/api/projects/:id/versions',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   await getProject(tx,params(req).id);return (await tx.query('SELECT id,document_id AS "documentId",revision,name,created_at AS "createdAt" FROM document_versions WHERE project_id=$1 ORDER BY created_at DESC LIMIT 300',[params(req).id])).rows;

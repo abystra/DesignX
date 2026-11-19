@@ -1,4 +1,4 @@
-import { draftCache } from "../lib/draft-cache";
+import { createDraftJournal } from "../lib/draft-cache";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -117,12 +117,35 @@ function ColorPicker({ value, onChange, label = "颜色" }) {
     </div>
   );
 }
-export default function Editor({ project, onBack, onSave, onToast }) {
+export default function Editor({
+  project,
+  draftOwner,
+  onBack,
+  onSave,
+  onCopy,
+  onToast,
+}) {
   const cacheKey =
     String(project.projectId || project.id) +
     ":" +
     String(project.documentId || "primary");
+  const [journal] = useState(() =>
+    createDraftJournal(`editor:${draftOwner}:${cacheKey}`, cacheKey),
+  );
+  const [otherDrafts, setOtherDrafts] = useState([]);
   const [cacheReady, setCacheReady] = useState(false);
+  const pendingRequest = useRef(null),
+    copyRequest = useRef(null),
+    mounted = useRef(true);
+  const conflictRef = useRef(false),
+    recoveryBusy = useRef(false);
+  const [recovering, setRecovering] = useState(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const projectRef = useRef(project),
     savingRef = useRef(null),
     changeRef = useRef(0),
@@ -148,6 +171,8 @@ export default function Editor({ project, onBack, onSave, onToast }) {
     historyIndex = useRef(0);
   const [, renderHistory] = useState(0);
   const [title, setTitle] = useState(project?.title || "秋日咖啡 · 品牌海报");
+  const titleRef = useRef(title);
+  titleRef.current = title;
   const [selectionIds, setSelectionIds] = useState([]);
   const clipboard = useRef([]);
   const [selectedId, setActiveId] = useState(
@@ -277,26 +302,85 @@ export default function Editor({ project, onBack, onSave, onToast }) {
     apply(value);
     renderHistory((n) => n + 1);
   };
+  const draftValue = () => ({
+    design: designRef.current,
+    title: titleRef.current,
+    baseRevision: projectRef.current.revision,
+    pending: pendingRequest.current,
+    copy: copyRequest.current,
+    project: {
+      id: project.id,
+      projectId: project.projectId,
+      documentId: project.documentId,
+      workspaceMode: project.workspaceMode,
+    },
+  });
+  const sameContent = (a, b) =>
+    a.title.trim() === b.title.trim() && !diffDesign(a.design, b.design).length;
+  const cacheFailure = () =>
+    setSaveError("浏览器无法保留离线草稿，请保持页面开启并保存。");
+  async function refreshDrafts() {
+    const values = await journal.list();
+    setOtherDrafts(
+      values.filter(
+        (entry) => ArtboardSchema.safeParse(entry.value?.design).success,
+      ),
+    );
+  }
+  function applyDraft(draft) {
+    const value = ArtboardSchema.parse(draft.design);
+    designRef.current = clone(value);
+    committedDesign.current = clone(value);
+    titleRef.current = draft.title;
+    setDesign(clone(value));
+    setTitle(draft.title);
+    history.current = [null];
+    historyIndex.current = 0;
+    pendingRequest.current = draft.pending || null;
+    copyRequest.current = draft.copy || null;
+    // A pending idempotent request must be reconciled before declaring conflict.
+    const changed =
+      project.unavailable ||
+      (draft.baseRevision !== projectRef.current.revision && !draft.pending);
+    projectRef.current = {
+      ...projectRef.current,
+      revision: draft.baseRevision,
+    };
+    conflictRef.current = changed;
+    setConflict(changed);
+    setSaved(false);
+    setSaveError(
+      project.unavailable
+        ? "作品已删除或当前账号无法访问。未同步草稿仍保留在本机，可另存副本，或恢复原作品后使用最新版本。"
+        : changed
+          ? "发现未同步的本地修改，服务器已有新版本。请保留为副本或使用最新版本。"
+          : "",
+    );
+    changeRef.current++;
+  }
   useEffect(() => {
     let active = true;
-    draftCache
-      .get(cacheKey)
-      .then((draft) => {
-        if (!active || !draft) return;
-        ArtboardSchema.parse(draft.design);
-        designRef.current = clone(draft.design);
-        committedDesign.current = clone(draft.design);
-        setDesign(clone(draft.design));
-        setTitle(draft.title);
-        setSaved(false);
-        if (draft.baseRevision !== project.revision) {
-          setConflict(true);
-          setSaveError(
-            "发现未同步的本地修改，服务器已有新版本。请保留为副本或使用最新版本。",
-          );
-        } else notify("已恢复尚未同步的修改");
-      })
-      .catch(() => {})
+    (async () => {
+      const entries = await journal.list();
+      if (!active) return;
+      const valid = entries.filter(
+        (entry) => ArtboardSchema.safeParse(entry.value?.design).success,
+      );
+      const entry = valid[0];
+      if (entry) {
+        await journal.adopt(entry);
+        if (!active) return;
+        if (!project.unavailable && sameContent(entry.value, project))
+          await journal.clear();
+        else {
+          applyDraft(entry.value);
+          await journal.put(draftValue());
+          notify("已恢复尚未同步的修改");
+        }
+      }
+      if (active) await refreshDrafts();
+    })()
+      .catch(cacheFailure)
       .finally(() => {
         if (active) setCacheReady(true);
       });
@@ -305,60 +389,64 @@ export default function Editor({ project, onBack, onSave, onToast }) {
     };
   }, []);
   useEffect(() => {
-    if (!cacheReady || saved) return;
-    draftCache
-      .put(cacheKey, {
-        design,
-        title,
-        baseRevision: projectRef.current.revision,
-      })
-      .catch(() =>
-        setSaveError("浏览器无法保留离线草稿，请保持页面开启并保存。"),
-      );
+    if (cacheReady && !saved) journal.put(draftValue()).catch(cacheFailure);
   }, [design, title, saved, cacheReady]);
   const save = async (manual = true) => {
-    if (savingRef.current) {
-      await savingRef.current;
-    }
-    if (conflict) return false;
-    const counter = changeRef.current;
-    const next = {
-      ...projectRef.current,
-      title: title.trim() || "未命名设计",
-      design: clone(designRef.current),
-      image:
-        designRef.current.nodes.find((n) => n.type === "image")?.src ||
-        projectRef.current.image,
-    };
+    if (!cacheReady || conflictRef.current || recoveryBusy.current)
+      return false;
+    if (savingRef.current) return savingRef.current;
     setSaving(true);
     setSaveError("");
     const pending = (async () => {
       try {
-        ArtboardSchema.parse(next.design);
-        const result = await onSave?.(next);
-        if (result === false) return false;
-        if (result && typeof result === "object")
+        // Flush edits made during a request before allowing navigation or export.
+        while (mounted.current) {
+          if (!pendingRequest.current)
+            pendingRequest.current = {
+              ...projectRef.current,
+              title: titleRef.current.trim() || "未命名设计",
+              design: clone(designRef.current),
+              saveRequestKey: crypto.randomUUID(),
+            };
+          const next = pendingRequest.current;
+          ArtboardSchema.parse(next.design);
+          // Persist the request identity before sending it; refresh can safely retry.
+          await journal.put(draftValue()).catch(cacheFailure);
+          const result = await onSave(next);
+          if (!result || !Number.isInteger(result.revision))
+            throw new Error("保存结果未确认，请重试");
           projectRef.current = { ...projectRef.current, ...result };
-        if (counter === changeRef.current) {
-          setSaved(true);
-          await draftCache.remove(cacheKey).catch(() => {});
-        } else
-          await draftCache
-            .put(cacheKey, {
+          pendingRequest.current = null;
+          if (
+            sameContent(next, {
               design: designRef.current,
-              title,
-              baseRevision: projectRef.current.revision,
+              title: titleRef.current.trim() || "未命名设计",
             })
-            .catch(() => {});
-        if (manual) notify("设计已保存到个人空间");
-        return true;
+          ) {
+            const counter = changeRef.current;
+            await journal.clear().catch(cacheFailure);
+            if (counter !== changeRef.current) continue;
+            setSaved(true);
+            if (manual) notify("设计已保存到个人空间");
+            return true;
+          }
+          await journal.put(draftValue()).catch(cacheFailure);
+        }
+        return false;
       } catch (e) {
+        if (e.status === 409) {
+          conflictRef.current = true;
+          setConflict(true);
+          pendingRequest.current = null;
+          await journal.put(draftValue()).catch(cacheFailure);
+        }
         setSaveError(
           e.status === 409
             ? "这份设计已在其他页面更新。你的改动仍保留，请选择处理方式。"
-            : e.message || "保存失败，请稍后重试",
+            : [403, 404].includes(e.status)
+              ? "作品已删除或当前账号无法访问。未同步修改仍保留在本机，可另存副本或稍后恢复原作品。"
+              : e.message || "保存失败，请稍后重试",
         );
-        if (e.status === 409) setConflict(true);
         return false;
       } finally {
         setSaving(false);
@@ -392,55 +480,97 @@ export default function Editor({ project, onBack, onSave, onToast }) {
     window.addEventListener("online", online);
     return () => window.removeEventListener("online", online);
   });
-  async function loadLatest() {
+  async function restoreLocal(entry) {
+    if (savingRef.current || recoveryBusy.current) return;
+    recoveryBusy.current = true;
+    setRecovering(true);
     try {
-      const p = await api(
-        "/projects/" + (projectRef.current.projectId || projectRef.current.id),
+      if (!saved) await journal.put(draftValue());
+      // Use a fresh server revision to distinguish this draft from a newer save.
+      const latest = await readLatest();
+      await journal.adopt(entry);
+      projectRef.current = { ...projectRef.current, ...latest };
+      applyDraft(entry.value);
+      await journal.put(draftValue());
+      await refreshDrafts();
+    } catch (e) {
+      setSaveError(e.message);
+    } finally {
+      recoveryBusy.current = false;
+      setRecovering(false);
+    }
+  }
+  async function readLatest() {
+    const p = projectRef.current;
+    if (p.projectId && p.id !== p.projectId) {
+      const board = await api("/projects/" + p.projectId + "/studio");
+      const value = board.snapshot.results.find(
+        (r) => r.documentId === p.documentId,
       );
-      let value = p;
-      if (
-        projectRef.current.projectId &&
-        projectRef.current.id !== projectRef.current.projectId
-      ) {
-        const board = await api(
-          "/projects/" + projectRef.current.projectId + "/studio",
-        );
-        value =
-          board.snapshot.results.find(
-            (r) => r.documentId === projectRef.current.documentId,
-          ) || p;
-      }
+      if (!value) throw new Error("画板已不存在，未同步草稿仍保留在本机");
+      return value;
+    }
+    return api("/projects/" + p.id);
+  }
+  async function loadLatest() {
+    if (savingRef.current || recoveryBusy.current) return;
+    recoveryBusy.current = true;
+    setRecovering(true);
+    try {
+      const value = await readLatest();
+      await journal.clear();
       projectRef.current = { ...projectRef.current, ...value };
+      pendingRequest.current = null;
       setDesign(clone(value.design));
       designRef.current = clone(value.design);
       setTitle(value.title);
+      titleRef.current = value.title;
       committedDesign.current = clone(value.design);
       history.current = [null];
       historyIndex.current = 0;
       setSaved(true);
       setConflict(false);
-      await draftCache.remove(cacheKey).catch(() => {});
+      conflictRef.current = false;
       setSaveError("");
+      await refreshDrafts();
+      return true;
     } catch (e) {
-      notify(e.message);
+      setSaveError(e.message);
+      return false;
+    } finally {
+      recoveryBusy.current = false;
+      setRecovering(false);
     }
   }
   async function saveCopy() {
+    if (recoveryBusy.current || savingRef.current) return;
+    recoveryBusy.current = true;
+    setRecovering(true);
     try {
+      const body = {
+        title:
+          (titleRef.current.trim() || "未命名设计").slice(0, 195) + " · 副本",
+        design: clone(designRef.current),
+        workspaceMode: "editor",
+      };
+      const signature = JSON.stringify(body);
+      if (copyRequest.current?.signature !== signature)
+        copyRequest.current = { signature, key: crypto.randomUUID() };
+      await journal.put(draftValue());
       const p = await api("/projects", {
         method: "POST",
-        body: { title: title + " · 副本", design: designRef.current },
+        headers: { "Idempotency-Key": copyRequest.current.key },
+        body,
       });
-      projectRef.current = p;
-      setTitle(p.title);
-      setConflict(false);
-      await draftCache.remove(cacheKey).catch(() => {});
-      setSaveError("");
-      setSaved(true);
+      await journal.clear();
       refreshWorkspace();
+      onCopy(p);
       notify("已将你的修改另存为副本");
     } catch (e) {
-      notify(e.message);
+      setSaveError(e.message);
+    } finally {
+      recoveryBusy.current = false;
+      setRecovering(false);
     }
   }
   async function openVersions() {
@@ -487,7 +617,7 @@ export default function Editor({ project, onBack, onSave, onToast }) {
           "/restore",
         { method: "POST" },
       );
-      await loadLatest();
+      if (!(await loadLatest())) return;
       setVersions(null);
       refreshWorkspace();
       notify("已恢复所选版本");
@@ -498,6 +628,7 @@ export default function Editor({ project, onBack, onSave, onToast }) {
   useEffect(() => {
     if (!autoFit || !stageRef.current) return;
     const fit = () => {
+      if (!stageRef.current) return;
       const rect = stageRef.current.getBoundingClientRect();
       setZoom(
         Math.max(
@@ -973,18 +1104,51 @@ export default function Editor({ project, onBack, onSave, onToast }) {
 
   return (
     <div
+      aria-busy={!cacheReady || recovering}
       className={`ed-root ${preview ? "ed-preview" : ""} ${inspectorOpen ? "ed-properties-open" : ""} ${leftOpen ? "ed-left-open" : ""}`}
     >
+      {!cacheReady && (
+        <div className="ed-service-error" role="status">
+          正在检查本机未同步的草稿…
+        </div>
+      )}
+      {!!otherDrafts.length && (
+        <details className="ed-local-drafts">
+          <summary>其他本机草稿（{otherDrafts.length}）</summary>
+          <p>打开其他草稿会保留当前修改。不同标签页的草稿分别保存。</p>
+          {otherDrafts.map((entry) => (
+            <button
+              key={entry.key}
+              disabled={saving || recovering}
+              onClick={() => restoreLocal(entry)}
+            >
+              恢复草稿：{entry.value.title} ·{" "}
+              {new Date(entry.value.updatedAt || Date.now()).toLocaleString()}
+            </button>
+          ))}
+        </details>
+      )}
       {saveError && (
         <div className="ed-service-error" role="alert">
           {saveError}
           {conflict ? (
             <>
-              <button onClick={loadLatest}>使用最新版本</button>
-              <button onClick={saveCopy}>将我的修改另存副本</button>
+              <button disabled={saving || recovering} onClick={loadLatest}>
+                使用最新版本
+              </button>
+              <button disabled={saving || recovering} onClick={saveCopy}>
+                将我的修改另存副本
+              </button>
             </>
           ) : (
-            <button onClick={() => save()}>重试保存</button>
+            <>
+              <button disabled={saving || recovering} onClick={() => save()}>
+                重试保存
+              </button>
+              <button disabled={saving || recovering} onClick={saveCopy}>
+                将我的修改另存副本
+              </button>
+            </>
           )}
         </div>
       )}
@@ -1033,7 +1197,10 @@ export default function Editor({ project, onBack, onSave, onToast }) {
           </section>
         </div>
       )}
-      <header className="ed-header">
+      <header
+        className="ed-header"
+        inert={!cacheReady || recovering ? true : undefined}
+      >
         <div className="ed-header-left">
           <IconButton
             icon={ArrowLeft}
@@ -1050,9 +1217,12 @@ export default function Editor({ project, onBack, onSave, onToast }) {
           <input
             className="ed-title-input"
             aria-label="作品名称"
+            maxLength={200}
+            disabled={!cacheReady || recovering}
             value={title}
             onChange={(e) => {
               changeRef.current += 1;
+              titleRef.current = e.target.value;
               setTitle(e.target.value);
               setSaved(false);
             }}
@@ -1094,7 +1264,7 @@ export default function Editor({ project, onBack, onSave, onToast }) {
           </button>
           <button
             className="ed-button ed-save-button"
-            disabled={saving}
+            disabled={saving || !cacheReady || recovering}
             onClick={() => save()}
           >
             <Save size={16} />
@@ -1109,7 +1279,10 @@ export default function Editor({ project, onBack, onSave, onToast }) {
           </button>
         </div>
       </header>
-      <div className="ed-body">
+      <div
+        className="ed-body"
+        inert={!cacheReady || recovering ? true : undefined}
+      >
         <nav className="ed-tool-rail" aria-label="编辑工具">
           {nav.map(({ id, icon: Icon, label }) => (
             <button
@@ -1132,7 +1305,12 @@ export default function Editor({ project, onBack, onSave, onToast }) {
           </div>
         </nav>
         <aside className="ed-library">
-          {project.brief && <details className="ed-creation-note"><summary>创作参考</summary><p>{project.brief}</p></details>}
+          {project.brief && (
+            <details className="ed-creation-note">
+              <summary>创作参考</summary>
+              <p>{project.brief}</p>
+            </details>
+          )}
           <div className="ed-panel-heading">
             <h2>{nav.find((n) => n.id === tab)?.label}</h2>
             <IconButton
@@ -1669,15 +1847,35 @@ export default function Editor({ project, onBack, onSave, onToast }) {
                   <select
                     className="ed-select ed-font-select"
                     aria-label="字体"
-                    value={selected.font === "Noto Sans SC Variable" ? FONT : selected.font || FONT}
+                    value={
+                      selected.font === "Noto Sans SC Variable"
+                        ? FONT
+                        : selected.font || FONT
+                    }
                     onChange={(e) =>
                       updateNode(selected.id, { font: e.target.value })
                     }
                   >
                     <option value={FONT}>Noto Sans SC · 中文无衬线</option>
-                    <option value="Source Serif 4 Variable">Source Serif 4 · 衬线</option>
-                    {selected?.font?.includes("Georgia") && <option value={selected.font}>经典衬线（历史作品）</option>}
-                    {selected.font && ![FONT, "Noto Sans SC Variable", "Source Serif 4 Variable"].includes(selected.font) && !selected.font.includes("Georgia") && <option value={selected.font}>历史字体（无衬线回退）</option>}
+                    <option value="Source Serif 4 Variable">
+                      Source Serif 4 · 衬线
+                    </option>
+                    {selected?.font?.includes("Georgia") && (
+                      <option value={selected.font}>
+                        经典衬线（历史作品）
+                      </option>
+                    )}
+                    {selected.font &&
+                      ![
+                        FONT,
+                        "Noto Sans SC Variable",
+                        "Source Serif 4 Variable",
+                      ].includes(selected.font) &&
+                      !selected.font.includes("Georgia") && (
+                        <option value={selected.font}>
+                          历史字体（无衬线回退）
+                        </option>
+                      )}
                   </select>
                   <div className="ed-property-row">
                     <select
