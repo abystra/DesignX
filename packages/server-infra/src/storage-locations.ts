@@ -18,7 +18,7 @@ export function parseBucketAliases(raw: string | undefined): BucketAliases {
     aliases.set(logical, {bucket, prefix});
   }
   for (const [logical, target] of aliases) {
-    if (aliases.has(target.bucket) && target.bucket !== logical) throw new Error('Storage bucket aliases cannot be chained');
+    if (aliases.has(target.bucket) && target.bucket !== logical && aliases.get(target.bucket)!.bucket !== target.bucket) throw new Error('Storage bucket aliases cannot be chained');
     if (target.bucket === logical && !target.prefix) throw new Error('Storage bucket alias must change its target');
   }
   return aliases;

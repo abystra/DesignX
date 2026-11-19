@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawnGroup, stopGroup, requireFreePorts } from './process-group.mjs';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startTunnel } from './tunnel.mjs';
 
@@ -18,10 +18,11 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
 }
 
 try {
+  await requireFreePorts([5173, 3001]);
   if (provider === 'cloudflared') tunnel = await startTunnel(provider);
   const env = { ...process.env };
   if (provider === 'cloudflared') env.WEB_ORIGIN = tunnel.webUrl;
-  application = spawn('corepack', ['pnpm', 'dev:v2'], { stdio: 'inherit', env });
+  application = spawnGroup('corepack', ['pnpm', 'dev:v2'], { stdio: 'inherit', env });
   application.on('error', error => { applicationFailure = error; });
   application.on('exit', code => {
     if (!stopping) applicationFailure = new Error('Development processes exited with code ' + code);
@@ -52,14 +53,5 @@ try {
   process.exitCode = 1;
 } finally {
   await tunnel?.cleanup();
-  if (application && application.exitCode === null && application.signalCode === null) {
-    application.kill('SIGTERM');
-    await Promise.race([
-      new Promise(resolve => application.once('exit', resolve)),
-      delay(5000),
-    ]);
-    if (application.exitCode === null && application.signalCode === null) {
-      application.kill('SIGKILL');
-    }
-  }
+  await stopGroup(application);
 }

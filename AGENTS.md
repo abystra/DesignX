@@ -151,6 +151,8 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 
 服务器配置保存在 /etc/designx/app.env，权限 0600。首次部署为服务器创建独立的 designx_production 数据库和 designx_app 登录角色，密码在服务器生成并写入该私有配置。R2 参数从当前环境的应用绑定读取，后续部署保留已有服务器配置。Codex 开发仍使用前文的 designx 数据库。当前 AI 与图片生成默认关闭。上传使用已有的同源 API 通道，由服务器写入 R2。
 
+生产备份/调度/隔离恢复使用 `scripts/cloud/operations.py`、`restore.py`，通过现有 `access.py ssh` 在 aws-1 root 执行。合同和命令见 [G2 运维手册](docs/implementation/operations-release.md)。数据归档私有；恢复只建 UUID 空库/对象前缀，不能以当前生产库作为恢复目标；清理先 dry-run。账号、密钥和归档文件不提交。安装状态及演练结果以证据为准，不从脚本存在推断已运行。
+
 部署会执行记录式数据库迁移、检查 API 健康和 Worker/Renderer 就绪，再切换 current 链接与 Nginx。已有部署存在时，服务启动或站点配置失败会恢复上一版本的镜像配置与静态链接。数据库迁移按仓库现有方式向前执行。
 
 该服务器使用的 TLS 证书路径为 /etc/letsencrypt/live/designx.velax.cn，现有 Certbot 自动续期任务在证书更新后重载 Nginx。域名 DNS、证书及服务器已有 PostgreSQL/R2 是部署前提。

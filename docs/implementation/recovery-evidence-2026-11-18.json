@@ -182,6 +182,7 @@
   "ci": {
     "commit": "81fd71d54c390b801e80d28d8916e9715734da2b",
     "url": "https://github.com/abystra/DesignX/actions/runs/44478554624",
-    "status": "in_progress"
+    "status": "completed",
+    "conclusion": "success"
   }
 }

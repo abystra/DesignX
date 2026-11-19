@@ -35,4 +35,4 @@
 
 应用提交 `81fd71d54c390b801e80d28d8916e9715734da2b` 已部署到 https://designx.velax.cn，发布目录为 `81fd71d54c39-20261119071819`。正式站验证真实版本冲突与副本路由、实际会话撤销后的同账号草稿恢复、保存/刷新/600×800 PNG 下载，以及通过 HTTPS Nginx 导入含真实图片的 13,344,264 字节有效项目。专用验收账号、空间、任务及注册存储文件已清理，错误列表为空。
 
-默认 chisel 下 E2B Web 200、API 健康且 AI 关闭已实际验证。该应用提交的 [全量 CI](https://github.com/abystra/DesignX/actions/runs/44478554624) 已触发，最终结论以证据文件后续更新为准。
+默认 chisel 下 E2B Web 200、API 健康且 AI 关闭已实际验证。该应用提交的 [全量 CI](https://github.com/abystra/DesignX/actions/runs/44478554624) 已完成且结论为 success。

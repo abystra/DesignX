@@ -1,0 +1,9 @@
+# Managed by DesignX operations
+[Unit]
+Description=DesignX database and immutable object backup
+After=docker.service postgresql.service network-online.target
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /srv/designx/current/scripts/cloud/operations.py backup
+TimeoutStartSec=2h

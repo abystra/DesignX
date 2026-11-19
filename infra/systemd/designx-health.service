@@ -1,0 +1,9 @@
+# Managed by DesignX operations
+[Unit]
+Description=DesignX backup service and queue health
+After=docker.service postgresql.service
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /srv/designx/current/scripts/cloud/operations.py health
+TimeoutStartSec=2m
