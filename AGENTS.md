@@ -165,6 +165,7 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 
 2026-11-18 的 G1–G7 已分批实施、推送和部署，最新应用为 `8319ea3`；逐项提交、测试、正式旅程、恢复和未验收设备/外部条件见 [交付索引](docs/implementation/goals-completion-2026-11-18.md)。新会话先核对这些证据与实际部署，不按原审计重复重做已完成内容。
 
+- 2026-11-19 用户要求关闭公开注册。`REGISTRATION_ENABLED` 默认 false；登录页读取 `/api/auth/options`，服务端拒绝 `/api/auth/register`（含旧邮箱方式）。不得为验收重新开启生产注册或重置已有账号；隔离测试显式开启以创建夹具。已有登录、会话和账户设置保留，详见 [注册关闭记录](docs/implementation/registration-closure.md)。
 - 首版账号使用普通用户名和密码，邮件投递/邮箱验证/邮件找回已由用户明确排除，不再询问邮件服务配置或视为上线依赖。旧邮箱账号仍作为登录标识兼容；账户设置、改密与会话撤销见 [B2 普通账号](docs/implementation/account-release.md)。禁止仅凭用户名重置密码。
 - 新建个人海报使用 `workspaceMode=editor`，旧项目/多画板默认 `studio`；列表、搜索和刷新必须遵守持久化入口。
 - 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。

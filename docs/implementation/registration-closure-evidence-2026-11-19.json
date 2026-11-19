@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-19",
+  "timezone": "America/Los_Angeles",
+  "environment": "Codex managed cloud; isolated PostgreSQL and disposable S3; Chromium",
+  "status": "local checks passed; committed release and production verification pending",
+  "policy": "public registration closed by default; existing login retained; no production account mutation",
+  "tests": {
+    "typecheck": "passed",
+    "unit": 109,
+    "accountAPI": 9,
+    "accountBrowser": 6,
+    "closedRegistrationBrowser": {
+      "checks": [
+        "stale registration form and direct username/email requests are rejected without creating accounts or workspaces",
+        "closed login page remains usable at desktop/tablet/390px/320px; existing account signs in and out",
+        "unavailable public auth options keep registration hidden while existing login still works"
+      ],
+      "errors": [],
+      "data": "isolated local database and synthetic account; no production mutation"
+    },
+    "browserArtifacts": "tests/e2e/.artifacts/registration-closed-1795089720981",
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        568
+      ]
+    ],
+    "visualReview": "desktop and 320px reviewed; closure notice spaced below login button",
+    "check": "passed",
+    "build": "passed"
+  },
+  "deployment": null,
+  "production": null,
+  "baseline": {
+    "base": "https://designx.velax.cn",
+    "mode": "before",
+    "checks": [
+      "Existing production displays registration and reaches input validation"
+    ],
+    "errors": [],
+    "accountMutation": false
+  }
+}

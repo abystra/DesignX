@@ -29,6 +29,7 @@ def runtime_configuration():
         "API_HOST": "127.0.0.1",
         "PORT": "3100",
         "WEB_ORIGIN": "https://designx.velax.cn",
+        "REGISTRATION_ENABLED": "false",
         "S3_ENDPOINT": env.get("S3_ENDPOINT", "https://358f047a3eb6ccf29a49370b1693e54a.r2.cloudflarestorage.com"),
         "S3_REGION": env.get("S3_REGION", "auto"),
         "S3_BUCKET": env.get("S3_BUCKET", "designx"),

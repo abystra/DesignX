@@ -8,6 +8,7 @@ export default function Auth() {
   const [session, setSession] = useState(null),
     [checking, setChecking] = useState(true),
     [register, setRegister] = useState(false),
+    [registrationEnabled, setRegistrationEnabled] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [showPassword, setShowPassword] = useState(false),
@@ -23,6 +24,11 @@ export default function Auth() {
     }
   }, [session?.user.id]);
   useEffect(() => {
+    api("/auth/options")
+      .then((options) =>
+        setRegistrationEnabled(options.registrationEnabled === true),
+      )
+      .catch(() => setRegistrationEnabled(null));
     api("/auth/me")
       .then(setSession)
       .catch((e) => {
@@ -84,6 +90,10 @@ export default function Auth() {
       setExpiredSession(false);
       setSession(next);
     } catch (e) {
+      if (e.data?.error === "REGISTRATION_CLOSED") {
+        setRegistrationEnabled(false);
+        setRegister(false);
+      }
       setError(e.message);
     } finally {
       setBusy(false);
@@ -248,18 +258,26 @@ export default function Auth() {
             )}{" "}
             {register ? "创建账户" : "进入创作空间"}
           </button>
-          <button
-            type="button"
-            className="auth-switch"
-            disabled={busy}
-            onClick={() => {
-              setRegister(!register);
-              setError("");
-              setShowPassword(false);
-            }}
-          >
-            {register ? "已有账户？登录" : "第一次来？创建账户"}
-          </button>
+          {registrationEnabled ? (
+            <button
+              type="button"
+              className="auth-switch"
+              disabled={busy}
+              onClick={() => {
+                setRegister(!register);
+                setError("");
+                setShowPassword(false);
+              }}
+            >
+              {register ? "已有账户？登录" : "第一次来？创建账户"}
+            </button>
+          ) : (
+            <p className="auth-registration-status">
+              {registrationEnabled === false
+                ? "当前暂不开放注册，请使用已有账号登录。"
+                : "请使用已有账号登录。"}
+            </p>
+          )}
           <small>设计与素材将保存在你的个人工作空间中。</small>
         </form>
       </main>

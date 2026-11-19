@@ -5,6 +5,7 @@ import { buildApp } from '../src/server.js';
 import { migrate } from '../../../db/migrate.js';
 import { pool } from '../../../packages/server-infra/src/db.js';
 import { stopQueue } from '../../../packages/server-infra/src/queue.js';
+import { config } from '../../../packages/server-infra/src/config.js';
 
 await migrate();
 const app = await buildApp({ logger: false });
@@ -104,4 +105,35 @@ test('password changes retain real per-user attempt limits', async () => {
   const a = await actor();
   for (let n = 0; n < 10; n++) assert.equal((await call('POST', '/password', { currentPassword: 'bad-password', newPassword: 'a-new-account-password' }, a.cookie)).statusCode, 400);
   assert.equal((await call('POST', '/password', { currentPassword: secret, newPassword: 'a-new-account-password' }, a.cookie)).statusCode, 429);
+});
+
+test('closed registration rejects username, legacy email and stale clients without affecting existing login', async () => {
+  const existing = await actor();
+  const legacyEmail = 'closing-' + randomUUID() + '@example.test';
+  const legacy = await app.inject({ method: 'POST', url: '/api/auth/register', remoteAddress: '10.8.0.2', payload: { email: legacyEmail, password: secret } });
+  assert.equal(legacy.statusCode, 201);
+  const before = (await pool.query('SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM workspaces) AS workspaces, (SELECT count(*) FROM sessions) AS sessions')).rows[0];
+  const enabled = config.registrationEnabled;
+  config.registrationEnabled = false;
+  try {
+    const options = await call('GET', '/options');
+    assert.equal(options.statusCode, 200);
+    assert.equal(options.headers['cache-control'], 'no-store');
+    assert.deepEqual(options.json(), { registrationEnabled: false });
+    for (const payload of [{ username: 'closed_' + randomUUID().slice(0, 8), password: secret }, { email: randomUUID() + '@example.test', password: secret }, {}]) {
+      const response = await app.inject({ method: 'POST', url: '/api/auth/register', remoteAddress: '10.8.0.1', payload });
+      assert.equal(response.statusCode, 403);
+      assert.equal(response.json().error, 'REGISTRATION_CLOSED');
+      assert.equal(response.headers['set-cookie'], undefined);
+    }
+    const after = (await pool.query('SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM workspaces) AS workspaces, (SELECT count(*) FROM sessions) AS sessions')).rows[0];
+    assert.deepEqual(after, before);
+    assert.equal((await call('GET', '/me', undefined, existing.cookie)).statusCode, 200);
+    const login = await call('POST', '/login', { account: existing.username, password: secret });
+    assert.equal(login.statusCode, 200);
+    assert.equal(login.json().user.id, existing.user.id);
+    const legacyLogin = await call('POST', '/login', { account: legacyEmail, password: secret });
+    assert.equal(legacyLogin.statusCode, 200);
+    assert.equal(legacyLogin.json().user.id, legacy.json().user.id);
+  } finally { config.registrationEnabled = enabled; }
 });

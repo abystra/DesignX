@@ -24,7 +24,7 @@ pnpm exec playwright install chromium
 pnpm dev:all
 ```
 
-打开 [Design X](http://127.0.0.1:5173/)，使用用户名和密码创建自己的账户，无预置通用密码、不要求邮箱。已有邮箱账号继续登录；侧栏“账户设置”支持资料修改、改密与退出设备。端口：Web 5173、API 3001、PostgreSQL 55432、S3 58333。迁移需要数据库建表/角色权限；上述 `--wait` 等待 PostgreSQL healthy，SeaweedFS 只检查容器运行状态。应用启动后应看到 `Design-X media worker ready` 和 `Design-X renderer ready`；首次上传/导出验证存储与处理链路。
+打开 [Design X](http://127.0.0.1:5173/)，使用已有用户名/密码登录，无预置通用密码。公开注册默认关闭（`REGISTRATION_ENABLED=false`），登录页不显示创建账户入口，注册 API 返回 403；只有经明确授权配置服务器 `REGISTRATION_ENABLED=true` 并重启 API 才能重新开放。隔离测试自行开启注册以创建夹具，不更改正式站。已有邮箱账号继续登录；侧栏“账户设置”支持资料修改、改密与退出设备。端口：Web 5173、API 3001、PostgreSQL 55432、S3 58333。迁移需要数据库建表/角色权限；上述 `--wait` 等待 PostgreSQL healthy，SeaweedFS 只检查容器运行状态。应用启动后应看到 `Design-X media worker ready` 和 `Design-X renderer ready`；首次上传/导出验证存储与处理链路。
 
 使用 `127.0.0.1:5173` 与示例 `WEB_ORIGIN` 保持一致。改主机名或端口时，需要同步调整 `.env` 和 Vite 配置中的代理/端口。`/api/health` 返回 `status: ok` 只证明 API 可达；`aiEnabled` 反映配置开关，不代表模型或后台处理全部健康。
 

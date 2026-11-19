@@ -39,7 +39,10 @@ try {
   const renderer=await child('apps/renderer/src/main.ts');
   // Control only this suite's isolated renderer; no production fault hooks.
   globalThis.DESIGNX_RENDERER_FIXTURE={pause:()=>renderer.kill('SIGSTOP'),resume:()=>renderer.kill('SIGCONT')};
-  if(process.env.DESIGNX_FEEDBACK_ONLY==='true'){
+  if(process.env.DESIGNX_REGISTRATION_ONLY==='true'){
+    await import('./account_journey.mjs');
+    await import('./closed_registration_journey.mjs');
+  }else if(process.env.DESIGNX_FEEDBACK_ONLY==='true'){
     await import('./feedback_journey.mjs');
   }else if(process.env.DESIGNX_UI_ONLY==='true'){
     await import('./ui_journey.mjs');
@@ -79,6 +82,7 @@ try {
     await import('./recovery_journey.mjs');
     await import('./large_import_journey.mjs');
     await import('./render_consistency.mjs');
+    await import('./closed_registration_journey.mjs');
   }
 } catch (error) {
   console.error(error); console.error(logs.slice(-5000)); process.exitCode = 1;

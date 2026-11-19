@@ -14,6 +14,7 @@ export const config = {
   port: Number(process.env.PORT || 3001),
   host: process.env.API_HOST || "127.0.0.1",
   webOrigin: value("WEB_ORIGIN", "http://127.0.0.1:5173"),
+  registrationEnabled: process.env.REGISTRATION_ENABLED === "true",
   s3Endpoint: value("S3_ENDPOINT", "http://127.0.0.1:58333"),
   s3Region: process.env.S3_REGION || "us-east-1",
   s3Bucket: value("S3_BUCKET", "designx"),

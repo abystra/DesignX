@@ -154,10 +154,15 @@ async function lockedUser(tx: Tx, identity: Identity) {
   return row;
 }
 export async function authRoutes(app: FastifyInstance) {
+  app.get("/api/auth/options", async () => ({
+    registrationEnabled: config.registrationEnabled,
+  }));
   app.post(
     "/api/auth/register",
     { config: { rateLimit: { max: 12, timeWindow: "15 minutes" } } },
     async (req, reply) => {
+      if (!config.registrationEnabled)
+        throw new HttpError(403, "REGISTRATION_CLOSED", "当前暂不开放注册，请使用已有账号登录");
       const body = registerSchema.parse(req.body),
         userId = id(),
         workspaceId = id();

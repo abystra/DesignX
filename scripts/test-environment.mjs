@@ -26,6 +26,7 @@ export function buildTestEnvironment(source, runId) {
   return {
     ...env,
     NODE_ENV: 'test', DESIGNX_TEST_ENV: 'true',
+    REGISTRATION_ENABLED: 'true',
     DOTENV_CONFIG_PATH: fileURLToPath(new URL('../tests/fixtures/empty.env', import.meta.url)),
     DOTENV_CONFIG_OVERRIDE: 'false', DOTENV_CONFIG_QUIET: 'true',
     DATABASE_URL: localUrl(source.TEST_DATABASE_URL || 'postgres://designx:designx-local-only@127.0.0.1:55432/designx', ['postgres:','postgresql:'], 'TEST_DATABASE_URL'),

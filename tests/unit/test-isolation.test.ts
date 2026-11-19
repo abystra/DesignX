@@ -53,3 +53,13 @@ test('actual server config and direct dotenv imports cannot reload developer clo
   const {stdout}=await promisify(execFile)(process.execPath,['--import','tsx','--input-type=module','-e',code],{env,timeout:10000});
   assert.deepEqual(JSON.parse(stdout.trim()),{endpoint:env.S3_ENDPOINT,bucket:env.S3_BUCKET,imageEnabled:false,aiEnabled:false,key:'test-only-no-image-credential',aliases:'{}',legacy:'',runner:'false'});
 });
+
+test('public registration stays closed unless explicitly enabled by the server',async()=>{
+  const base=buildTestEnvironment(process.env,'registration-default');
+  for(const setting of [undefined,'false','TRUE','true']) {
+    const env={...base};delete env.REGISTRATION_ENABLED;
+    if(setting!==undefined)env.REGISTRATION_ENABLED=setting;
+    const {stdout}=await promisify(execFile)(process.execPath,['--import','tsx','--input-type=module','-e',"import {config} from './packages/server-infra/src/config.ts';console.log(config.registrationEnabled)"],{env,timeout:10000});
+    assert.equal(stdout.trim(),String(setting==='true'));
+  }
+});
