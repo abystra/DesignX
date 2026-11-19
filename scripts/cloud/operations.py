@@ -152,9 +152,20 @@ def health():
     return bool(problems)
 
 def retention():
+    ROOT.mkdir(mode=0o700, parents=True, exist_ok=True)
+    with (ROOT / '.retention.lock').open('w') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print(json.dumps({'status': 'already-running'}))
+            return
+        _retention_locked()
+
+def _retention_locked():
     _, _, image = settings()
     ROOT.mkdir(mode=0o700, parents=True, exist_ok=True)
-    state = {'status': 'running', 'startedAt': time.time()}
+    previous = json.loads((ROOT / 'retention.json').read_text()) if (ROOT / 'retention.json').exists() else {}
+    state = {'status': 'running', 'startedAt': time.time(), 'completedAt': previous.get('completedAt') or 0}
     write_json(ROOT / 'retention.json', state)
     container = 'designx-retention-' + uuid.uuid4().hex
     try:

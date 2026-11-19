@@ -488,7 +488,7 @@ export default function App({
     [editedProject, setEditedProject] = useState(null);
   const [feedback, setFeedback] = useState(null);
   function openFeedback(context = {}) {
-    setNotice(false);
+    // Native modal isolation keeps the task trigger mounted for focus restoration.
     setFeedback(context);
   }
   const [notice, setNotice] = useState(false),
