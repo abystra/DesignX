@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ArrowUpRight,
   ArrowUp,
+  Settings,
   ArrowRight,
   Search,
   SlidersHorizontal,
@@ -42,6 +43,7 @@ import {
 } from "lucide-react";
 import Editor from "./components/Editor.jsx";
 import Workspace from "./components/Workspace.jsx";
+import AccountSettings from "./components/AccountSettings.jsx";
 import ProjectThumbnail from "./components/ProjectThumbnail.jsx";
 import LibraryPageStatus from "./components/LibraryPageStatus.jsx";
 import { useLibraryPage } from "./lib/use-library-page.js";
@@ -480,6 +482,7 @@ export default function App({
   sessionUser = { name: "创作者" },
   workspace,
   onLogout,
+  onSessionChange,
 }) {
   const [page, setPage] = useState(
     () => location.hash.slice(1).split("/")[0] || "home",
@@ -883,9 +886,9 @@ export default function App({
                 className="space-picker"
                 onClick={() => navigate("projects")}
               >
-                <span className="space-avatar">Y</span>
+                <span className="space-avatar">{sessionUser.name?.slice(0, 1) || "我"}</span>
                 <span>
-                  我的创作空间<small>个人空间</small>
+                  {workspace?.name || "我的创作空间"}<small>个人空间</small>
                 </span>
                 <ChevronDown size={14} />
               </button>
@@ -932,12 +935,13 @@ export default function App({
                   <span>创作指南</span>
                   <ArrowUpRight size={14} />
                 </button>
+                <button className={"nav-item account-entry " + (page === "account" ? "active" : "")} onClick={() => navigate("account")} aria-label="账户设置"><Settings size={18} /><span>账户设置</span></button>
                 <div className="profile">
                   <button
                     className="profile-avatar"
-                    onClick={onLogout}
-                    title="退出登录"
-                    aria-label="退出登录"
+                    onClick={() => navigate("account")}
+                    title="账户设置"
+                    aria-label="打开账户设置"
                   >
                     {sessionUser.name?.slice(0, 1) || "我"}
                   </button>
@@ -970,7 +974,7 @@ export default function App({
                   )}
                   <span>工作空间</span>
                   <ChevronRight size={13} />
-                  <b>{task ? task.name : current?.[1] || "创作指南"}</b>
+                  <b>{task ? task.name : page === "account" ? "账户设置" : current?.[1] || "创作指南"}</b>
                 </div>
                 <div className="header-actions">
                   <button
@@ -994,10 +998,10 @@ export default function App({
                   </button>
                   <button
                     className="header-avatar"
-                    onClick={() => navigate("projects")}
-                    aria-label="我的空间"
+                    onClick={() => navigate("account")}
+                    aria-label="个人账户设置"
                   >
-                    Y
+                    {sessionUser.name?.slice(0, 1) || "我"}
                   </button>
                 </div>
                 {notice && (
@@ -1020,6 +1024,8 @@ export default function App({
                     onSave={save}
                     onToast={notify}
                   />
+                ) : page === "account" ? (
+                  <AccountSettings user={sessionUser} workspace={workspace} onSessionChange={onSessionChange} onLogout={onLogout} />
                 ) : page === "home" ? (
                   <HomePage
                     onNavigate={navigate}

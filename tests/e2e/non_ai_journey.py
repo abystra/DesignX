@@ -33,7 +33,7 @@ def main() -> int:
         ['node', '-e', 'import("playwright").then(p=>console.log(p.chromium.executablePath()))'], cwd=ROOT, text=True).strip()
     report = {'runId': run_id, 'baseUrl': args.base_url, 'checks': [], 'pageErrors': [], 'failedResponses': [], 'artifacts': [], 'mocked': False}
     current = 'startup'
-    email = f'e2e-{run_id}@example.test'
+    username = ('e2e-' + run_id)[:32]
     password = 'designx-test-' + uuid4().hex
     project_id = None
     asset_id = None
@@ -93,8 +93,9 @@ def main() -> int:
             target.wait_for_load_state('networkidle')
             target.get_by_role('button', name='第一次来？创建账户').click()
             target.get_by_label('你的名字').fill(name)
-            target.get_by_label('邮箱', exact=True).fill(address)
+            target.get_by_label('账号', exact=True).fill(address)
             target.get_by_label('密码', exact=True).fill(password)
+            target.get_by_label('确认密码', exact=True).fill(password)
             target.get_by_role('button', name='创建账户', exact=True).click()
             target.get_by_role('navigation', name='主导航').wait_for()
 
@@ -107,8 +108,8 @@ def main() -> int:
             if args.expect_ai_disabled:
                 assert ai_enabled is False, '--expect-ai-disabled requires an AI-disabled API'
             current = 'register-personal-workspace'
-            register(page, email, '端到端验收')
-            assert api('/auth/me')['user']['email'] == email
+            register(page, username, '端到端验收')
+            assert api('/auth/me')['user']['username'] == username
             assert any(c['name'] == 'dx_session' and c['httpOnly'] for c in context.cookies())
             check(current)
             screenshot('01-home')
@@ -272,10 +273,11 @@ def main() -> int:
 
             current = 'logout-and-login-durable-data'
             page.goto(args.base_url + '/#projects', wait_until='domcontentloaded')
-            page.get_by_role('button', name='退出登录').click()
+            page.get_by_role('button', name='账户设置', exact=True).click()
+            page.get_by_role('button', name='退出登录', exact=True).click()
             expect(page.get_by_role('heading', name='欢迎回来')).to_be_visible()
             assert context.request.get(args.base_url + '/api/auth/me').status == 401
-            page.get_by_label('邮箱', exact=True).fill(email)
+            page.get_by_label('登录账号', exact=True).fill(username)
             page.get_by_label('密码', exact=True).fill(password)
             page.get_by_role('button', name='进入创作空间', exact=True).click()
             page.get_by_role('navigation', name='主导航').wait_for()
@@ -288,7 +290,7 @@ def main() -> int:
             other_context = browser.new_context(viewport={'width': 1440, 'height': 1000})
             try:
                 other = other_context.new_page()
-                register(other, f'e2e-other-{run_id}@example.test', '隔离验收')
+                register(other, ('other-' + run_id)[:32], '隔离验收')
                 for resource in [f'/projects/{project_id}', f'/projects/{project_id}/studio', f'/projects/{project_id}/versions', f'/assets/{asset_id}/file', f'/assets/{asset_id}/thumbnail'] + [f'/exports/{eid}/file' for eid in export_ids]:
                     response = other_context.request.get(args.base_url + '/api' + resource)
                     assert response.status == 404, f'cross-account GET {resource}: {response.status}'
@@ -323,7 +325,7 @@ def main() -> int:
             context.close()
             browser.close()
             report['projectId'] = project_id
-            report['testEmail'] = email
+            report['testUsername'] = username
             (output / 'report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
             print(f'Report: {output / "report.json"}', flush=True)
     return 1 if report['status'] == 'failed' else 0

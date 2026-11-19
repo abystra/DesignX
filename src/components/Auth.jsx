@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { api } from "../lib/api";
 import App from "../App";
 import "./auth.css";
@@ -9,12 +9,14 @@ export default function Auth() {
     [checking, setChecking] = useState(true),
     [register, setRegister] = useState(false),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [showPassword, setShowPassword] = useState(false),
+    [serviceError, setServiceError] = useState(false);
   useEffect(() => {
     api("/auth/me")
       .then(setSession)
       .catch((e) => {
-        if (e.status !== 401) setError("暂时无法连接服务，请检查后重试。");
+        if (e.status !== 401) setServiceError(true);
       })
       .finally(() => setChecking(false));
     const expired = () => setSession(null);
@@ -23,16 +25,23 @@ export default function Auth() {
   }, []);
   async function submit(e) {
     e.preventDefault();
+    if (busy) return;
+    const data = Object.fromEntries(new FormData(e.currentTarget));
+    if (register && data.password !== data.confirmPassword) {
+      setError("两次输入的密码不一致");
+      e.currentTarget.elements.confirmPassword.focus();
+      return;
+    }
+    delete data.confirmPassword;
     setBusy(true);
     setError("");
-    const data = Object.fromEntries(new FormData(e.currentTarget));
     try {
-      setSession(
-        await api(`/auth/${register ? "register" : "login"}`, {
-          method: "POST",
-          body: data,
-        }),
-      );
+      const next = await api(`/auth/${register ? "register" : "login"}`, {
+        method: "POST",
+        body: data,
+      });
+      location.hash = "home";
+      setSession(next);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -40,18 +49,26 @@ export default function Auth() {
     }
   }
   async function logout() {
-    try {
-      await api("/auth/logout", { method: "POST" });
-      setSession(null);
-    } catch (e) {
-      setError(e.message);
-    }
+    await api("/auth/logout", { method: "POST" });
+    location.hash = "home";
+    setRegister(false);
+    setError("");
+    setSession(null);
   }
   if (checking)
     return (
       <div className="auth-loading">
         <LoaderCircle className="st-spin" /> 正在打开创作空间…
       </div>
+    );
+  if (serviceError)
+    return (
+      <main className="auth-loading" role="alert">
+        暂时无法连接服务，请检查网络后重试。
+        <button className="auth-retry" onClick={() => location.reload()}>
+          重新连接
+        </button>
+      </main>
     );
   if (session)
     return (
@@ -60,6 +77,7 @@ export default function Auth() {
         sessionUser={session.user}
         workspace={session.workspace}
         onLogout={logout}
+        onSessionChange={setSession}
       />
     );
   return (
@@ -84,7 +102,7 @@ export default function Auth() {
         <img src="/assets/coffee.jpg" alt="温暖的咖啡创作灵感" />
       </section>
       <main className="auth-form-wrap">
-        <form onSubmit={submit}>
+        <form onSubmit={submit} aria-busy={busy}>
           <span className="eyebrow">YOUR CREATIVE WORKSPACE</span>
           <h2>{register ? "开始你的创作旅程" : "欢迎回来"}</h2>
           <p>
@@ -105,28 +123,67 @@ export default function Auth() {
             </label>
           )}
           <label>
-            邮箱
+            {register ? "账号" : "登录账号"}
             <input
-              name="email"
-              type="email"
-              autoComplete="email"
+              key={register ? "username" : "account"}
+              name={register ? "username" : "account"}
+              type="text"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
               required
-              maxLength={254}
-              placeholder="you@example.com"
+              minLength={register ? 3 : undefined}
+              maxLength={register ? 32 : 254}
+              pattern={register ? "[a-zA-Z][a-zA-Z0-9_.\\-]{2,31}" : undefined}
+              aria-describedby={register ? "auth-account-help" : undefined}
+              placeholder={
+                register ? "例如 lin_design" : "用户名或已有邮箱账号"
+              }
+              disabled={busy}
             />
           </label>
+          {register && (
+            <p id="auth-account-help" className="auth-help">
+              3–32
+              位，以字母开头，可用字母、数字、下划线、点和短横线；不区分大小写。
+            </p>
+          )}
           <label>
             密码
             <input
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               autoComplete={register ? "new-password" : "current-password"}
               required
-              minLength={10}
+              minLength={register ? 10 : 1}
               maxLength={128}
               placeholder="至少 10 个字符"
+              disabled={busy}
             />
           </label>
+          <button
+            type="button"
+            className="auth-password-toggle"
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ? "隐藏密码" : "显示密码"}
+          </button>
+          {register && (
+            <label>
+              确认密码
+              <input
+                name="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={10}
+                maxLength={128}
+                disabled={busy}
+              />
+            </label>
+          )}
           {error && (
             <p className="auth-error" role="alert">
               {error}
@@ -143,9 +200,11 @@ export default function Auth() {
           <button
             type="button"
             className="auth-switch"
+            disabled={busy}
             onClick={() => {
               setRegister(!register);
               setError("");
+              setShowPassword(false);
             }}
           >
             {register ? "已有账户？登录" : "第一次来？创建账户"}

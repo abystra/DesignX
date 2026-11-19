@@ -24,7 +24,7 @@ pnpm exec playwright install chromium
 pnpm dev:all
 ```
 
-打开 [Design X](http://127.0.0.1:5173/)，创建自己的账户，无预置通用密码。端口：Web 5173、API 3001、PostgreSQL 55432、S3 58333。迁移需要数据库建表/角色权限；上述 `--wait` 等待 PostgreSQL healthy，SeaweedFS 只检查容器运行状态。应用启动后应看到 `Design-X media worker ready` 和 `Design-X renderer ready`；首次上传/导出验证存储与处理链路。
+打开 [Design X](http://127.0.0.1:5173/)，使用用户名和密码创建自己的账户，无预置通用密码、不要求邮箱。已有邮箱账号继续登录；侧栏“账户设置”支持资料修改、改密与退出设备。端口：Web 5173、API 3001、PostgreSQL 55432、S3 58333。迁移需要数据库建表/角色权限；上述 `--wait` 等待 PostgreSQL healthy，SeaweedFS 只检查容器运行状态。应用启动后应看到 `Design-X media worker ready` 和 `Design-X renderer ready`；首次上传/导出验证存储与处理链路。
 
 使用 `127.0.0.1:5173` 与示例 `WEB_ORIGIN` 保持一致。改主机名或端口时，需要同步调整 `.env` 和 Vite 配置中的代理/端口。`/api/health` 返回 `status: ok` 只证明 API 可达；`aiEnabled` 反映配置开关，不代表模型或后台处理全部健康。
 
@@ -110,6 +110,6 @@ python3 tests/e2e/ai_creation.py --allow-paid-ai
 - `packages/server-domain`、`server-infra`：领域业务、RLS、事务、队列和 S3。
 - `db/migrations`、`infra/compose`：可重放 SQL 迁移、本地 PostgreSQL / SeaweedFS。
 
-当前支持本地联调与 aws-1 部署，部署验证范围以实际运行结果为准。`pnpm build` 只构建 Web 静态文件；aws-1 的 API、Worker、Renderer 镜像、进程管理和 Nginx 配置由 scripts/cloud/deploy.py 部署，自动 CI/CD 流水线仍需另行配置。邮箱验证/找回、OTP、通用自动冲突解决、定时素材 GC、多人实时协作、独立图片/视频模型、完整配方与计费未实现。低倍率仍渲染真实图层，无缩略图 LOD。生产需独立配置数据库角色、存储凭证、HTTPS、备份与 tldraw 许可，不能使用示例开发密码。
+当前支持本地联调与 aws-1 部署，部署验证范围以实际运行结果为准。`pnpm build` 只构建 Web 静态文件；aws-1 的 API、Worker、Renderer 镜像、进程管理和 Nginx 配置由 scripts/cloud/deploy.py 部署，自动 CI/CD 流水线仍需另行配置。首版按普通用户名/密码账号交付，邮件服务不是依赖。自助找回、账户删除、OTP、通用自动冲突解决、定时素材 GC、多人实时协作、独立图片/视频模型、完整配方与计费未实现。低倍率仍渲染真实图层，无缩略图 LOD。生产需独立配置数据库角色、存储凭证、HTTPS、备份与 tldraw 许可，不能使用示例开发密码。
 
-个人海报首版的实施顺序、审计整改和验收见 [个人海报首版计划](docs/implementation/personal-poster-release.md)，项目/素材分页及服务端搜索见 [B1 资料库实施记录](docs/implementation/library-search-release.md)。`pnpm test:poster` 同时覆盖超过 1000 条数据的资料库浏览器旅程。
+个人海报首版的实施顺序、审计整改和验收见 [个人海报首版计划](docs/implementation/personal-poster-release.md)，项目/素材分页及服务端搜索见 [B1 资料库实施记录](docs/implementation/library-search-release.md)。普通账号与会话管理见 [B2 账户实施记录](docs/implementation/account-release.md)。`pnpm test:poster` 同时覆盖普通账号全流程和超过 1000 条数据的资料库浏览器旅程。

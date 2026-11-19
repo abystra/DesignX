@@ -133,8 +133,10 @@ def main() -> int:
             page.wait_for_load_state('networkidle')
             page.get_by_role('button', name='第一次来？创建账户').click()
             page.get_by_label('你的名字').fill('编辑器交互验收')
-            page.get_by_label('邮箱', exact=True).fill(f'editor-{run_id}@example.test')
-            page.get_by_label('密码', exact=True).fill('Editor-Verification-' + uuid4().hex)
+            page.get_by_label('账号', exact=True).fill(('editor-' + run_id)[:32])
+            password = 'Editor-Verification-' + uuid4().hex
+            page.get_by_label('密码', exact=True).fill(password)
+            page.get_by_label('确认密码', exact=True).fill(password)
             page.get_by_role('button', name='创建账户', exact=True).click()
             page.get_by_role('navigation', name='主导航').wait_for()
             check('register-one-isolated-account')

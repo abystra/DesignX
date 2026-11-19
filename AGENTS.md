@@ -87,7 +87,7 @@
 
 ### 初始化与启动
 
-首次进入 Codex 环境执行初始化，再启动开发进程。会话可能延续既有进程；启动前先核对 5173/3001 与已有 `scripts/cloud/start.mjs`，健康时复用，避免重复启动。需要重启时只停止本项目的启动进程，由其清理 Worker 和 E2B 隧道后再启动。
+首次进入 Codex 环境执行初始化，再启动开发进程。会话可能延续既有进程；启动前先核对 5173/3001 与已有 `scripts/cloud/start.mjs`，健康时复用，避免重复启动。需要重启时只停止本项目的启动进程，由其清理 Worker 和 E2B 隧道后再启动。若旧 corepack/pnpm 包装进程退出后端口仍占用，核实 PID、工作目录及父级 concurrently 属于本仓库，再停止该孤立项目进程；确认端口释放后启动，不能直接重复 start。
 
     python3 scripts/cloud/dev.py setup
     python3 scripts/cloud/dev.py start
@@ -157,12 +157,13 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 
 首版主线已确定为个人海报：模板/素材 → 编辑 → 保存 → 导出。实施顺序、审计映射和验收记录见 [个人海报首版计划](docs/implementation/personal-poster-release.md)。后续会话先核对该计划的最新状态，不重新询问已确定的方向。
 
+- 首版账号使用普通用户名和密码，邮件投递/邮箱验证/邮件找回已由用户明确排除，不再询问邮件服务配置或视为上线依赖。旧邮箱账号仍作为登录标识兼容；账户设置、改密与会话撤销见 [B2 普通账号](docs/implementation/account-release.md)。禁止仅凭用户名重置密码。
 - 新建个人海报使用 `workspaceMode=editor`，旧项目/多画板默认 `studio`；列表、搜索和刷新必须遵守持久化入口。
 - 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。
 - 公共工具目录只列真实手动入口和 `/api/capabilities` 配方。提示词明确标注为预设，能力关闭时在创建项目之前阻止进入。
 - 模板文档构造复用 `src/data/template-design.js`；UI 预览与服务端创建保持一致。品牌 Logo 使用素材 ID、版本 ID 和不可变 URL 的统一合同。
 - 项目/素材目录使用 `/api/projects/page`、`/api/assets/page` 的游标分页与服务端筛选；不要先取 1000 条再在浏览器过滤，也不要自动遍历全库填满选择器。上传状态读取单素材；错误与空结果分开。B1 合同及限制见 [资料库分页与搜索](docs/implementation/library-search-release.md)。
-- `pnpm test:poster` 自动创建隔离数据库、S3 和 Web/API/Media/Renderer，执行个人海报、1000 条以上资料库旅程与共享渲染对照；需要本机 PostgreSQL、已有 SeaweedFS 镜像和 Playwright Chromium。
+- `pnpm test:poster` 自动创建隔离数据库、S3 和 Web/API/Media/Renderer，执行普通账号、个人海报、1000 条以上资料库旅程与共享渲染对照；需要本机 PostgreSQL、已有 SeaweedFS 镜像和 Playwright Chromium。
 
 产品梳理见 docs/implementation/product-readiness-audit.md，线上抽查证据见同目录 product-readiness-evidence-2026-11-18.json。2026-11-18 的部署已有真实账户、项目、素材和导出链路，但线上 Agent/图片生成关闭，目录中的提示词预设不代表独立工具已实现。后续工作先核对当前部署和 /api/capabilities，再更新报告中的问题状态与验收证据。
 

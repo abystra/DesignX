@@ -88,14 +88,16 @@ def main() -> int:
             page.goto(args.base_url, wait_until='domcontentloaded')
             if reused_accounts:
                 account = reused_accounts[label]
-                page.get_by_label('邮箱', exact=True).fill(account['email'])
+                page.get_by_label('登录账号', exact=True).fill(account.get('username') or account['email'])
                 page.get_by_label('密码', exact=True).fill(account['password'])
                 page.get_by_role('button', name='进入创作空间', exact=True).click()
             else:
                 page.get_by_role('button', name='第一次来？创建账户').click()
                 page.get_by_label('你的名字').fill('项目导入验收 ' + label)
-                page.get_by_label('邮箱', exact=True).fill(f'import-{label}-{run_id}@example.test')
-                page.get_by_label('密码', exact=True).fill('Import-Test-' + uuid4().hex)
+                page.get_by_label('账号', exact=True).fill(('import-' + label + '-' + uuid4().hex)[:32])
+                password = 'Import-Test-' + uuid4().hex
+                page.get_by_label('密码', exact=True).fill(password)
+                page.get_by_label('确认密码', exact=True).fill(password)
                 page.get_by_role('button', name='创建账户', exact=True).click()
             page.get_by_role('navigation', name='主导航').wait_for()
             return context, page

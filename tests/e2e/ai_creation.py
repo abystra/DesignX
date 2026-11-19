@@ -36,7 +36,7 @@ def main() -> int:
     parser.add_argument('--base-url', default=os.getenv('DESIGNX_E2E_URL', 'http://127.0.0.1:5173'))
     parser.add_argument('--output', type=Path)
     parser.add_argument('--account-file', type=Path,
-                        help='Private JSON with email/password for an existing isolated test account; never copied to reports.')
+                        help='Private JSON with username (or legacy email)/password for an existing isolated test account; never copied to reports.')
     parser.add_argument('--turn-timeout', type=int, default=720)
     parser.add_argument('--allow-paid-ai', action='store_true',
                         help='Explicitly permit the three real UI submissions, including immediate cancellation of the third.')
@@ -53,7 +53,7 @@ def main() -> int:
         ['node', '-e', 'import("playwright").then(p=>console.log(p.chromium.executablePath()))'],
         cwd=ROOT, text=True).strip()
     account = json.loads(args.account_file.read_text()) if args.account_file else {
-        'email': f'ai-creation-{run_id}@example.test', 'password': 'AI-Verification-' + uuid4().hex,
+        'username': ('ai-' + run_id)[:32], 'password': 'AI-Verification-' + uuid4().hex,
     }
     secrets = [str(account['password'])]
     report = {
@@ -198,8 +198,10 @@ def main() -> int:
             if not args.account_file:
                 page.get_by_role('button', name='第一次来？创建账户', exact=True).click()
                 page.get_by_label('你的名字', exact=True).fill('AI 完整链路验收')
-            page.get_by_label('邮箱', exact=True).fill(account['email'])
+            page.get_by_label('登录账号' if args.account_file else '账号', exact=True).fill(account.get('username') or account['email'])
             page.get_by_label('密码', exact=True).fill(account['password'])
+            if not args.account_file:
+                page.get_by_label('确认密码', exact=True).fill(account['password'])
             page.get_by_role('button', name='进入创作空间' if args.account_file else '创建账户', exact=True).click()
             page.get_by_role('navigation', name='主导航').wait_for()
             authenticated = True

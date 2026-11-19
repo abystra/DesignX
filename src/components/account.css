@@ -1,0 +1,194 @@
+.account-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 8px 0 32px;
+  color: var(--dx-text-primary);
+  font: 14px/1.5 var(--dx-font-ui);
+}
+.account-page header {
+  margin-bottom: 24px;
+}
+.account-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--dx-text-secondary);
+}
+.account-page h1 {
+  font-size: 28px;
+  line-height: 1.35;
+  margin: 8px 0 12px;
+}
+.account-page header p,
+.account-help {
+  color: var(--dx-text-secondary);
+  line-height: 1.6;
+}
+.account-help {
+  font-size: 14px;
+  margin: 8px 0 16px;
+}
+.account-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.account-card {
+  min-width: 0;
+  background: var(--dx-bg-surface);
+  border: 1px solid var(--dx-border-subtle);
+  border-radius: 16px;
+  padding: 24px;
+}
+.account-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  line-height: 1.4;
+  margin: 0 0 20px;
+}
+.account-card label {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.account-card input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--dx-border-control);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--dx-bg-surface);
+  color: var(--dx-text-primary);
+  font: inherit;
+}
+.account-card input[readonly] {
+  background: var(--dx-bg-subtle);
+}
+.account-page button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font: inherit;
+  line-height: 1.5;
+  white-space: normal;
+}
+.account-primary {
+  background: var(--dx-action);
+  color: white;
+}
+.account-primary:hover {
+  background: var(--dx-action-hover);
+}
+.account-page .account-secondary {
+  border: 1px solid var(--dx-border-control);
+  background: var(--dx-bg-surface);
+  color: var(--dx-text-primary);
+}
+.account-secondary:hover {
+  background: var(--dx-bg-subtle);
+}
+.account-page input:focus-visible,
+.account-page button:focus-visible {
+  outline: 2px solid var(--dx-focus);
+  outline-offset: 2px;
+}
+.account-error,
+.account-success {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.account-error {
+  background: var(--dx-danger-bg);
+  color: var(--dx-danger);
+}
+.account-success {
+  background: var(--dx-success-bg);
+  color: var(--dx-success);
+}
+.account-success svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.account-sessions {
+  grid-column: 1/-1;
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+.app-shell .sidebar .profile > .profile-avatar {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+}
+.app-shell .sidebar .account-entry {
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--dx-text-secondary);
+}
+.app-shell .sidebar .account-entry.active {
+  color: var(--dx-action);
+  background: var(--dx-selection-bg);
+}
+@media (max-width: 850px) {
+  .account-sections {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .account-card {
+    padding: 20px;
+  }
+}
+@media (max-width: 600px) {
+  .account-page h1 {
+    font-size: 24px;
+  }
+  .account-card {
+    padding: 16px;
+  }
+  .account-card input {
+    font-size: 16px;
+  }
+  .account-page button {
+    width: 100%;
+  }
+  .account-card h2 {
+    font-size: 20px;
+  }
+  .account-actions {
+    display: grid;
+  }
+  .account-page header {
+    margin-bottom: 20px;
+  }
+}
+.app-shell .space-picker > span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell .profile > div {
+  min-width: 0;
+}
+.app-shell .profile b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

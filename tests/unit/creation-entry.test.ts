@@ -57,7 +57,7 @@ test("only loopback proxy peers may set client IP; authenticated users have inde
     // Explicit test identity; production uses the verified durable session.
     if (request.headers["test-user"])
       request.identity = {
-        user: { id: String(request.headers["test-user"]), name: "", email: "" },
+        user: { username: null, id: String(request.headers["test-user"]), name: "", email: "" },
         workspace: { id: "", name: "" },
         tokenHash: "",
       };

@@ -30,6 +30,7 @@ try {
   await web.listen();
   await child('apps/worker/src/main.ts', { WORKER_ROLE: 'media' });
   await child('apps/renderer/src/main.ts');
+  await import('./account_journey.mjs');
   await import('./poster_journey.mjs');
   await import('./library_journey.mjs');
   await import('./render_consistency.mjs');
