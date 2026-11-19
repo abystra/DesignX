@@ -102,6 +102,12 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 
 该服务器使用的 TLS 证书路径为 /etc/letsencrypt/live/designx.velax.cn，现有 Certbot 自动续期任务在证书更新后重载 Nginx。域名 DNS、证书及服务器已有 PostgreSQL/R2 是部署前提。
 
+## 产品现状与完成标准
+
+产品梳理见 docs/implementation/product-readiness-audit.md，线上抽查证据见同目录 product-readiness-evidence-2026-11-18.json。2026-11-18 的部署已有真实账户、项目、素材和导出链路，但线上 Agent/图片生成关闭，目录中的提示词预设不代表独立工具已实现。后续工作先核对当前部署和 /api/capabilities，再更新报告中的问题状态与验收证据。
+
+功能完成需要贯通用户入口、真实接口、数据保存、失败恢复和结果交付；历史本地验收、fixture、健康检查或部署成功不能单独等同于 C 端产品就绪。开发环境验证后部署已提交版本，并通过正式域名复测。梳理和文档更新本身不改变线上业务开关。
+
 ## Claude 远端开发
 
 先读取 Claude 远端环境的 setup 和已有 SSH 配置，确认 Tailscale 运行模式、实际 socket、代理端口与密钥位置。用户此前说明 Claude 的 setup 使用 SOCKS5 接入 tailnet，该环境的具体参数尚未在本次 Codex 会话实测。

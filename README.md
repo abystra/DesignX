@@ -2,7 +2,9 @@
 
 保留现有高仿真 UI 的创作系统：账户与个人空间、模板、tldraw Board、精细编辑器、项目/版本、素材与品牌、AI 可编辑设计、真实后台处理和导出。业务数据在 PostgreSQL，文件在 S3 兼容对象存储，任务由独立 Worker / Renderer 执行。
 
-AI 已接入 **E2B 官方 SDK → 指定 Codex 模板内 Harness → Codex SDK → DeepSeek**。支持参考图创作、真实可编辑画板、修改提案预览/应用、取消和持久化回合；通过真实浏览器与模型验收。详见 [AI 创作实现](docs/implementation/ai-creation.md)、[ADR-0001](docs/adr/0001-codex-e2b.md)。
+AI 实现采用 **E2B 官方 SDK → 指定 Codex 模板内 Harness → Codex SDK → DeepSeek**，包含参考图创作、可编辑画板、修改提案预览/应用、取消和持久化回合。历史浏览器与模型验收见 [AI 创作实现](docs/implementation/ai-creation.md)、[ADR-0001](docs/adr/0001-codex-e2b.md)。2026-11-18 正式站点的 Agent 与图片生成均未启用，历史实现记录不代表当前线上开放状态。
+
+当前产品完成度和下一阶段实施以 [C 端产品审计](docs/implementation/product-readiness-audit.md) 为准。该报告区分真实链路、静态预设、线上未开放能力和缺失功能，记录了线上复现问题、改造顺序与验收标准。项目已能独立部署，仍需完成面向普通用户的产品闭环。
 
 基础链路提交为 `44fcd0e`、`ead7d15`、`2bcc3f0`。本轮分三步交付：Board 便签/分区 `5f7a263`，持久化项目导入 `2291383`，最后汇总验收与文档。架构目录描述的长期目标不等于全部实现，具体完成度见 [阶段进度](docs/implementation/progress.md)。
 
@@ -50,6 +52,8 @@ cloudflared 通过 setup/start 的 --tunnel-provider cloudflared 参数显式选
 部署入口为 https://designx.velax.cn。Web 构建文件、API、Worker 和 Renderer 均在 aws-1 上运行，Nginx 提供静态页面并将 /api/ 转发到服务器本机 3100。部署目录、运行配置、回退步骤和开发环境区别见 AGENTS.md 的“开发与服务器部署”。
 
 ## 可用旅程
+
+以下描述仓库中的实现路径。正式站点以服务端能力状态为准；创作参考复用、品牌 Logo、导入大小和入口一致性等已知问题见上述产品审计。
 
 1. 模板灵感 → 预览模板 → 使用模板 → 修改文字/图片/图层 → 自动或手动保存 → 刷新重开。
 2. 开始创作 → Board → 添加画板、模板、素材或便签 → 创建分区并管理成员 → 平移缩放、多选、对齐、复制/移除、撤销重做 → 精细编辑 → 返回原画布。移动分区带动成员，删除分区保留内容；成员通过明确加入/移出改变归属。

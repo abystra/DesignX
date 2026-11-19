@@ -1,0 +1,199 @@
+{
+  "auditedOn": "2026-11-18",
+  "timezone": "America/Los_Angeles",
+  "sourceCommit": "d1843dd3057443d4dfd975307ca9a058cdece544",
+  "method": "Chromium on aws-1 visiting the deployed HTTPS site with a temporary account; real API calls; no mocked routes",
+  "scope": "Focused product-entry audit, not a complete regression or model-provider acceptance",
+  "modelCalls": 0,
+  "uploadsOrExportsCreated": 0,
+  "base": "https://designx.velax.cn",
+  "checks": [
+    {
+      "name": "registration",
+      "status": "passed",
+      "authApi": true
+    },
+    {
+      "name": "capabilities",
+      "version": 1,
+      "modes": [
+        {
+          "id": "design",
+          "label": "可编辑设计",
+          "enabled": false,
+          "reason": "AI 创作未启用",
+          "maxReferences": 3,
+          "maxCount": 3
+        },
+        {
+          "id": "image",
+          "label": "图片生成",
+          "enabled": false,
+          "reason": "图片生成尚未启用",
+          "maxReferences": 3,
+          "maxCount": 3
+        },
+        {
+          "id": "video",
+          "label": "视频",
+          "enabled": false,
+          "reason": "视频生成不在本期支持范围",
+          "maxReferences": 0,
+          "maxCount": 0
+        }
+      ],
+      "recipes": [
+        {
+          "id": "marketing-poster",
+          "version": 1,
+          "name": "营销海报",
+          "description": "图片素材与可独立编辑的标题、正文、品牌和行动按钮",
+          "parameters": [
+            "prompt",
+            "headline",
+            "subheadline",
+            "cta",
+            "brand"
+          ],
+          "enabled": false,
+          "outputCount": 1,
+          "maxReferences": 3
+        },
+        {
+          "id": "product-set",
+          "version": 1,
+          "name": "商品套图",
+          "description": "围绕已关联商品素材生成一组可编辑方案",
+          "parameters": [
+            "prompt",
+            "headline",
+            "subheadline",
+            "brand",
+            "assetId"
+          ],
+          "enabled": false,
+          "outputCount": 3,
+          "maxReferences": 3
+        },
+        {
+          "id": "multi-size",
+          "version": 1,
+          "name": "多尺寸适配",
+          "description": "将已确认设计确定性适配为独立的新画板",
+          "parameters": [
+            "documentId",
+            "sizes"
+          ],
+          "enabled": true,
+          "outputCount": null,
+          "maxReferences": 3
+        }
+      ],
+      "image": {
+        "model": "gpt-image-2.5-sunburst-2026-09-08",
+        "quality": "medium",
+        "maxReferences": 3,
+        "maxCount": 3,
+        "quotaPerImage": 1,
+        "sizes": [
+          "1024x1024",
+          "1024x1536",
+          "1536x1024"
+        ]
+      },
+      "uploads": {
+        "direct": false,
+        "maxBytes": 10485760
+      },
+      "quota": {
+        "limit": 100,
+        "reserved": 0,
+        "used": 0,
+        "remaining": 100
+      }
+    },
+    {
+      "name": "home",
+      "primaryDisabled": true,
+      "quickTools": [
+        {
+          "text": "AI 商品套图\n热门\n\n一张商品图，一整套好设计",
+          "disabled": false
+        },
+        {
+          "text": "AI 营销海报\n\n把好想法，变成好画面",
+          "disabled": false
+        },
+        {
+          "text": "AI 视频创作\n\n让产品故事，生动起来",
+          "disabled": false
+        },
+        {
+          "text": "智能抠图\n\n轻松去背景，细节更干净",
+          "disabled": false
+        },
+        {
+          "text": "PPT 设计\n\n从一段内容，到精彩提案",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "toolCatalog",
+      "cards": 32,
+      "enabled": [
+        "MADE WITH PURPOSE自然之本\n纯粹之美设计，让表达更动人 多尺寸适配将已确认设计确定性适配为独立的新画板品牌执行配方 v1"
+      ]
+    },
+    {
+      "name": "videoShortcut",
+      "createsRealProject": 1,
+      "urlHash": "#studio",
+      "footnote": "AI 创作未启用\nShift ↵ 换行"
+    },
+    {
+      "name": "templatePersistence",
+      "status": 200,
+      "artboards": 1,
+      "nodes": 7,
+      "restored": true
+    },
+    {
+      "name": "stockReferenceReuse",
+      "httpStatus": 400,
+      "body": {
+        "error": "INVALID_ASSET",
+        "message": "素材不存在、无权访问或尚未就绪"
+      }
+    },
+    {
+      "name": "mobileHome",
+      "overflow": false,
+      "navigationVisible": true
+    }
+  ],
+  "errors": [],
+  "cleanup": true,
+  "gatewayProbe": {
+    "path": "/api/projects/import",
+    "method": "POST",
+    "declaredContentLength": 13631488,
+    "bodyBytesSent": 0,
+    "status": 413
+  },
+  "diagnosticNotes": [
+    "The first harness run read the route before the template navigation completed; a URL wait corrected the harness.",
+    "The first cleanup transaction was rolled back because the direct SQL session lacked tenant context. A scoped recovery using the audit identity and tenant context succeeded.",
+    "The final browser run completed with no page errors; fixtures from both runs were removed."
+  ],
+  "serviceObservation": {
+    "release": "d1843dd30574-20261118151309",
+    "api": "healthy",
+    "worker": "running",
+    "renderer": "running",
+    "health": {
+      "status": "ok",
+      "aiEnabled": false
+    }
+  }
+}
