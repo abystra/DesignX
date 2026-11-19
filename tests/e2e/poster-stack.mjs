@@ -69,6 +69,12 @@ try {
     await import('./previews_journey.mjs');
     await import('./templates_journey.mjs');
     await import('./ui_journey.mjs');
+    // Each feature batch exercises the real registration limit. Start a fresh
+    // isolated API for the added feedback batch so accumulated anonymous test
+    // registrations do not consume later journeys' 15-minute IP budget.
+    // Database, sessions, workers and real storage remain durable across restart.
+    await app.close();app=await buildApp({logger:false});
+    await app.listen({port:apiPort,host:'127.0.0.1'});
     await import('./feedback_journey.mjs');
     await import('./recovery_journey.mjs');
     await import('./large_import_journey.mjs');
