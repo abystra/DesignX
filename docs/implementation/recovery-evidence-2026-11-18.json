@@ -26,7 +26,32 @@
     "tests/e2e/.artifacts/render-1795072652804"
   ],
   "production": {
-    "status": "pending deployment"
+    "base": "https://designx.velax.cn",
+    "checks": [
+      {
+        "name": "real concurrent revision conflict preserves original and copied poster reloads its own route",
+        "passed": true
+      },
+      {
+        "name": "actual session revocation and username login recover the same unsaved poster",
+        "passed": true
+      },
+      {
+        "name": "recovered poster persists, fits 390px viewport and exports real 600x800 PNG",
+        "passed": true
+      },
+      {
+        "name": "valid project larger than former 12MiB gateway limit imports through HTTPS nginx with readable immutable image",
+        "passed": true
+      }
+    ],
+    "errors": [],
+    "cleanup": true,
+    "importBytes": 13344264,
+    "commit": "81fd71d54c390b801e80d28d8916e9715734da2b",
+    "release": "81fd71d54c39-20261119071819",
+    "image": "sha256:fc75934ff5bcfece5afb515c979cbc49982f2f098bc2b1e7a7cae5bc87049eb0",
+    "status": "verified"
   },
   "account": {
     "base": "http://127.0.0.1:38913",
@@ -145,5 +170,18 @@
       }
     ],
     "pageErrors": []
+  },
+  "development": {
+    "provider": "chisel",
+    "e2bWebStatus": 200,
+    "e2bApi": {
+      "status": "ok",
+      "aiEnabled": false
+    }
+  },
+  "ci": {
+    "commit": "81fd71d54c390b801e80d28d8916e9715734da2b",
+    "url": "https://github.com/abystra/DesignX/actions/runs/44478554624",
+    "status": "in_progress"
   }
 }
