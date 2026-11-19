@@ -116,7 +116,24 @@
     "aiEnabled": false
   },
   "ci": {
-    "status": "rerunning after browser polling correction",
-    "finding": "Playwright 1.64.1 waitForFunction treats the Promise returned by an async predicate as truthy; replaced with bounded response polling and immutable-version assertions. Asset readiness and version publication were already atomic."
-  }
+    "status": "passed",
+    "finding": "Playwright 1.64.1 waitForFunction treats the Promise returned by an async predicate as truthy; replaced with bounded response polling and immutable-version assertions. Asset readiness and version publication were already atomic.",
+    "commit": "5d2752d9f70d25152289f26bacb4566c063d76d2",
+    "url": "https://github.com/abystra/DesignX/actions/runs/44465695054",
+    "checks": [
+      "typecheck",
+      "103 unit tests",
+      "83 API integration tests",
+      "personal poster browser journey",
+      "3 editor/export render comparisons",
+      "structural checks",
+      "production build",
+      "Python runner tests",
+      "Go matfs tests"
+    ]
+  },
+  "artifactsAfterPollingCorrection": [
+    "tests/e2e/.artifacts/poster-1795066213849",
+    "tests/e2e/.artifacts/render-1795066230828"
+  ]
 }
