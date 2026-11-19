@@ -1,0 +1,299 @@
+{
+  "goal": "G2",
+  "date": "2026-11-18",
+  "timezone": "America/Los_Angeles",
+  "environment": "Codex managed cloud development; aws-1 production",
+  "commits": [
+    "ae566a941508a4120c12437492821c3ac8eacf1e",
+    "f4310ec20e34197dde5073ff00e82b2e246d724b"
+  ],
+  "deployment": {
+    "commit": "f4310ec20e34197dde5073ff00e82b2e246d724b",
+    "release": "/srv/designx/releases/f4310ec20e34-20261119073850",
+    "image": "sha256:ed59f9f69e867b7796bf92dbbd3acdf2e3d644d80c61e40af110ecba8587f371",
+    "base": "https://designx.velax.cn"
+  },
+  "ci": {
+    "url": "https://github.com/abystra/DesignX/actions/runs/44481176289",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "localVerification": {
+    "typecheck": true,
+    "structuralChecks": true,
+    "build": true,
+    "unitTests": 106,
+    "fullApiTestsBeforeFramingFix": 100,
+    "focusedBackupTestsAfterFix": 3,
+    "fullBrowserJourneys": {
+      "account": 6,
+      "poster": 11,
+      "library": 10,
+      "recovery": 7,
+      "largeImport": 3,
+      "renderComparisons": 3
+    },
+    "databaseDumpRestore": true,
+    "rejectNonemptyPublicAndOtherSchema": true,
+    "rejectArchiveTraversal": true,
+    "ownedProcessGroupAndDuplicateStart": true,
+    "logs": [
+      "/tmp/designx-g2-types.log",
+      "/tmp/designx-g2-unit.log",
+      "/tmp/designx-g2-api.log",
+      "/tmp/designx-g2-backup-api.log",
+      "/tmp/designx-g2-browser.log"
+    ]
+  },
+  "initialFailure": {
+    "reason": "PostgreSQL json_agg composite values emitted multiple lines; snapshot reader expected one JSON line",
+    "failedRun": "20261119T073638Z-a49378c4",
+    "published": false,
+    "health": {
+      "at": 1795073878.492358,
+      "status": "degraded",
+      "problems": [
+        "backup-stale-or-failed"
+      ],
+      "services": {
+        "api": {
+          "running": true,
+          "health": "healthy",
+          "startedAt": "2026-11-19T07:36:22.135838323Z"
+        },
+        "worker": {
+          "running": true,
+          "health": null,
+          "startedAt": "2026-11-19T07:36:22.129567288Z"
+        },
+        "renderer": {
+          "running": true,
+          "health": null,
+          "startedAt": "2026-11-19T07:36:22.133833093Z"
+        }
+      },
+      "queues": [],
+      "backupAgeSeconds": 1795073878,
+      "externalNotificationConfigured": false
+    },
+    "fix": "JSONB line framing with real PostgreSQL regression"
+  },
+  "drillBackup": {
+    "runId": "20261119T074109Z-bdfb7cfa",
+    "status": "ok",
+    "startedAt": 1795074069.8614597,
+    "lastSuccessAt": 1795074074.7004054,
+    "stage": "complete",
+    "receipt": {
+      "runId": "20261119T074109Z-bdfb7cfa",
+      "archiveBytes": 1057023,
+      "sha256": "5f3ebb8845e4c5283d890c06e940793febd7aaf484dadc7fe4f572945e0d2ed7",
+      "backupBucket": "designx",
+      "backupKey": "_designx_backups/v1/20261119T074109Z-bdfb7cfa/snapshot.tar.gz",
+      "offhostVerified": true,
+      "objectCount": 4,
+      "objectBytes": 995917,
+      "database": "designx_production",
+      "counts": {
+        "users": 2,
+        "projects": 2,
+        "versions": 3,
+        "documents": 4,
+        "workspaces": 2,
+        "assetVersions": 2
+      },
+      "release": "f4310ec20e34-20261119073850",
+      "seconds": 3.81
+    },
+    "retention": {
+      "retained": [
+        "20261119T074109Z-bdfb7cfa"
+      ],
+      "removed": []
+    }
+  },
+  "awsRestorePreparation": {
+    "runId": "20261119T074109Z-bdfb7cfa",
+    "directory": "/var/backups/designx/restore-f06523cb-790b-4485-b2e3-d0ed9742f27f",
+    "database": "designx_restore_f06523cb790b4485b2e3d0ed9742f27f",
+    "prefix": "_designx_restore/f06523cb-790b-4485-b2e3-d0ed9742f27f/",
+    "status": "ready-for-validation",
+    "sourceDatabase": "designx_production",
+    "release": "f4310ec20e34-20261119073850",
+    "databaseCreated": true,
+    "counts": {
+      "users": 2,
+      "workspaces": 2,
+      "projects": 2,
+      "documents": 4,
+      "versions": 3,
+      "assetVersions": 2
+    },
+    "objects": 4,
+    "image": "sha256:ed59f9f69e867b7796bf92dbbd3acdf2e3d644d80c61e40af110ecba8587f371",
+    "restoreSeconds": 5.37
+  },
+  "separateHostDatabase": {
+    "separateHostRestore": true,
+    "database": "designx_restore_dd479c5917144989a0b997275044d703",
+    "counts": {
+      "users": 2,
+      "workspaces": 2,
+      "projects": 2,
+      "documents": 4,
+      "versions": 3,
+      "assetVersions": 2
+    },
+    "appRoleSuperuser": false
+  },
+  "separateHostBrowser": {
+    "checks": [
+      "restored account logs in with original password; document and revision match snapshot",
+      "saved document version history restored",
+      "immutable image URL reads archived bytes through isolated bucket alias",
+      "independent restored-environment account denied project and immutable asset",
+      "real browser opens, edits, saves and reloads recovered poster",
+      "recovered image is decoded in the actual editor preview",
+      "isolated Renderer generates and downloads real 600x800 PNG",
+      "download contains restored coral image pixels, not a placeholder"
+    ],
+    "errors": [],
+    "source": "production backup downloaded from private R2",
+    "executionHost": "Codex cloud (separate from aws-1)",
+    "base": "http://127.0.0.1:33101",
+    "database": "designx_restore_dd479c5917144989a0b997275044d703"
+  },
+  "productionBrowser": {
+    "base": "https://designx.velax.cn",
+    "checks": [
+      "deployed domain login and saved poster readback",
+      "production Renderer returns real 600x800 PNG after backup/restore configuration"
+    ],
+    "errors": []
+  },
+  "timerEvidence": [
+    "enabled",
+    "enabled",
+    "active",
+    "active",
+    "NextElapseUSecRealtime=Fri 2026-11-20 04:37:58 UTC",
+    "Result=success",
+    "ExecMainStatus=0"
+  ],
+  "configuredHealth": {
+    "at": 1795074088.788739,
+    "status": "ok",
+    "problems": [],
+    "services": {
+      "api": {
+        "running": true,
+        "health": "healthy",
+        "startedAt": "2026-11-19T07:40:59.661496071Z"
+      },
+      "worker": {
+        "running": true,
+        "health": null,
+        "startedAt": "2026-11-19T07:40:59.654631922Z"
+      },
+      "renderer": {
+        "running": true,
+        "health": null,
+        "startedAt": "2026-11-19T07:40:59.65890279Z"
+      }
+    },
+    "queues": [],
+    "backupAgeSeconds": 14,
+    "externalNotificationConfigured": false
+  },
+  "cleanup": {
+    "productionFixture": {
+      "errors": [],
+      "cleanup": true
+    },
+    "awsRestore": {
+      "database": "designx_restore_f06523cb790b4485b2e3d0ed9742f27f",
+      "prefix": "_designx_restore/f06523cb-790b-4485-b2e3-d0ed9742f27f/",
+      "objects": 6,
+      "applied": true
+    },
+    "codexRestoreDatabaseAndRoleRemoved": true,
+    "dryRun": {
+      "database": "designx_restore_f06523cb790b4485b2e3d0ed9742f27f",
+      "prefix": "_designx_restore/f06523cb-790b-4485-b2e3-d0ed9742f27f/",
+      "objects": 6,
+      "applied": false
+    }
+  },
+  "finalProductionBackupAfterFixtureCleanup": {
+    "runId": "20261119T074510Z-ae036094",
+    "status": "ok",
+    "startedAt": 1795074310.778638,
+    "lastSuccessAt": 1795074314.9288673,
+    "stage": "complete",
+    "receipt": {
+      "runId": "20261119T074510Z-ae036094",
+      "archiveBytes": 1052704,
+      "sha256": "ce7e7602149ae4c6a866678b33c1232686d5f8ac5fd3b33a5e97edf207334e0f",
+      "backupBucket": "designx",
+      "backupKey": "_designx_backups/v1/20261119T074510Z-ae036094/snapshot.tar.gz",
+      "offhostVerified": true,
+      "objectCount": 2,
+      "objectBytes": 995162,
+      "database": "designx_production",
+      "counts": {
+        "users": 1,
+        "projects": 1,
+        "versions": 1,
+        "documents": 2,
+        "workspaces": 1,
+        "assetVersions": 1
+      },
+      "release": "f4310ec20e34-20261119073850",
+      "seconds": 2.9
+    },
+    "retention": {
+      "retained": [
+        "20261119T074510Z-ae036094"
+      ],
+      "removed": [
+        "20261119T074109Z-bdfb7cfa"
+      ]
+    }
+  },
+  "screenshots": [
+    "tests/e2e/.artifacts/g2-restore/recovered-poster.png",
+    "tests/e2e/.artifacts/g2-restore/recovered-export.png"
+  ],
+  "limitations": [
+    "No external notification destination configured; systemd nonzero state/journal and private health files verified, not external message delivery.",
+    "No third copy in an independent account/provider. Existing private R2 off-host plus local archives cover separate source-object or host loss, not simultaneous account and host loss.",
+    "RTO target 2 hours is not a complete replacement-server provisioning measurement. AWS data preparation took 5.37 seconds at the recorded small production size; Codex browser journey passed without an end-to-end timed host rebuild.",
+    "Temporary uploads, unpublished jobs and regenerable export outputs are excluded from durable object backup.",
+    "Same-day retention replaced the drill recovery point with a new backup after test-account cleanup; recorded hash is historical evidence."
+  ],
+  "finalHealth": {
+    "at": 1795074398.439384,
+    "status": "ok",
+    "problems": [],
+    "services": {
+      "api": {
+        "running": true,
+        "health": "healthy",
+        "startedAt": "2026-11-19T07:40:59.661496071Z"
+      },
+      "worker": {
+        "running": true,
+        "health": null,
+        "startedAt": "2026-11-19T07:40:59.654631922Z"
+      },
+      "renderer": {
+        "running": true,
+        "health": null,
+        "startedAt": "2026-11-19T07:40:59.65890279Z"
+      }
+    },
+    "queues": [],
+    "backupAgeSeconds": 84,
+    "externalNotificationConfigured": false
+  }
+}

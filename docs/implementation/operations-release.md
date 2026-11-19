@@ -1,6 +1,6 @@
 # G2：备份、恢复与故障定位
 
-本批在 Codex 云环境实现。发布与生产演练结果见本文件末尾和配套证据；实施中的命令不能提前视为验收完成。复用 aws-1、现有私有 R2，不接邮件服务。
+本批在 Codex 云环境实现。应用提交 `f4310ec` 已发布至正式域名，配套 [脱敏证据](operations-evidence-2026-11-18.json) 记录实际结果。复用 aws-1、现有私有 R2，不接邮件服务。
 
 ## 备份合同
 
@@ -23,7 +23,7 @@ python3 scripts/cloud/access.py ssh 'sudo -n python3 /srv/designx/current/script
 
 备份每天 04:30 UTC，随机延迟最多 15 分钟，停机后补跑。目标 RPO 为 24 小时 15 分钟以内；超过 30 小时无成功点或最近备份失败即呈异常。RTO 初始目标为 2 小时，包括重新部署/配置；演练的实际耗时单独记录，不把少量数据恢复时间扩大为任意规模承诺。
 
-健康任务每 5 分钟检查 API HTTP、三个容器、排队超过 10 分钟/运行超过 30 分钟的业务任务、最近 24 小时失败任务和备份年龄。结果在 root 私有 `health.json`/`status.json`，异常任务返回非零退出码并记录 systemd journal。`systemctl status designx-backup.service designx-health.service`、`journalctl -u designx-backup -u designx-health` 定位到阶段；业务任务可用既有 `ops:report` 继续查找。未配置外部通知接收端；这不是已送达的告警，也不接入邮件替代。
+健康任务每 5 分钟检查 API HTTP、三个容器、排队超过 10 分钟/运行超过 30 分钟的业务任务、最近 24 小时失败任务和备份年龄。结果在 root 私有 `health.json`/`status.json`，异常任务返回非零退出码并记录 systemd journal。`systemctl status designx-backup.service designx-health.service`、`journalctl -u designx-backup -u designx-health` 定位到阶段；有异常时通过 root 的 PostgreSQL 只读查询按 `kind`、`status`、时间和 workspace 定位 `jobs.id`。现有 `ops:report` 在普通生产角色下受 FORCE RLS 影响，不能把其零行当作全局健康；其租户化查询随 G7 运营报告补齐。未配置外部通知接收端；这不是已送达的告警，也不接入邮件替代。
 
 安装器拒绝覆盖同名非 DesignX 管理的 systemd 单元。服务始终从 `/srv/designx/current` 执行；回退到不包含运维脚本的旧版本前先停止两个 timer，数据归档保留。应用表结构本批无迁移。
 
@@ -55,4 +55,11 @@ python3 scripts/cloud/access.py ssh 'sudo -n python3 /srv/designx/current/script
 
 - 工作区类型、结构、构建通过；106 单元、100 API 通过（包含真实 S3 备份下载/源文件丢失后恢复、摘要损坏拒绝、非空前缀拒绝、保留清理登记保护、既有 GC 引用保护）。
 - 独立 PostgreSQL 自定义格式备份恢复成功，公开及非公开 schema 已有对象均拒绝覆盖；开发重复启动及独立进程组清理通过。
-- 完整浏览器回归、正式站发布、定时器安装及真实恢复作品验收进行中，完成后写入实际提交与运行证据。
+- 完整浏览器回归通过：账户 6、海报 11、资料库 10、异常恢复 7、大项目导入 3，以及真实渲染对照 3。新增快照格式修复后定向备份测试 3 项通过；[提交全量 CI](https://github.com/abystra/DesignX/actions/runs/44481176289) success。
+- 发布目录 `/srv/designx/releases/f4310ec20e34-20261119073850`，正式域名重新登录、读取专用作品、600×800 PNG 下载通过，浏览器无脚本错误。
+- 第一次备份因 PostgreSQL 组合记录 JSON 跨行而失败，任务/健康状态确实显示异常，未发布归档；修复为 JSONB 单行传输后成功，保留故障证据。
+- 演练恢复点覆盖 2 个账号/空间、2 个项目、4 个文档、3 个历史版本、2 个素材版本及 4 个原图/缩略图文件。归档 1,057,023 字节，备份 3.81 秒；R2 下载、校验、aws-1 新库及新对象路径恢复准备 5.37 秒。
+- 同一恢复包复制到另一台 Codex 主机的独立 PostgreSQL，应用使用独立非超级用户角色。原密码登录、文档与历史版本一致、图片字节读取、另一账号访问作品/图片均 404、真实 Editor 编辑保存刷新、图片解码显示、Renderer PNG 下载与珊瑚色图片像素全部通过；预览和导出截图人工核对。没有用在线生产库充当恢复库。
+- 两个 timer 均 enabled/active，健康 service Result=success；首个实际计划时间为 2026-11-20 04:37:58 UTC。未声称已观察到下一自然日自动备份运行；配置、手动运行和健康调度已验证。
+- 演练清理先 dry-run，删除仅该 UUID 路径 6 个对象及独立数据库；Codex 两次演练的库/临时登录角色均移除，生产验收账号/项目/文件清理成功。随后重新备份真实生产数据（1 个账号/空间、1 个项目），同日保留策略实际移除了旧演练恢复点，当前私有归档 SHA-256 为 `ce7e7602149ae4c6a866678b33c1232686d5f8ac5fd3b33a5e97edf207334e0f`。
+- 外部通知、独立账户第三份副本、整台替代主机自动配置与完整 RTO 实测仍未验收。这里的秒数只代表上述小规模数据恢复准备，不是全平台灾难切换承诺。
