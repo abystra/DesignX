@@ -58,8 +58,8 @@
     "errors": []
   },
   "render": {
-    "runId": "render-1795067935067",
-    "baseURL": "http://127.0.0.1:45885",
+    "runId": "render-1795068255056",
+    "baseURL": "http://127.0.0.1:44121",
     "mocked": false,
     "results": [
       {
@@ -97,7 +97,43 @@
     "running": "Web/API/Generation/Media/Agent/Import/Renderer"
   },
   "production": {
-    "status": "pending deployment"
+    "status": "deployed and verified",
+    "commit": "53b098b8f349cef4be2bfd3b6441fdd8ed5d4e26",
+    "release": "/srv/designx/releases/53b098b8f349-20261119060446",
+    "image": "sha256:71e8ee04c27fa49d0edf52e8a87d9519998e24ab998776d4e7b0cdb85348af8a",
+    "migration": "0014 applied",
+    "health": "API, Worker, Renderer healthy; nginx configuration and HTTPS passed",
+    "base": "https://designx.velax.cn",
+    "checks": [
+      {
+        "name": "HTTPS metadata pagination, server search and accurate folder count",
+        "passed": true
+      },
+      {
+        "name": "library and global server search reopen the saved poster",
+        "passed": true
+      },
+      {
+        "name": "server Renderer exports searched and edited poster",
+        "passed": true,
+        "width": 600,
+        "height": 800
+      },
+      {
+        "name": "real R2 upload, individual asset polling, material search and editable placement",
+        "passed": true
+      },
+      {
+        "name": "searchable brand Logo picker persists immutable material version",
+        "passed": true
+      },
+      {
+        "name": "390px public project library without horizontal overflow",
+        "passed": true
+      }
+    ],
+    "errors": [],
+    "cleanup": true
   },
   "limitations": [
     "No mail provider configured in repository, Codex bindings or production app.env key inventory",
@@ -105,5 +141,14 @@
     "Literal substring search tested on 1000+ records, not a large-scale performance SLA",
     "No physical mobile keyboard, screen reader, live model or backup recovery exercise"
   ],
-  "visualReview": "Desktop 1440px and mobile 390/320px screenshots reviewed; narrow category labels remain whole and wrap as buttons."
+  "visualReview": "Desktop 1440px and mobile 390/320px screenshots reviewed; narrow category labels remain whole and wrap as buttons.",
+  "commit": "53b098b8f349cef4be2bfd3b6441fdd8ed5d4e26",
+  "testResourceCleanup": "All disposable local regression databases/buckets/S3 containers and the owned PostgreSQL test container removed; dedicated public verification workspace and objects removed.",
+  "ci": {
+    "commit": "53b098b8f349cef4be2bfd3b6441fdd8ed5d4e26",
+    "runId": 44469522232,
+    "url": "https://github.com/abystra/DesignX/actions/runs/44469522232",
+    "conclusion": "success",
+    "coverage": "typecheck, unit, API, poster/library/render browsers, structural checks, build, Python Runner and Go matfs"
+  }
 }
