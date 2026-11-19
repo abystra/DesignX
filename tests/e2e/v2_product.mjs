@@ -29,20 +29,16 @@ try {
   const identity = await api('/auth/register', { email: `v2-product-${randomUUID()}@example.test`, password: 'product-test-password', name: '创作验收' });
   await page.goto(base);
   await page.getByRole('navigation', { name: '主导航' }).waitFor();
-  const video = page.locator('.composer-tabs button').filter({ hasText: '视频' });
-  assert.equal(await video.isDisabled(), true);
-  await check('capability-driven home: unavailable video disabled');
-  await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '模板灵感', exact: true }).click();
-  await page.getByRole('button', { name: /^预览模板 / }).first().click();
-  await page.getByRole('button', { name: '使用这个模板' }).click();
+  assert.equal(await page.locator('.composer').count(), 0);
+  await check('manual poster home remains available with AI disabled');
+  const created = await api('/projects', { title: 'Studio regression', design: { width: 600, height: 800, background: '#ffffff', nodes: [{ id: 'heading', type: 'text', text: '工作区海报', x: 30, y: 30, w: 500, h: 100, size: 40 }] } });
+  const projectId = created.id;
+  await page.goto(`${base}/#studio/${projectId}`);
   await page.getByLabel('当前创作名称').waitFor();
-  await page.waitForURL('**/#studio/*');
-  const projectId = page.url().split('#studio/')[1];
-  assert.ok(projectId);
   const original = await api(`/projects/${projectId}/studio`);
   assert.equal(original.snapshot.results.length, 1);
   const doc = original.snapshot.results[0];
-  await check('template creates real project in unified Studio');
+  await check('existing Studio project still opens the unified workspace');
   // A local autosave is acknowledged by its PUT. Its SSE event must not fan
   // out into unrelated capability, asset, session and activity reads.
   await page.waitForTimeout(1200);

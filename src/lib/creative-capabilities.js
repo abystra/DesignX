@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import { materialFor } from "./creation-entry.js";
 
 // The server is authoritative; absent configuration never implies availability.
 export function modeId(mode) {
@@ -56,8 +57,9 @@ export function imageSize(ratio) {
       : "1024x1024";
 }
 export function normalizeAsset(asset) {
-  const assetId = asset.assetId || (asset.status ? asset.id : undefined);
-  const versionId = asset.assetVersionId || asset.versionId;
+  const material = materialFor(asset);
+  const assetId = material?.kind === 'asset' ? material.id : undefined;
+  const versionId = material?.kind === 'asset' ? material.versionId : undefined;
   return {
     ...asset,
     assetId,

@@ -50,7 +50,9 @@ export function NodeContent({
         style={{
           fontFamily: n.font?.includes("Georgia")
             ? '"Source Serif 4 Variable", serif'
-            : DOCUMENT_FONT,
+            : n.font?.includes("Source Serif 4")
+              ? `"Source Serif 4 Variable", ${DOCUMENT_FONT}`
+              : DOCUMENT_FONT,
           fontSize: n.size || 24,
           fontWeight: n.weight || 400,
           color: n.color || "#292b2e",

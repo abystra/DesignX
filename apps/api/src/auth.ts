@@ -33,6 +33,7 @@ export async function resolveIdentity(token?:string):Promise<Identity|null> {
  return r?{user:{id:r.id,email:r.email,name:r.name},workspace:{id:r.workspace_id,name:r.workspace_name},tokenHash:digest(token)}:null;
 }
 export async function requireIdentity(request:FastifyRequest) {
+ if(request.identity)return;
  const identity=await resolveIdentity(request.cookies.dx_session);
  if(!identity)throw new HttpError(401,'UNAUTHENTICATED','请先登录');
  request.identity=identity;

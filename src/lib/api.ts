@@ -34,7 +34,7 @@ export async function api<T = any>(
       ? null
       : await response
           .json()
-          .catch(() => ({ message: "服务返回了无法读取的结果" }));
+          .catch(() => ({ message: response.status === 413 ? "文件超过服务器接收限制，请检查文件大小后重试" : "服务返回了无法读取的结果" }));
   if (!response.ok) {
     if (response.status === 401 && typeof window !== "undefined")
       window.dispatchEvent(new Event("designx:unauthorized"));
@@ -53,8 +53,7 @@ export function refreshWorkspace() {
 }
 export async function waitForJob(id: string, onProgress?: (job: any) => void) {
   for (let i = 0; i < 180; i++) {
-    const jobs = await api<any[]>("/jobs");
-    const job = jobs.find((j) => j.id === id);
+    const job = await api<any>(`/jobs/${id}`);
     if (!job) throw new Error("任务不存在");
     onProgress?.(job);
     if (job.status === "succeeded" || job.status === "completed") return job;

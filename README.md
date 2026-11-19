@@ -80,6 +80,9 @@ pnpm test:unit
 pnpm build
 # 本地 PostgreSQL + S3；测试自动创建临时库和桶，并启动自己的 worker/renderer。
 pnpm test:api
+
+# 隔离环境中的个人海报完整旅程 + 渲染一致性（自动启动 Web/API/Worker/Renderer）
+pnpm test:poster
 # 重新启动 pnpm dev:all 后运行浏览器旅程。
 python3 -m pip install -r tests/e2e/requirements.txt
 pnpm test:e2e
@@ -92,7 +95,7 @@ pnpm verify:ai-runtime
 python3 tests/e2e/ai_creation.py --allow-paid-ai
 ```
 
-`test:unit` 和 `test:api` 不读取开发者的 `.env` / `.env.ai.local`，并替换继承的云存储、E2B 和模型凭据。API 每轮使用唯一数据库及素材、暂存、旧存储测试桶，结束只清理本轮资源，不使用现有项目或其存储桶。默认连接本机 PostgreSQL `55432`，并从已有的 `chrislusf/seaweedfs:3.85` 镜像启动临时 S3 容器，使用随机 loopback 端口、独立容器数据并在结束时移除；不会构建或拉取镜像。unit 不需要 Docker。
+`test:unit`、`test:api` 和 `test:poster` 不读取开发者的 `.env` / `.env.ai.local`，并替换继承的云存储、E2B 和模型凭据。API 每轮使用唯一数据库及素材、暂存、旧存储测试桶，结束只清理本轮资源，不使用现有项目或其存储桶。默认连接本机 PostgreSQL `55432`，并从已有的 `chrislusf/seaweedfs:3.85` 镜像启动临时 S3 容器，使用随机 loopback 端口、独立容器数据并在结束时移除；不会构建或拉取镜像。unit 不需要 Docker。
 
 可通过 `TEST_DATABASE_URL` 调整本地 PostgreSQL，数据库用户需可创建数据库。显式设置 `TEST_S3_ENDPOINT` 时使用指定本地 S3 服务，不启动容器；另支持 `TEST_S3_REGION`、`TEST_S3_ACCESS_KEY_ID`、`TEST_S3_SECRET_ACCESS_KEY`。只接受本地地址；可选 `TEST_S3_BUCKET` / `TEST_S3_STAGING_BUCKET` 必须是尚不存在的桶名。单文件回归使用 `pnpm test:api --file v2-storage.integration.test.ts`；显式 `verify:*` 真实服务验收不受此隔离影响。
 
@@ -108,3 +111,5 @@ python3 tests/e2e/ai_creation.py --allow-paid-ai
 - `db/migrations`、`infra/compose`：可重放 SQL 迁移、本地 PostgreSQL / SeaweedFS。
 
 当前支持本地联调与 aws-1 部署，部署验证范围以实际运行结果为准。`pnpm build` 只构建 Web 静态文件；aws-1 的 API、Worker、Renderer 镜像、进程管理和 Nginx 配置由 scripts/cloud/deploy.py 部署，自动 CI/CD 流水线仍需另行配置。邮箱验证/找回、OTP、通用自动冲突解决、定时素材 GC、多人实时协作、独立图片/视频模型、完整配方与计费未实现。低倍率仍渲染真实图层，无缩略图 LOD。生产需独立配置数据库角色、存储凭证、HTTPS、备份与 tldraw 许可，不能使用示例开发密码。
+
+个人海报首版的实施顺序、审计整改和验收见 [个人海报首版计划](docs/implementation/personal-poster-release.md)。

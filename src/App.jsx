@@ -43,7 +43,9 @@ import {
 import Editor from "./components/Editor.jsx";
 import Workspace from "./components/Workspace.jsx";
 import { api, uploadAsset, refreshWorkspace } from "./lib/api";
-import { initialDesign } from "./components/Editor.jsx";
+import { initialDesign } from "./data/template-design.js";
+import { creationEntries, materialFor } from "./lib/creation-entry.js";
+import "./styles/poster.css";
 import JobPanel from "./components/JobPanel.jsx";
 import DesignThumbnail from "./components/DesignThumbnail.jsx";
 import Catalog from "./components/Catalog.jsx";
@@ -61,7 +63,7 @@ import "./components/workbench.css";
 
 const NAV = [
   ["home", "创作首页", Home],
-  ["skills", "AI 技能", Sparkles],
+  ["skills", "创作提示词", Sparkles],
   ["tools", "设计工具", LayoutGrid],
   ["templates", "模板灵感", PanelsTopLeft],
   ["recent", "最近打开", History],
@@ -121,37 +123,10 @@ export function Modal({ children, onClose, className = "" }) {
     </div>
   );
 }
-export function Artwork({ item, compact = false }) {
+export function Artwork({ item }) {
   return (
-    <div
-      className={"artwork art-" + item.theme + (compact ? " compact" : "")}
-      style={{ backgroundColor: item.color }}
-    >
-      <img src={item.image} alt={item.title} loading="lazy" />
-      <div className="art-shade" />
-      <div className="art-content">
-        <span className="art-label">{item.label}</span>
-        <strong>
-          {item.en?.split("\n").map((t, i) => (
-            <React.Fragment key={i}>
-              {t}
-              <br />
-            </React.Fragment>
-          ))}
-        </strong>
-        <div className="art-bottom">
-          <span>{item.title}</span>
-          <ArrowUpRight size={19} />
-        </div>
-      </div>
-      {item.theme === "coffee" && (
-        <span className="art-stamp">
-          A LITTLE
-          <br />
-          COFFEE
-          <br />A LOT OF JOY
-        </span>
-      )}
+    <div className="template-document">
+      <DesignThumbnail design={initialDesign(item)} title={item.title} />
     </div>
   );
 }
@@ -193,429 +168,145 @@ function TemplateCard({ item, onSelect, favorites, toggleFavorite }) {
 }
 function HomePage({
   onNavigate,
-  onTask,
   onTemplate,
   onCreate,
   projects,
   onProject,
   favorites,
   toggleFavorite,
+  creating,
 }) {
-  const [prompt, setPrompt] = useState("");
-  const [mode, setMode] = useState("可编辑设计");
-  const capabilities = useCapabilities();
-  const capability = capabilityFor(capabilities.catalog, mode);
-  const [tab, setTab] = useState("为你推荐");
-  const [attachment, setAttachment] = useState(null);
-  const [error, setError] = useState("");
-  const upload = useRef();
-  const modes = capabilities.catalog?.modes || [];
-  const visible =
-    tab === "最近使用"
-      ? templates.filter((t) => projects.some((p) => p.image === t.image))
-      : tab === "我的收藏"
-        ? templates.filter((t) => favorites.includes(t.id))
-        : templates.slice(0, 6);
-  function submit() {
-    if (!prompt.trim()) {
-      setError("先写下你的设计想法，或试试下方的灵感建议");
-      return;
-    }
-    if (!capability?.enabled) {
-      setError(capability?.reason || "当前创作能力尚未配置");
-      return;
-    }
-    setError("");
-    const product = /商品|套图|电商/.test(prompt),
-      social = /小红书|社媒|种草/.test(prompt);
-    onTask({
-      name:
-        mode === "视频生成"
-          ? "视频创作"
-          : mode === "图片生成"
-            ? "图片生成"
-            : product
-              ? "AI 商品套图"
-              : social
-                ? "社媒图文笔记"
-                : "营销海报",
-      prompt,
-      mode,
-      image: attachment?.url,
-      assetId: attachment?.id,
-      assetVersionId: attachment?.versionId,
-      category:
-        mode === "视频生成"
-          ? "视频"
-          : product
-            ? "电商"
-            : social
-              ? "自媒体"
-              : "海报",
-    });
-  }
-  async function attach(e) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setError("正在上传素材…");
-    try {
-      const asset = await uploadAsset(file);
-      setAttachment({
-        id: asset.id,
-        versionId: asset.versionId,
-        name: asset.title,
-        url: asset.image,
-      });
-      setError("");
-    } catch (e) {
-      setError(e.message);
-    }
-  }
+  const [title, setTitle] = useState("");
+  const [ratio, setRatio] = useState("3:4");
   return (
-    <div className="home-page">
-      <div className="welcome-row">
-        <span>
-          <span className="hello-dot" />
-          灵感不设限，创作正当时
-        </span>
-        <button className="text-button" onClick={() => onNavigate("guide")}>
-          认识你的创作空间 <ArrowUpRight size={14} />
-        </button>
-      </div>
-      <section className="hero">
-        <div className="hero-copy">
-          <span className="eyebrow">YOUR IDEAS, BEAUTIFULLY MADE.</span>
+    <div className="poster-home">
+      <section className="poster-hero">
+        <div>
+          <span className="poster-eyebrow">DESIGN YOUR EVERYDAY</span>
           <h1>
-            从一个想法，
-            <br />到
-            <span className="hero-accent">
-              一整套好设计
-              <svg viewBox="0 0 320 12">
-                <path d="M3 8 Q145 -2 315 6" />
-              </svg>
-            </span>
-            <span className="hero-star">✳</span>
+            把日常灵感，
+            <br />
+            做成自己的海报。
           </h1>
           <p>
-            把灵感交给 AI，把时间留给创造。
-            <br className="small-only" />
-            图片、海报与可编辑设计，一站完成。
-          </p>
-        </div>
-        <div className="hero-collage" aria-hidden="true">
-          <div className="collage-note">
-            A little idea.
+            选一个模板，换上你的文字和图片。
             <br />
-            <em>Endless possibilities.</em>
-            <span>↗</span>
-          </div>
-          <div className="collage-art collage-back">
-            <Artwork item={templates[1]} compact />
-          </div>
-          <div className="collage-art collage-front">
-            <Artwork item={templates[0]} compact />
-          </div>
-          <div className="collage-caption">
-            <Sparkles size={13} /> 灵感正在发生
-          </div>
-        </div>
-      </section>
-      <section className="composer">
-        <div className="composer-tabs">
-          {modes.map((m, i) => (
-            <button
-              className={modeId(mode) === m.id ? "active" : ""}
-              key={m.id}
-              disabled={!m.enabled}
-              title={m.reason || m.label}
-              onClick={() => setMode(modeLabel(m.id))}
-            >
-              {i === 0 ? (
-                <Sparkles size={15} />
-              ) : i === 1 ? (
-                <Images size={15} />
-              ) : (
-                <Video size={15} />
-              )}{" "}
-              {m.label || modeLabel(m.id)}
-              {!m.enabled ? " · 尚未开放" : ""}
-            </button>
-          ))}
-          <span>DESIGN WITH AI</span>
-        </div>
-        <textarea
-          value={prompt}
-          onChange={(e) => {
-            setPrompt(e.target.value);
-            setError("");
-          }}
-          onKeyDown={(e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === "Enter") submit();
-          }}
-          placeholder={
-            mode === "视频生成"
-              ? "描述你的镜头、故事或产品，开始一段有想法的视频…"
-              : "描述你想做的设计，例如：为我的咖啡品牌设计一组温暖、自然的秋日上新海报…"
-          }
-          aria-label="描述你的设计需求"
-        />
-        {attachment && (
-          <div className="attachment">
-            <img src={attachment.url} />
-            <span>{attachment.name}</span>
-            <button onClick={() => setAttachment(null)} aria-label="移除附件">
-              <X size={13} />
-            </button>
-          </div>
-        )}
-        <div className="composer-footer">
-          <div>
-            <button onClick={() => upload.current.click()}>
-              <Plus size={18} />
-              <span>添加素材</span>
-            </button>
-            <button
-              onClick={() =>
-                onTask({
-                  draft: prompt,
-                  image: attachment?.url,
-                  assetId: attachment?.id,
-                  assetVersionId: attachment?.versionId,
-                  mode,
-                  panel: "skills",
-                })
-              }
-            >
-              <Sparkles size={16} />
-              <span>选择技能</span>
-            </button>
-            <button
-              onClick={() =>
-                onTask({
-                  draft: prompt,
-                  image: attachment?.url,
-                  assetId: attachment?.id,
-                  assetVersionId: attachment?.versionId,
-                  mode,
-                  panel: "assets",
-                })
-              }
-            >
-              <FolderOpen size={16} />
-              <span>引用资产</span>
-            </button>
-          </div>
-          <span className="composer-key">⌘ Enter</span>
-          <button
-            className="send-button"
-            onClick={submit}
-            disabled={!capability?.enabled}
-            aria-label="开始创作"
-          >
-            <ArrowUp size={20} />
+            作品自动保存，随时回来继续，完成后即可导出。
+          </p>
+          <button className="primary" onClick={() => onNavigate("templates")}>
+            挑选海报模板 <ArrowRight size={20} />
           </button>
         </div>
-        <input
-          ref={upload}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          hidden
-          onChange={attach}
-        />
-        {error && <span className="inline-error">{error}</span>}
+        <div className="poster-hero-art" aria-hidden="true">
+          <Artwork item={templates[0]} />
+        </div>
       </section>
-      <div className="prompt-chips">
-        <span>试试这些灵感</span>
-        {["为新品做一套商品图", "设计秋日咖啡海报", "制作小红书种草图"].map(
-          (s, i) => (
-            <button
-              key={s}
-              onClick={() => {
-                setPrompt(s);
-                setMode("智能创作");
-              }}
-            >
-              {
-                [
-                  <ShoppingBag size={13} />,
-                  <Leaf size={13} />,
-                  <Heart size={13} />,
-                ][i]
-              }
-              {s}
-              <ArrowUpRight size={12} />
-            </button>
-          ),
-        )}
-      </div>
-      <section className="quick-section">
-        <div className="section-heading">
-          <h2>让创作，再简单一点</h2>
-          <button className="text-button" onClick={() => onNavigate("tools")}>
-            全部工具 <ArrowRight size={15} />
+      <section className="poster-start" aria-labelledby="poster-start-title">
+        <div>
+          <h2 id="poster-start-title">从空白画布开始</h2>
+          <p>适合已经有想法的你，也可以先去素材库选一张图片。</p>
+          <button className="text-button" onClick={() => onNavigate("assets")}>
+            打开素材库 <ArrowRight size={16} />
           </button>
         </div>
-        <div className="quick-tools">
-          {[
-            {
-              name: "AI 商品套图",
-              desc: "一张商品图，一整套好设计",
-              icon: ShoppingBag,
-              color: "peach",
-              cat: "电商",
-              tag: "热门",
-            },
-            {
-              name: "AI 营销海报",
-              desc: "把好想法，变成好画面",
-              icon: WandSparkles,
-              color: "green",
-              cat: "海报",
-            },
-            {
-              name: "AI 视频创作",
-              desc: "让产品故事，生动起来",
-              icon: Video,
-              color: "blue",
-              cat: "视频",
-            },
-            {
-              name: "智能抠图",
-              desc: "轻松去背景，细节更干净",
-              icon: Scissors,
-              color: "sand",
-              cat: "图像",
-            },
-            {
-              name: "PPT 设计",
-              desc: "从一段内容，到精彩提案",
-              icon: Presentation,
-              color: "rose",
-              cat: "办公",
-            },
-          ].map((t) => (
-            <button
-              className={"quick-tool " + t.color}
-              key={t.name}
-              onClick={() => onTask({ name: t.name, category: t.cat })}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            onCreate({ name: title.trim() || "未命名海报", ratio });
+          }}
+        >
+          <label>
+            作品名称
+            <input
+              value={title}
+              maxLength={80}
+              placeholder="例如：周末咖啡海报"
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </label>
+          <label>
+            画布比例
+            <select
+              value={ratio}
+              onChange={(event) => setRatio(event.target.value)}
             >
-              <span className="quick-icon">
-                <t.icon size={23} strokeWidth={1.5} />
-              </span>
-              <div>
-                <h3>
-                  {t.name}
-                  {t.tag && <b>{t.tag}</b>}
-                </h3>
-                <p>{t.desc}</p>
-              </div>
-              <ArrowUpRight className="quick-arrow" size={16} />
-            </button>
-          ))}
-        </div>
+              <option value="3:4">竖版 3:4 · 600 × 800</option>
+              <option value="1:1">方形 1:1 · 600 × 600</option>
+              <option value="9:16">长图 9:16 · 540 × 960</option>
+              <option value="16:9">横版 16:9 · 960 × 540</option>
+            </select>
+          </label>
+          <button className="secondary" disabled={creating} type="submit">
+            <Plus size={18} />
+            {creating ? "正在创建…" : "创建海报"}
+          </button>
+        </form>
       </section>
-      <section className="inspiration-section">
+      <section className="poster-templates">
         <div className="section-heading">
           <div>
-            <h2>
-              好设计，从这里发生<span className="hand-star">✳</span>
-            </h2>
-            <p>发现喜欢的风格，让灵感有迹可循。</p>
+            <h2>从喜欢的版式出发</h2>
+            <p>内置模板 · 图片、文字和配色均可编辑</p>
           </div>
           <button
             className="text-button"
             onClick={() => onNavigate("templates")}
           >
-            探索模板灵感 <ArrowRight size={15} />
-          </button>
-        </div>
-        <div className="inspiration-tabs">
-          {[
-            "为你推荐",
-            "电商设计",
-            "海报设计",
-            "社媒内容",
-            "品牌设计",
-            "最近使用",
-            "我的收藏",
-          ].map((t) => (
-            <button
-              className={tab === t ? "active" : ""}
-              onClick={() => setTab(t)}
-              key={t}
-            >
-              {t === "为你推荐" && <Sparkles size={14} />} {t}
-            </button>
-          ))}
-          <button
-            className="filter-link"
-            onClick={() => onNavigate("templates")}
-          >
-            <SlidersHorizontal size={15} /> 筛选
+            查看全部 <ArrowRight size={16} />
           </button>
         </div>
         <div className="template-grid">
-          {(templates.some((t) => t.category === tab)
-            ? templates.filter((t) => t.category === tab)
-            : visible
-          ).map((item) => (
+          {templates.slice(0, 4).map((item) => (
             <TemplateCard
               key={item.id}
-              {...{ item, favorites, toggleFavorite }}
+              item={item}
               onSelect={onTemplate}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
             />
           ))}
         </div>
-        {visible.length === 0 && ["我的收藏", "最近使用"].includes(tab) && (
-          <div className="empty-block">
-            <Heart />
-            <h3>把喜欢的灵感留在这里</h3>
-            <p>点击作品右上角的爱心，即可收藏。</p>
-          </div>
-        )}
       </section>
-      <section className="recent-section">
+      <section className="poster-recent">
         <div className="section-heading">
-          <h2>接着上次的灵感</h2>
+          <h2>继续你的创作</h2>
           <button
             className="text-button"
             onClick={() => onNavigate("projects")}
           >
-            全部项目 <ArrowRight size={15} />
+            我的项目 <ArrowRight size={16} />
           </button>
         </div>
-        <div className="home-projects">
-          {projects.slice(0, 3).map((p) => (
-            <button key={p.id} onClick={() => onProject(p)}>
-              {p.design ? (
-                <DesignThumbnail
-                  design={p.design}
-                  title={p.title}
-                  style={{ width: 60, height: 44, borderRadius: 5 }}
-                />
-              ) : (
-                <img src={p.image} alt={p.title} />
-              )}
-              <div>
-                <h3>{p.title}</h3>
-                <span>
-                  {p.updatedAt} · {p.type}
+        {projects.length ? (
+          <div className="poster-projects">
+            {projects.slice(0, 3).map((project) => (
+              <button key={project.id} onClick={() => onProject(project)}>
+                <span className="poster-project-preview">
+                  {project.design && (
+                    <DesignThumbnail
+                      design={project.design}
+                      title={project.title}
+                    />
+                  )}
                 </span>
-              </div>
-              <ChevronRight size={17} />
-            </button>
-          ))}
-          <button className="blank-project" onClick={onCreate}>
-            <Plus />
-            <span>开启新的创作</span>
-          </button>
-        </div>
+                <span>
+                  <strong>{project.title}</strong>
+                  <small>
+                    {project.updatedAt
+                      ? new Date(project.updatedAt).toLocaleDateString("zh-CN")
+                      : "已保存"}
+                  </small>
+                </span>
+                <ArrowUpRight size={20} />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="poster-empty">
+            还没有作品。从上方模板或空白画布开始，保存的海报会出现在这里。
+          </p>
+        )}
       </section>
-      <div className="page-footer">
-        <span>让每个想法，都值得被看见。</span>
-        <span>DESIGN X / MADE FOR CREATORS</span>
-      </div>
     </div>
   );
 }
@@ -809,6 +500,12 @@ export default function App({
     [loading, setLoading] = useState(true),
     [loadError, setLoadError] = useState("");
   const timer = useRef();
+  const capabilities = useCapabilities();
+  const publicEntries = creationEntries(capabilities.catalog, catalog.skills);
+  const creatingRef = useRef(false);
+  const creationRequest = useRef(null);
+  const [creating, setCreating] = useState(false);
+  const [creationError, setCreationError] = useState("");
   function notify(text) {
     setToast(text);
     clearTimeout(timer.current);
@@ -840,62 +537,87 @@ export default function App({
     await api("/projects/" + id + "/open", { method: "POST" });
   }
   async function openStudio(item = {}) {
+    if (creatingRef.current) return;
+    if (item.destination) {
+      navigate(item.destination);
+      return;
+    }
+    const aiEntry =
+      item.kind === "recipe" || item.kind === "preset" || item.mode;
+    if (aiEntry) {
+      const available =
+        item.kind === "recipe"
+          ? capabilities.catalog?.recipes?.find(
+              (recipe) => recipe.id === (item.recipeId || item.id),
+            )
+          : capabilityFor(capabilities.catalog, item.mode || "design");
+      if (!available?.enabled) {
+        setCreationError(
+          available?.reason || "此创作能力尚未开放，请先使用模板或空白海报",
+        );
+        return;
+      }
+    }
+    const workspaceMode =
+      aiEntry || item.workspaceMode === "studio" ? "studio" : "editor";
+    const body = {
+      title: item.template?.title || item.name || "未命名海报",
+      workspaceMode,
+      brief: item.prompt || item.draft || "",
+      ...(item.template
+        ? { templateId: item.template.id }
+        : { design: initialDesign({ blank: true, ratio: item.ratio }) }),
+      ...(materialFor(item) ? { material: materialFor(item) } : {}),
+    };
+    const signature = JSON.stringify(body);
+    if (creationRequest.current?.signature !== signature)
+      creationRequest.current = { signature, key: crypto.randomUUID(), item };
+    const request = creationRequest.current;
+    creatingRef.current = true;
+    setCreating(true);
+    setCreationError("");
     try {
-      const project = await api("/projects", {
-        method: "POST",
-        body: item.template
-          ? {
-              title: item.template.title,
-              design: initialDesign(item.template),
-              image: item.template.image,
-            }
-          : { title: item.name || "新创作", blank: true },
-      });
-      if (item.assetId)
-        await api(`/projects/${project.id}/assets`, {
+      const project =
+        request.project ||
+        (await api("/projects", {
           method: "POST",
-          body: {
-            assetId: item.assetId,
-            ...(item.assetVersionId ? { versionId: item.assetVersionId } : {}),
+          headers: { "Idempotency-Key": request.key },
+          body,
+        }));
+      request.project = project;
+      if (workspaceMode === "editor") {
+        setStudio(null);
+        setTask(null);
+        setEditing(project);
+        history.pushState(null, "", "#editor/" + project.id);
+      } else {
+        await restoreStudio(
+          project.id,
+          {
+            skill: aiEntry ? item : null,
+            draft: item.prompt || item.draft || "",
+            mode: item.mode || "Agent",
+            panel: item.panel,
           },
-        });
-      const skill =
-        item.recipeId || item.version
-          ? item
-          : item.name
-            ? catalog.skills.find((s) => s.name === item.name) || item
-            : null;
-      await restoreStudio(
-        project.id,
-        {
-          skill,
-          draft: item.prompt || item.draft || "",
-          mode: modeId(item.mode) === "design" ? "Agent" : item.mode,
-          assets: item.image
-            ? [
-                {
-                  id: item.assetId || "reference",
-                  assetId: item.assetId,
-                  versionId: item.assetVersionId,
-                  name: "参考素材",
-                  url: item.image,
-                },
-              ]
-            : [],
-          panel: item.panel,
-        },
-        { project },
-      );
+          { project },
+        );
+        history.pushState(null, "", "#studio/" + project.id);
+      }
       setTemplate(null);
-      history.pushState(null, "", "#studio/" + project.id);
-      void reloadProjects().catch(() => {});
-    } catch (e) {
-      notify(e.message);
+      creationRequest.current = null;
+      void api(`/projects/${project.id}/open`, { method: "POST" })
+        .then(reloadProjects)
+        .catch(() => {});
+    } catch (error) {
+      setCreationError(error.message);
+    } finally {
+      creatingRef.current = false;
+      setCreating(false);
     }
   }
   function navigate(p) {
     if (p === "product-demo") {
-      openStudio({ name: "商品套图", category: "电商" });
+      navigate("tools");
       return;
     }
     setStudio(null);
@@ -1044,7 +766,7 @@ export default function App({
   async function edit(p) {
     try {
       let target;
-      if (p.projectId && p.documentId) target = p;
+      if (p.projectId && p.documentId && p.id !== p.projectId) target = p;
       else if (p.persisted && p.id) {
         target = await api("/projects/" + p.id);
         await api("/projects/" + p.id + "/open", { method: "POST" });
@@ -1070,6 +792,11 @@ export default function App({
   }
   async function openProject(p) {
     try {
+      if (!p.workspaceMode) p = await api("/projects/" + p.id);
+      if (p.workspaceMode === "editor") {
+        await edit(p);
+        return;
+      }
       const board = await api("/projects/" + p.id + "/studio");
       if (board.snapshot) {
         await restoreStudio(p.id, {}, { project: p, board });
@@ -1082,7 +809,31 @@ export default function App({
   const current = NAV.find((x) => x[0] === page);
   return (
     <>
-      <div className={"app-shell " + (collapsed ? "collapsed" : "")}>
+      {(creating || creationError) && (
+        <div
+          className="creation-feedback"
+          role={creationError ? "alert" : "status"}
+        >
+          <span>{creating ? "正在创建作品…" : creationError}</span>
+          {creationError && (
+            <>
+              {creationRequest.current && (
+                <button
+                  onClick={() => openStudio(creationRequest.current.item)}
+                >
+                  重试创建
+                </button>
+              )}
+              <button onClick={() => setCreationError("")}>关闭提示</button>
+            </>
+          )}
+        </div>
+      )}
+      <div
+        className={"app-shell " + (collapsed ? "collapsed" : "")}
+        aria-busy={creating || loading}
+        inert={template || searchOpen ? true : undefined}
+      >
         {loadError && (
           <div className="app-load-error" role="alert">
             {loadError}
@@ -1095,7 +846,7 @@ export default function App({
               key={studio.id}
               session={studio}
               onBack={() => navigate("home")}
-              onNew={() => openStudio()}
+              onNew={() => openStudio({ workspaceMode: "studio" })}
               onEdit={edit}
               onSave={save}
               onToast={notify}
@@ -1159,7 +910,6 @@ export default function App({
                     >
                       <Icon size={19} strokeWidth={1.7} />
                       <span>{name}</span>
-                      {id === "skills" && <b>NEW</b>}
                       {page === id && !task && <i />}
                     </button>
                   </React.Fragment>
@@ -1171,18 +921,9 @@ export default function App({
                     <Sparkles size={17} />
                     <span>给灵感，一个开始</span>
                   </div>
-                  <p>从一句话，开始你的第一份设计</p>
-                  <button
-                    onClick={() => {
-                      navigate("home");
-                      setTimeout(
-                        () =>
-                          document.querySelector(".composer textarea")?.focus(),
-                        100,
-                      );
-                    }}
-                  >
-                    试试 AI 创作 <ArrowUpRight size={14} />
+                  <p>选一个模板，开始你的第一张海报</p>
+                  <button onClick={() => navigate("templates")}>
+                    挑选海报模板 <ArrowUpRight size={14} />
                   </button>
                   <span className="tip-drawing">✳</span>
                 </div>
@@ -1250,7 +991,6 @@ export default function App({
                     onClick={() => setNotice(!notice)}
                   >
                     <Bell size={18} />
-                    <i />
                   </button>
                   <button
                     className="header-avatar"
@@ -1283,9 +1023,9 @@ export default function App({
                 ) : page === "home" ? (
                   <HomePage
                     onNavigate={navigate}
-                    onTask={openStudio}
                     onTemplate={setTemplate}
-                    onCreate={() => openStudio()}
+                    onCreate={openStudio}
+                    creating={creating}
                     projects={projects}
                     onProject={openProject}
                     favorites={favorites}
@@ -1329,7 +1069,7 @@ export default function App({
       </div>
       {toast && (
         <div className="toast" role="status">
-          <CheckCircle2 size={18} />
+          <span aria-hidden="true">·</span>
           {toast}
         </div>
       )}
@@ -1363,6 +1103,7 @@ export default function App({
             </dl>
             <button
               className="primary"
+              disabled={creating}
               onClick={() => openStudio({ template })}
             >
               使用这个模板 <ArrowRight size={17} />
@@ -1424,8 +1165,8 @@ export default function App({
               </button>
             ))}
           {query &&
-            [...catalog.skills, ...catalog.tools]
-              .filter((t) => t.name.includes(query))
+            publicEntries
+              .filter((t) => t.enabled && t.name.includes(query))
               .slice(0, 8)
               .map((t) => (
                 <button
@@ -1452,7 +1193,7 @@ export default function App({
                   key={p.id}
                   onClick={() => {
                     setSearchOpen(false);
-                    edit(p);
+                    openProject(p);
                   }}
                 >
                   <FolderOpen size={18} />
@@ -1461,9 +1202,7 @@ export default function App({
                 </button>
               ))}
           {query &&
-            ![...catalog.skills, ...catalog.tools].some((t) =>
-              t.name.includes(query),
-            ) &&
+            !publicEntries.some((t) => t.enabled && t.name.includes(query)) &&
             !projects.some((p) => p.title.includes(query)) &&
             !NAV.some((x) => x[1].includes(query)) &&
             !templates.some((t) =>

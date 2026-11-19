@@ -22,7 +22,7 @@
 
 原品牌珊瑚色配白字对比度约 3.18:1，不用于普通字号白字按钮；深珊瑚主操作约 5.11:1。普通文本至少 4.5:1，必要的控件边界/焦点至少 3:1；状态还必须有图标或文字。禁止用过淡颜色、小字号或单纯降低透明度表达关键说明。
 
-新增样式使用规范中的 `--dx-*` 语义 token，不再散落硬编码近似色。统一 token 文件目标为 `src/styles/tokens.css`，首个 UI 实施批次建立并接入；当前规范文档不代表 CSS 已迁移。旧变量按语义逐步适配，用户作品和品牌自定义颜色单独保留。
+新增样式使用规范中的 `--dx-*` 语义 token，不再散落硬编码近似色。统一 token 已定义在 `src/styles/tokens.css` 并全局接入；首页和创作目录已开始使用，旧页面仍需分批迁移。旧变量按语义逐步适配，用户作品和品牌自定义颜色单独保留。
 
 ### 排版、布局与组件
 
@@ -98,7 +98,7 @@ start 在 Codex 工作区启动 Web、API、Generation、Media、Agent、Import 
 
 对象存储默认使用现有 R2 designx 私有桶，S3_BUCKET 与 S3_STAGING_BUCKET 均为 designx，保持仓库既有开发约定。S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY 优先使用同名绑定，缺少时从 WORKX_R2_PARENT_ACCESS_KEY_ID / WORKX_R2_PARENT_SECRET_ACCESS_KEY 读取。S3_ENDPOINT 等显式环境变量可覆盖开发默认值。服务端 S3 请求使用环境中的 HTTP_PROXY / HTTPS_PROXY / NO_PROXY 规则。
 
-AI_ENABLED 默认为 false，基础初始化及浏览器验收使用这一配置。需要 AI 功能时在该环境显式配置 AI_ENABLED 及对应模型、E2B 模板和凭据。
+AI_ENABLED 和 IMAGE_GENERATION_ENABLED 均默认为 false，基础初始化及浏览器验收使用这一配置。需要 AI 功能时在该环境显式配置 AI_ENABLED 及对应模型、E2B 模板和凭据。
 
 ### E2B 访问开发环境
 
@@ -154,6 +154,14 @@ Nginx 为 designx.velax.cn 提供 HTTPS，静态文件位于 /srv/designx/curren
 该服务器使用的 TLS 证书路径为 /etc/letsencrypt/live/designx.velax.cn，现有 Certbot 自动续期任务在证书更新后重载 Nginx。域名 DNS、证书及服务器已有 PostgreSQL/R2 是部署前提。
 
 ## 产品现状与完成标准
+
+首版主线已确定为个人海报：模板/素材 → 编辑 → 保存 → 导出。实施顺序、审计映射和验收记录见 [个人海报首版计划](docs/implementation/personal-poster-release.md)。后续会话先核对该计划的最新状态，不重新询问已确定的方向。
+
+- 新建个人海报使用 `workspaceMode=editor`，旧项目/多画板默认 `studio`；列表、搜索和刷新必须遵守持久化入口。
+- 创建请求提供幂等键；素材解析、版本权限校验和初始文档写入在同一事务。内置 `stock-*`、上传素材 ID 和参考记录 ID 不混用。
+- 公共工具目录只列真实手动入口和 `/api/capabilities` 配方。提示词明确标注为预设，能力关闭时在创建项目之前阻止进入。
+- 模板文档构造复用 `src/data/template-design.js`；UI 预览与服务端创建保持一致。品牌 Logo 使用素材 ID、版本 ID 和不可变 URL 的统一合同。
+- `pnpm test:poster` 自动创建隔离数据库、S3 和 Web/API/Media/Renderer，执行个人海报旅程与共享渲染对照；需要本机 PostgreSQL、已有 SeaweedFS 镜像和 Playwright Chromium。
 
 产品梳理见 docs/implementation/product-readiness-audit.md，线上抽查证据见同目录 product-readiness-evidence-2026-11-18.json。2026-11-18 的部署已有真实账户、项目、素材和导出链路，但线上 Agent/图片生成关闭，目录中的提示词预设不代表独立工具已实现。后续工作先核对当前部署和 /api/capabilities，再更新报告中的问题状态与验收证据。
 

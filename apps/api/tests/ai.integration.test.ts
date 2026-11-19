@@ -32,7 +32,7 @@ const { deleteObject } =
   await import("../../../packages/server-infra/src/storage.js");
 const {ingestBufferAsset,linkProjectAsset}=await import('../../../packages/server-domain/src/assets.js');
 await migrate();
-const app = await buildApp({ logger: false, aiEnabled: true });
+let app = await buildApp({ logger: false, aiEnabled: true });
 const actors: any[] = [];
 const keys: string[] = [];
 for (let index = 0; index < 2; index++) {
@@ -52,8 +52,10 @@ for (let index = 0; index < 2; index++) {
   });
 }
 let fixtureClient = 0;
-test.beforeEach(() => {
+test.beforeEach(async () => {
   fixtureClient++;
+  await app.close();
+  app = await buildApp({ logger: false, aiEnabled: true });
 });
 const req = (
   method: string,

@@ -1,3 +1,4 @@
+import { normalizeBrand } from "../../../packages/server-domain/src/materials.js";
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { tenantTransaction } from '../../../packages/server-infra/src/db.js';
@@ -22,13 +23,14 @@ export async function libraryRoutes(app:FastifyInstance) {
  }));
  app.get('/api/preferences/:key',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   if(!preferenceKeys.has(req.params.key))notFound();
-  return (await tx.query('SELECT value FROM preferences WHERE key=$1',[req.params.key])).rows[0]?.value??null;
+  const value=(await tx.query('SELECT value FROM preferences WHERE key=$1',[req.params.key])).rows[0]?.value??null;
+  return req.params.key==='brand'&&value?normalizeBrand(tx,value):value;
  }));
  app.put('/api/preferences/:key',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
   const key=req.params.key;if(!preferenceKeys.has(key))notFound();let value=req.body;
   if(/favorites/.test(key)||key==='studio-skills')value=z.array(z.string().max(200)).max(5000).parse(value);
   if(key==='references')value=z.array(z.object({id:z.string().max(100),title:z.string().max(200),prompt:z.string().max(10000).optional(),image:z.string().max(2048).optional()}).passthrough()).max(500).parse(value);
-  if(key==='brand')value=z.object({name:z.string().max(100),colors:z.array(z.string().regex(/^#[0-9a-f]{6}$/i)).min(1).max(20),description:z.string().max(3000).optional(),font:z.string().max(200).optional(),logo:z.string().max(2048).optional(),subtitle:z.string().max(300).optional()}).passthrough().parse(value);
+  if(key==='brand')value=await normalizeBrand(tx,value);
   if(value===undefined||Buffer.byteLength(JSON.stringify(value))>1000000)throw new HttpError(400,'INVALID_PREFERENCE','设置数据超出限制');
   await tx.query('INSERT INTO preferences(workspace_id,key,value) VALUES($1,$2,$3) ON CONFLICT(workspace_id,key) DO UPDATE SET value=excluded.value,updated_at=now()',[req.identity.workspace.id,key,JSON.stringify(value)]);
   await emit(tx,req.identity.workspace.id,'preference.updated',{key});return value;

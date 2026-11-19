@@ -21,7 +21,7 @@ const {storage,deleteObject,putObject}=await import('../../../packages/server-in
 const {config}=await import('../../../packages/server-infra/src/config.js');
 const {ListObjectsV2Command}=await import('@aws-sdk/client-s3');
 const {migrate}=await import('../../../db/migrate.js');
-await migrate();const app=await buildApp({logger:false});
+await migrate();let app=await buildApp({logger:false});
 const actors:{cookie:string,workspaceId:string}[]=[];const children:ChildProcess[]=[];let logs='';
 for(let i=0;i<2;i++){
  const registered=await app.inject({method:'POST',url:'/api/auth/register',payload:{email:`import-${randomUUID()}@example.test`,password:'correct-horse-designx',name:`Importer ${i}`}});
@@ -29,8 +29,8 @@ for(let i=0;i<2;i++){
 }
 function start(path:string){const child=spawn(process.execPath,['--import','tsx',path],{env:process.env,stdio:['ignore','pipe','pipe']});children.push(child);child.stdout?.on('data',data=>{logs+=data;});child.stderr?.on('data',data=>{logs+=data;});}
 let fixtureClient=0;
-test.beforeEach(()=>{fixtureClient++;});
-// Distinct test clients retain the real per-IP import rate limit without a production bypass.
+test.beforeEach(async()=>{fixtureClient++;await app.close();app=await buildApp({logger:false});});
+// Each scenario starts a fresh API instance with real user/IP rate limits; durable data survives the restart.
 const request=(method:string,url:string,payload?:any,actor=0,headers:any={})=>app.inject({method:method as any,url,payload,remoteAddress:`192.0.2.${fixtureClient}`,headers:{cookie:actors[actor].cookie,origin:'http://127.0.0.1:5173',...headers}});
 async function upload(packet:any,actor=0,key?:string){
  const bytes=Buffer.isBuffer(packet)?packet:Buffer.from(JSON.stringify(packet));const boundary=`dx-${randomUUID()}`;

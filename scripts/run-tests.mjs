@@ -10,7 +10,7 @@ import {startDisposableTestStorage} from './test-storage.mjs';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const suite=process.argv[2];
-if (!['api','unit'].includes(suite)) throw new Error('Usage: run-tests.mjs api|unit [node test options]');
+if (!['api','unit','poster'].includes(suite)) throw new Error('Usage: run-tests.mjs api|unit|poster [node test options]');
 const runId=randomUUID().replaceAll('-','');
 const env=buildTestEnvironment(process.env,runId);
 const directory=suite==='api'?'apps/api/tests':'tests/unit';
@@ -31,7 +31,7 @@ process.on('SIGINT',interrupt);process.on('SIGTERM',interrupt);
 const ownedBuckets=[];
 const send=command=>storage.send(command,{abortSignal:AbortSignal.timeout(15000)});
 try {
-  if (suite==='api') {
+  if (suite!=='unit') {
     admin=new pg.Client({connectionString:env.DATABASE_URL}); await admin.connect();
     await admin.query(`CREATE DATABASE "${databaseName}"`);databaseCreated=true;
     const databaseUrl=new URL(env.DATABASE_URL);databaseUrl.pathname='/'+databaseName;env.DATABASE_URL=databaseUrl.toString();
@@ -58,7 +58,7 @@ try {
     console.log(`API regression uses a disposable local database and three disposable local buckets (${disposableStorage?'temporary S3 container':'explicit TEST_S3_ENDPOINT'}).`);
   }
   stopped.signal.throwIfAborted();
-  const args=['--import','tsx','--test',...(suite==='api'?['--test-concurrency=1']:[]),...extra,...files];
+  const args=suite==='poster'?['--import','tsx','tests/e2e/poster-stack.mjs']:['--import','tsx','--test',...(suite==='api'?['--test-concurrency=1']:[]),...extra,...files];
   const exitCode=await new Promise((resolve,reject)=>{
     child=spawn(process.execPath,args,{cwd:root,env,stdio:'inherit'});
     child.on('error',reject);child.on('close',code=>{child=undefined;resolve(code??1);});

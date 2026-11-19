@@ -35,6 +35,18 @@ test('real upload enters S3 and is decoded by a separate media worker',async()=>
  assert.equal((await request('GET',asset.image,undefined,1)).statusCode,404);
  const thumb=await request('GET',asset.thumbnail);assert.equal((await sharp(thumb.rawPayload).metadata()).format,'webp');
 });
+test('poster material creation pins versions and brand logo uses the same immutable contract',async()=>{
+ const body={title:'Material poster',workspaceMode:'editor',material:{kind:'asset',id:asset.id,versionId:asset.versionId}};
+ const created=await request('POST','/api/projects',body);assert.equal(created.statusCode,201,created.body);
+ assert.equal(created.json().design.nodes[0].src,asset.image);
+ const links=(await request('GET',`/api/projects/${created.json().id}/assets`)).json();assert.ok(links.some((a:any)=>a.id===asset.id));
+ assert.equal((await request('POST','/api/projects',body,1)).statusCode,400,'Other tenants cannot use the material');
+ const saved=await request('PUT','/api/preferences/brand',{name:'Brand',colors:['#ffffff'],font:'Georgia',logoAssetId:asset.id});
+ assert.equal(saved.statusCode,200,saved.body);assert.equal(saved.json().logo,asset.image);assert.equal(saved.json().logoVersionId,asset.versionId);assert.equal(saved.json().font,'Source Serif 4 Variable');
+ assert.equal((await request('GET','/api/preferences/brand')).json().logo,asset.image);
+ assert.equal((await request('PUT','/api/preferences/brand',{name:'Brand',colors:['#ffffff'],logoAssetId:asset.id},1)).statusCode,400);
+ const cleared=await request('PUT','/api/preferences/brand',{...saved.json(),logoAssetId:''});assert.equal(cleared.json().logo,'');
+});
 test('export jobs persist while renderer is offline, queued cancellation is durable',async()=>{
  const design={width:320,height:240,background:'#ffffff',nodes:[{id:'image',type:'image',src:asset.image,x:0,y:0,w:320,h:240},{id:'text',type:'text',text:'中文导出测试',x:20,y:30,w:280,h:70,size:25,color:'#ffffff'}]};
  const created=await request('POST','/api/projects',{title:'真实导出',design});assert.equal(created.statusCode,201,created.body);project=created.json();

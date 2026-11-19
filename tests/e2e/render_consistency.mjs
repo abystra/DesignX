@@ -153,6 +153,7 @@ const fixtures = [
     ],
   },
 ];
+fixtures.push({ ...fixtures[0], name: 'explicit-source-serif-font', nodes: fixtures[0].nodes.map(node => node.type === 'text' ? { ...node, font: 'Source Serif 4 Variable' } : node) });
 try {
   await api("POST", "/auth/register", {
     email: `${runId}@example.test`,

@@ -66,6 +66,23 @@ test('folders, preferences, trash and restore persist without localStorage',asyn
  assert.equal((await request('DELETE',`/api/folders/${folder.id}`)).statusCode,200);
  assert.equal((await request('GET',`/api/projects/${project.id}`)).json().folderId,null);
 });
+test('poster entry, canonical templates and stock materials persist without orphan projects',async()=>{
+ const created=await request('POST','/api/projects',{title:'Template poster',workspaceMode:'editor',templateId:'t1'});
+ assert.equal(created.statusCode,201,created.body);
+ const poster=created.json();assert.equal(poster.workspaceMode,'editor');assert.ok(poster.design.nodes.some((n:any)=>n.id==='title'));
+ assert.equal((await request('GET',`/api/projects/${poster.id}`)).json().workspaceMode,'editor');
+ assert.equal((await request('GET',`/api/projects/${project.id}`)).json().workspaceMode,'studio','Existing/default projects keep their Studio entry');
+ const body={title:'Stock poster',workspaceMode:'editor',material:{kind:'stock',id:'stock-coffee'}};
+ const stock=await request('POST','/api/projects',body,0,{'idempotency-key':`stock-${unique}`});assert.equal(stock.statusCode,201,stock.body);
+ assert.equal(stock.json().design.nodes[0].src,'/assets/coffee.jpg');
+ assert.equal((await request('POST','/api/projects',body,0,{'idempotency-key':`stock-${unique}`})).json().id,stock.json().id);
+ const before=(await request('GET','/api/projects')).json().length;
+ for(const material of [{kind:'asset',id:'missing'},{kind:'stock',id:'stock-unknown'}]) {
+  assert.equal((await request('POST','/api/projects',{title:'Must rollback',workspaceMode:'editor',material})).statusCode,400);
+ }
+ assert.equal((await request('GET','/api/projects')).json().length,before);
+ assert.equal((await request('PUT','/api/preferences/brand',{name:'Brand',colors:['#ffffff'],logoAssetId:'missing'})).statusCode,400);
+});
 test('logout revokes the durable session',async()=>{
  assert.equal((await request('POST','/api/auth/logout',{})).statusCode,200);
  assert.equal((await request('GET','/api/auth/me')).statusCode,401);

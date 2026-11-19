@@ -7,7 +7,8 @@ import { config } from '../../../packages/server-infra/src/config.js';
 import { pool } from '../../../packages/server-infra/src/db.js';
 import { startQueue } from '../../../packages/server-infra/src/queue.js';
 import { HttpError } from '../../../packages/server-domain/src/common.js';
-import { authRoutes, requireIdentity } from './auth.js';
+import { authRoutes, requireIdentity, resolveIdentity } from './auth.js';
+import { trustedProxy, requestLimitKey } from './client-identity.js';
 import { importRoutes } from './imports.js';
 import { projectRoutes } from './projects.js';
 import { libraryRoutes } from './library.js';
@@ -17,10 +18,14 @@ import { taskRoutes } from './tasks.js';
 import { aiRoutes } from './ai.js';
 import { creativeRoutes } from './creative.js';
 export async function buildApp(options:{logger?:boolean,aiEnabled?:boolean}={}) {
- const app=Fastify({logger:options.logger??true,bodyLimit:6*1024*1024,trustProxy:false});
+ const app=Fastify({logger:options.logger??true,bodyLimit:6*1024*1024,trustProxy:trustedProxy});
  await app.register(cookie);
  await app.register(multipart,{limits:{fileSize:config.maxUploadBytes,files:1,fields:3}});
- await app.register(rateLimit,{global:true,max:600,timeWindow:'1 minute'});
+ app.addHook('onRequest',async req=>{
+  const identity=await resolveIdentity(req.cookies.dx_session);
+  if(identity)req.identity=identity;
+ });
+ await app.register(rateLimit,{global:true,max:600,timeWindow:'1 minute',keyGenerator:requestLimitKey});
  app.addHook('onRequest',async(req,reply)=>{
   reply.header('X-Content-Type-Options','nosniff');reply.header('Cache-Control','no-store');
   if(!['GET','HEAD','OPTIONS'].includes(req.method)){

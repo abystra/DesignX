@@ -57,8 +57,9 @@ export async function taskRoutes(app:FastifyInstance) {
  const streams=new Set<()=>void>();
  const listeners=new Map<string,Set<()=>void>>();
  const notificationConnection=await pool.connect();await notificationConnection.query('LISTEN designx_events');
- notificationConnection.on('notification',event=>{for(const notify of listeners.get(event.payload||'')||[])notify();});
- app.addHook('onClose',async()=>{for(const close of streams)close();await notificationConnection.query('UNLISTEN designx_events');notificationConnection.release();});
+ const onNotification=(event:{payload?:string})=>{for(const notify of listeners.get(event.payload||'')||[])notify();};
+ notificationConnection.on('notification',onNotification);
+ app.addHook('onClose',async()=>{for(const close of streams)close();notificationConnection.removeListener('notification',onNotification);await notificationConnection.query('UNLISTEN designx_events');notificationConnection.release();});
  app.get('/api/events',async(req:any,reply)=>{
   const header=req.headers['last-event-id'];let cursor=String(header||req.query.since||'0');
   if(!/^\d{1,20}$/.test(cursor))throw new HttpError(400,'INVALID_CURSOR','事件游标无效');

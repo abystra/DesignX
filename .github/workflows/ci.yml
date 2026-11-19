@@ -20,7 +20,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: docker compose -f infra/compose/docker-compose.dev.yml up -d --wait
       - run: pnpm db:migrate
-      - run: pnpm typecheck && pnpm test:unit && pnpm test:api && pnpm check && pnpm build
+      - run: pnpm typecheck && pnpm test:unit && pnpm test:api && pnpm test:poster && pnpm check && pnpm build
       - run: python -m pip install "pytest>=8,<10" "pytest-asyncio>=0.24,<2"
       - run: python -m pytest runtime/runner/tests -q
         env: {PYTHONPATH: runtime/runner/src}

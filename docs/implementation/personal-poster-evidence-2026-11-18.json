@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-18",
+  "timezone": "America/Los_Angeles",
+  "scope": "个人海报：模板/素材 → 编辑 → 保存 → 导出",
+  "environment": "Codex managed cloud; disposable local PostgreSQL/S3/Web/API/Media/Renderer",
+  "checks": {
+    "typecheck": "passed",
+    "unit": {
+      "passed": 103,
+      "failed": 0
+    },
+    "api": {
+      "passed": 83,
+      "failed": 0
+    },
+    "structuralChecks": "passed",
+    "build": "passed; existing large-chunk warning remains"
+  },
+  "browser": {
+    "data": "isolated local regression database and storage; real services, synthetic account",
+    "checks": [
+      "template → direct Editor → edit text → save → reload",
+      "project list and global search reopen the same editor",
+      "real renderer job downloads a 600 × 800 PNG",
+      "upload → save brand → apply font/colors and immutable Logo in editor",
+      "uploaded material is placed into the editable poster",
+      "stock reference creates a poster without INVALID_ASSET",
+      "text-only reference keeps the brief and creates no bogus asset link",
+      "lost create response retries with the same idempotency key and no duplicate project",
+      "tools reflect published operations and existing Studio projects retain their entry",
+      "home reflows at desktop/tablet/mobile, 320px, breakpoints and 200% equivalent viewport",
+      "390px blank poster creation, add text, edit and save through mobile panels"
+    ],
+    "errors": []
+  },
+  "render": {
+    "runId": "render-1795065759862",
+    "baseURL": "http://127.0.0.1:41999",
+    "mocked": false,
+    "results": [
+      {
+        "fixture": "chinese-latin-serif-and-wrapping",
+        "changedPixelRatio": 0,
+        "meanMaxChannelDelta": 0,
+        "width": 600,
+        "height": 500
+      },
+      {
+        "fixture": "rotation-opacity-contain-clipping",
+        "changedPixelRatio": 0.00025,
+        "meanMaxChannelDelta": 0.013135416666666667,
+        "width": 480,
+        "height": 400
+      },
+      {
+        "fixture": "explicit-source-serif-font",
+        "changedPixelRatio": 0,
+        "meanMaxChannelDelta": 0,
+        "width": 600,
+        "height": 500
+      }
+    ],
+    "pageErrors": []
+  },
+  "artifacts": [
+    "tests/e2e/.artifacts/poster-1795065743409",
+    "tests/e2e/.artifacts/render-1795065759862"
+  ],
+  "production": {
+    "status": "pending deployment"
+  },
+  "limitations": [
+    "No live model/provider calls",
+    "No production email or backup recovery exercise",
+    "200% reflow verified using equivalent CSS viewport; no physical mobile soft keyboard or screen reader test"
+  ]
+}

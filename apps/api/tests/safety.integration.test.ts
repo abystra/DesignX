@@ -63,6 +63,11 @@ test('trash hides exports/jobs and cancels pending work until project restore',a
 test('asset deletion protects historical designs and brand references',async()=>{
  const assetId=randomUUID(),brandAssetId=randomUUID();
  for(const a of [assetId,brandAssetId])await tenantTransaction(workspace,tx=>tx.query("INSERT INTO assets(id,workspace_id,title,mime,bytes,object_key,status) VALUES($1,$2,'Reference fixture','image/png',1,$3,'ready')",[a,workspace,`${workspace}/fixtures/${a}`]));
+ const brandVersionId=randomUUID();
+ await tenantTransaction(workspace,async tx=>{
+  await tx.query("INSERT INTO asset_versions(id,workspace_id,asset_id,object_key,bucket,bytes,sha256,mime) VALUES($1,$2,$3,$4,'fixture',1,$5,'image/png')",[brandVersionId,workspace,brandAssetId,`${workspace}/fixtures/${brandAssetId}`,'a'.repeat(64)]);
+  await tx.query('UPDATE assets SET current_version_id=$1 WHERE id=$2',[brandVersionId,brandAssetId]);
+ });
  const image=`/api/assets/${assetId}/file`;
  const design={width:100,height:100,background:'#ffffff',nodes:[{id:'photo',type:'image',x:0,y:0,w:100,h:100,src:image}]};
  const created=(await request('POST','/api/projects',{title:'Version reference',design})).json();

@@ -37,7 +37,9 @@ export async function startDisposableTestStorage({runId,accessKey,secretKey,sign
     await writeFile(configFile,JSON.stringify({identities:[{name:'designx-test',credentials:[{accessKey,secretKey}],actions:['Admin','Read','Write','List','Tagging']}]}),{mode:0o600});
     creationAttempted=true;
     await runDocker(['run','--detach','--rm','--pull=never','--name',name,'--label',label,'--publish','127.0.0.1::8333','--mount',`type=bind,source=${configFile},target=/etc/seaweedfs/s3.json,readonly`,imageId,
-      'server','-s3','-s3.config=/etc/seaweedfs/s3.json','-dir=/data','-volume.max=64','-master.volumeSizeLimitMB=32'],signal);
+      // All Seaweed services share this container. Loopback also avoids inherited
+      // cloud HTTP proxies intercepting its internal gRPC connections.
+      'server','-ip=127.0.0.1','-ip.bind=0.0.0.0','-s3','-s3.config=/etc/seaweedfs/s3.json','-dir=/data','-volume.max=64','-master.volumeSizeLimitMB=32'],signal);
     const published=(await runDocker(['port',name,'8333/tcp'],signal)).stdout.trim();
     if(!/^127\.0\.0\.1:\d{1,5}$/.test(published))throw new Error('Test S3 did not publish a random loopback port');
     const endpoint=`http://${published}`,deadline=Date.now()+45000;

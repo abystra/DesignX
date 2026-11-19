@@ -37,6 +37,7 @@ def configuration():
         "DEV_HOST": "0.0.0.0",
         "PORT": "3001",
         "AI_ENABLED": "false",
+        "IMAGE_GENERATION_ENABLED": "false",
     }
     for key, value in defaults.items():
         env.setdefault(key, value)

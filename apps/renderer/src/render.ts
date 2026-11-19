@@ -40,7 +40,7 @@ export async function renderExport(job:any){
  const sources=await embedSources(job.workspace_id,design,job.payload.assetVersions);
  const html=renderDocumentHtml(design,{transparent:format==='jpeg'?false:transparent,resolveAsset:src=>sources.get(src)||src});
  await updateJob(job.workspace_id,job.id,{progress:30},job.execution_token);
- const rendererVersion='designx-renderer-v2.2';
+ const rendererVersion='designx-renderer-v2.3';
  const cacheKey=createHash('sha256').update(JSON.stringify({rendererVersion,format,scale,transparent,title,documentId:job.payload.documentId,revision:job.payload.revision,assets:job.payload.assetVersions,documents:job.payload.documents})).update(html).digest('hex');
  const cached=await tenantTransaction(job.workspace_id,async tx=>(await tx.query("SELECT result FROM jobs WHERE workspace_id=$1 AND kind='render.export' AND status='succeeded' AND result->>'cacheKey'=$2 ORDER BY created_at DESC LIMIT 1",[job.workspace_id,cacheKey])).rows[0]?.result);
  let cachedObject:any;

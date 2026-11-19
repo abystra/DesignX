@@ -1,0 +1,27 @@
+:root {
+  --dx-bg-page: #f8f8f6;
+  --dx-bg-surface: #ffffff;
+  --dx-bg-subtle: #f1f2ee;
+  --dx-text-primary: #292b2e;
+  --dx-text-secondary: #5f655e;
+  --dx-text-muted: #6b7068;
+  --dx-border-subtle: #e9e9e5;
+  --dx-border-control: #858a81;
+  --dx-brand: #ef644d;
+  --dx-action: #bf452f;
+  --dx-action-hover: #aa3927;
+  --dx-action-pressed: #923020;
+  --dx-selection-bg: #fff0ea;
+  --dx-focus: #aa3927;
+  --dx-canvas-selection: #526c43;
+  --dx-success: #346447;
+  --dx-success-bg: #edf5ee;
+  --dx-warning: #8a5700;
+  --dx-warning-bg: #fff5dd;
+  --dx-danger: #b83232;
+  --dx-danger-bg: #fff0f0;
+  --dx-info: #315f8a;
+  --dx-info-bg: #eef4fb;
+  --dx-font-ui:
+    "Noto Sans SC Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
