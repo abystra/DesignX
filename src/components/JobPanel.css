@@ -1,0 +1,66 @@
+.notification-panel.job-panel {
+  position: fixed;
+  top: 72px;
+  right: max(16px, env(safe-area-inset-right));
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100dvh - 88px - env(safe-area-inset-bottom));
+  overflow: auto;
+  overscroll-behavior: contain;
+  isolation: isolate;
+  z-index: 50;
+  padding: 16px;
+  color: var(--dx-text-primary);
+  font: 14px/1.5 var(--dx-font-ui);
+  background: var(--dx-bg-surface);
+  border-color: var(--dx-border-subtle);
+}
+.job-panel h3 {
+  font-size: 16px;
+}
+.job-panel .job-row {
+  padding: 16px 0;
+}
+.job-panel .job-row > div {
+  flex-wrap: wrap;
+}
+.job-panel .job-row > span,
+.job-panel .job-row small {
+  font-size: 12px;
+  color: var(--dx-text-secondary);
+  overflow-wrap: anywhere;
+}
+.job-panel p {
+  overflow-wrap: anywhere;
+}
+.job-panel button,
+.job-panel .job-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--dx-text-primary);
+  border: 1px solid var(--dx-border-control);
+  border-radius: 8px;
+  background: var(--dx-bg-surface);
+}
+.job-panel .job-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.job-panel button:focus-visible,
+.job-panel a:focus-visible {
+  outline: 2px solid var(--dx-focus);
+  outline-offset: 2px;
+}
+.job-panel button:hover,
+.job-panel a:hover {
+  background: var(--dx-bg-subtle);
+}
+.job-panel [role="alert"] {
+  color: var(--dx-danger);
+}

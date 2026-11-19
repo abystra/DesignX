@@ -124,6 +124,7 @@ function ColorPicker({ value, onChange, label = "颜色" }) {
 export default function Editor({
   project,
   draftOwner,
+  onFeedback,
   onBack,
   onSave,
   onCopy,
@@ -1303,6 +1304,9 @@ export default function Editor({
             }}
             className="ed-inspector-toggle"
           />
+          <button className="ed-button" onClick={onFeedback}>
+            反馈与帮助
+          </button>
           <button className="ed-button" onClick={openVersions}>
             版本记录
           </button>

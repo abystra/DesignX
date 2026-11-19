@@ -1,3 +1,4 @@
+import {recordOpen} from '../../../packages/server-domain/src/product-facts.js';
 import {resolveTemplate,templateOrigin} from '../../../packages/server-domain/src/templates.js';
 import { cancelGeneration } from '../../../packages/server-domain/src/generations.js';
 import { projectPage } from '../../../packages/server-domain/src/library-pages.js';
@@ -40,7 +41,10 @@ export async function projectRoutes(app:FastifyInstance) {
   return projectDto(await getProject(tx,params(req).id));
  }));
  app.post('/api/projects/:id/open',async(req:any)=>tenantTransaction(req.identity.workspace.id,async tx=>{
-  await getProject(tx,params(req).id);await tx.query('UPDATE projects SET last_opened_at=now() WHERE id=$1',[params(req).id]);return {ok:true};
+  const {visitId}=z.object({visitId:z.uuid().optional()}).strict().parse(req.body||{});
+  await getProjectMetadata(tx,params(req).id);
+  if(visitId)await recordOpen(tx,req.identity.workspace.id,params(req).id,visitId);
+  await tx.query('UPDATE projects SET last_opened_at=now() WHERE id=$1',[params(req).id]);return {ok:true};
  }));
  app.get('/api/projects/:id/studio',async(req:any)=>tenantTransaction(req.identity.workspace.id,tx=>studioSnapshot(tx,params(req).id)));
  app.put('/api/projects/:id/studio',async(req:any)=>{

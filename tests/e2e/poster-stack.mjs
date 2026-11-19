@@ -39,7 +39,9 @@ try {
   const renderer=await child('apps/renderer/src/main.ts');
   // Control only this suite's isolated renderer; no production fault hooks.
   globalThis.DESIGNX_RENDERER_FIXTURE={pause:()=>renderer.kill('SIGSTOP'),resume:()=>renderer.kill('SIGCONT')};
-  if(process.env.DESIGNX_UI_ONLY==='true'){
+  if(process.env.DESIGNX_FEEDBACK_ONLY==='true'){
+    await import('./feedback_journey.mjs');
+  }else if(process.env.DESIGNX_UI_ONLY==='true'){
     await import('./ui_journey.mjs');
     await import('./library_journey.mjs');
   }else if(process.env.DESIGNX_PERFORMANCE_ONLY==='true'){
@@ -67,6 +69,7 @@ try {
     await import('./previews_journey.mjs');
     await import('./templates_journey.mjs');
     await import('./ui_journey.mjs');
+    await import('./feedback_journey.mjs');
     await import('./recovery_journey.mjs');
     await import('./large_import_journey.mjs');
     await import('./render_consistency.mjs');

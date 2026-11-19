@@ -143,26 +143,46 @@ def health():
     age = time.time() - (backup_state.get('lastSuccessAt') or 0)
     if age > 30 * 3600 or backup_state.get('status') == 'failed' or (backup_state.get('status') == 'running' and time.time() - backup_state.get('startedAt', 0) > 2 * 3600):
         problems.append('backup-stale-or-failed')
-    report = {'at': time.time(), 'status': 'degraded' if problems else 'ok', 'problems': problems, 'services': services, 'queues': queues, 'backupAgeSeconds': round(age), 'externalNotificationConfigured': False}
+    retention_state = json.loads((ROOT / 'retention.json').read_text()) if (ROOT / 'retention.json').exists() else {}
+    if (Path('/etc/systemd/system/designx-product-retention.timer').exists() and (retention_state.get('status') == 'failed' or time.time() - retention_state.get('completedAt', 0) > 48 * 3600)):
+        problems.append('product-retention-stale-or-failed')
+    report = {'retentionStatus': retention_state.get('status', 'not-configured'), 'at': time.time(), 'status': 'degraded' if problems else 'ok', 'problems': problems, 'services': services, 'queues': queues, 'backupAgeSeconds': round(age), 'externalNotificationConfigured': False}
     write_json(ROOT / 'health.json', report)
     print(json.dumps(report))
     return bool(problems)
 
+def retention():
+    _, _, image = settings()
+    ROOT.mkdir(mode=0o700, parents=True, exist_ok=True)
+    state = {'status': 'running', 'startedAt': time.time()}
+    write_json(ROOT / 'retention.json', state)
+    container = 'designx-retention-' + uuid.uuid4().hex
+    try:
+        result = json.loads(run(['docker', 'run', '--rm', '--name', container, '--network', 'host', '--read-only', '--tmpfs', '/tmp', '--security-opt', 'no-new-privileges', '--cap-drop', 'ALL', '--env-file', '/etc/designx/app.env', image, 'node', '--import', 'tsx', 'scripts/product-cli.ts', 'retention', '--all', '--apply'], timeout=900))
+        state.update(status='ok', completedAt=time.time(), result=result)
+    except BaseException:
+        state.update(status='failed', failedAt=time.time())
+        raise
+    finally:
+        subprocess.run(['docker', 'rm', '--force', container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+        write_json(ROOT / 'retention.json', state)
+    print(json.dumps(state))
+
 def install():
     ROOT.mkdir(mode=0o700, parents=True, exist_ok=True)
-    for name in ['designx-backup.service', 'designx-backup.timer', 'designx-health.service', 'designx-health.timer']:
+    for name in ['designx-backup.service', 'designx-backup.timer', 'designx-health.service', 'designx-health.timer', 'designx-product-retention.service', 'designx-product-retention.timer']:
         target = Path('/etc/systemd/system') / name
         if target.exists() and '# Managed by DesignX operations' not in target.read_text():
             raise RuntimeError('Refusing to replace an unmanaged unit: ' + name)
         target.write_text((CURRENT / 'infra/systemd' / name).read_text())
         target.chmod(0o644)
     run(['systemctl', 'daemon-reload'])
-    run(['systemctl', 'enable', '--now', 'designx-backup.timer', 'designx-health.timer'])
-    print(json.dumps({'installed': True, 'dailyUTC': '04:30', 'healthIntervalMinutes': 5, 'externalNotificationConfigured': False}))
+    run(['systemctl', 'enable', '--now', 'designx-backup.timer', 'designx-health.timer', 'designx-product-retention.timer'])
+    print(json.dumps({'installed': True, 'dailyUTC': '04:30', 'healthIntervalMinutes': 5, 'productRetentionDailyUTC': '06:00', 'externalNotificationConfigured': False}))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['backup', 'health', 'install'])
+    parser.add_argument('command', choices=['backup', 'health', 'install', 'retention'])
     args = parser.parse_args()
     if os.geteuid() != 0:
         raise SystemExit('Run as root on aws-1')
@@ -170,6 +190,7 @@ if __name__ == '__main__':
     try:
         if args.command == 'backup': backup()
         elif args.command == 'install': install()
+        elif args.command == 'retention': retention()
         else: raise SystemExit(int(health()))
     except Exception as error:
         print(json.dumps({'command': args.command, 'error': type(error).__name__, 'message': str(error) if isinstance(error, RuntimeError) else 'Operation failed; inspect private status and connectivity'}))

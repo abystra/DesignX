@@ -1,0 +1,46 @@
+{
+  "goal": "G7",
+  "date": "2026-11-18",
+  "environment": "Codex managed cloud; isolated local PostgreSQL/S3; real Chromium browser",
+  "status": "related API and UI validated; remaining regression/production pending",
+  "codeCommit": null,
+  "tests": {
+    "unit": 108,
+    "api": 120,
+    "newAPI": 8,
+    "typecheck": "passed",
+    "check": "passed",
+    "build": "passed",
+    "focusedBrowser": "tests/e2e/.artifacts/feedback-1795081076701/results.json",
+    "fullBrowser": {
+      "log": "/tmp/designx-g7-browser-full.log",
+      "passedBeforeTaskOverlayFix": [
+        "account 6",
+        "poster 11",
+        "library 10",
+        "preferences 8",
+        "previews 6",
+        "templates 5",
+        "UI 7"
+      ],
+      "interruption": "new failed-task feedback action was occluded by sidebar at 320px; JobPanel moved to fixed portal and all 9 feedback checks passed afterwards"
+    },
+    "focusedBrowserChecks": 9
+  },
+  "release": null,
+  "production": null,
+  "operations": null,
+  "restores": null,
+  "limits": [
+    "Physical phone keyboard, Safari device and screen reader unavailable",
+    "External notification channel remains unconfigured; no mail dependency",
+    "Fresh event collection only; no fabricated historical cohort or production conversion metrics",
+    "Download event means authorized GET bytes prepared, not proof of client receipt or device save"
+  ],
+  "regressionFixes": [
+    "explicit field labels remain stable after long textarea input",
+    "feedback modal uses shared centered shade",
+    "failed-task popover uses page portal so narrow sidebar cannot cover its actions",
+    "corrupt/expired session drafts safely discarded"
+  ]
+}

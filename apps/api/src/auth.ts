@@ -1,3 +1,4 @@
+import {recordRegistration} from '../../../packages/server-domain/src/product-facts.js';
 import {
   randomBytes,
   scrypt as scryptCallback,
@@ -175,7 +176,11 @@ export async function authRoutes(app: FastifyInstance) {
             "INSERT INTO workspaces(id,owner_id,name) VALUES($1,$2,$3)",
             [workspaceId, userId, displayName + " 的创作空间"],
           );
-          return startSession(tx, userId);
+          const token = await startSession(tx, userId);
+          await tx.query("SELECT set_config('app.workspace_id',$1,true)",[workspaceId]);
+          await tx.query('SET LOCAL ROLE designx_tenant');
+          await recordRegistration(tx,workspaceId);
+          return token;
         });
       } catch (error: any) {
         if (error.code === "23505")

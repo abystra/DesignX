@@ -250,7 +250,7 @@
   },
   "ci": {
     "url": "https://github.com/abystra/DesignX/actions/runs/44495167712",
-    "status": "in_progress",
-    "conclusion": null
+    "status": "completed",
+    "conclusion": "success"
   }
 }

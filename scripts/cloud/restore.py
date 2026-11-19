@@ -56,7 +56,15 @@ def restore(run_id):
         values.update(DATABASE_URL=urllib.parse.urlunsplit(url._replace(path='/' + target)), S3_BUCKET_ALIASES_JSON=json.dumps(restored['aliases'], separators=(',', ':')), AI_ENABLED='false', IMAGE_GENERATION_ENABLED='false', STORAGE_DIRECT_UPLOADS_ENABLED='false', LEGACY_S3_BUCKET='', LEGACY_S3_ENDPOINT='', WEB_ORIGIN='http://127.0.0.1:33101', PORT='33101', API_HOST='127.0.0.1')
         (directory / 'restore.env').write_text(''.join(key + '=' + value + '\n' for key, value in values.items()))
         (directory / 'restore.env').chmod(0o600)
-        state.update(status='ready-for-validation', counts=counts, objects=restored['objects'], image=image, restoreSeconds=round(time.time() - started, 2))
+        # An older archive may precede the currently pinned application's schema.
+        # Verify its original counts first, then migrate only this UUID drill database.
+        migration_container = 'designx-restore-migrate-' + token
+        try:
+            run(['docker', 'run', '--rm', '--name', migration_container, '--network', 'host', '--read-only', '--tmpfs', '/tmp', '--security-opt', 'no-new-privileges', '--cap-drop', 'ALL', '--env-file', str(directory / 'restore.env'), image, 'node', '--import', 'tsx', 'db/migrate.ts'], timeout=900)
+        finally:
+            import subprocess
+            subprocess.run(['docker', 'rm', '--force', migration_container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+        state.update(status='ready-for-validation', counts=counts, objects=restored['objects'], image=image, schemaMigratedToCurrentRelease=True, restoreSeconds=round(time.time() - started, 2))
         write_json(directory / 'drill.json', state)
         print(json.dumps(state))
     except BaseException:

@@ -1,3 +1,4 @@
+import {recordDownload} from '../../../packages/server-domain/src/product-facts.js';
 import { freezeRenderInputs } from '../../../packages/server-domain/src/render-inputs.js';
 import { idempotent } from '../../../packages/server-domain/src/idempotency.js';
 import type { FastifyInstance } from 'fastify';
@@ -54,7 +55,9 @@ export async function taskRoutes(app:FastifyInstance) {
  app.get('/api/exports/:id/file',async(req:any,reply)=>{
   const job=await tenantTransaction(req.identity.workspace.id,async tx=>(await tx.query("SELECT j.* FROM jobs j JOIN projects p ON p.id=j.project_id WHERE j.id=$1 AND j.kind='render.export' AND p.deleted_at IS NULL",[req.params.id])).rows[0]);
   if(!job)notFound();if(job.status!=='succeeded')throw new HttpError(409,'EXPORT_NOT_READY','导出尚未完成');
-  const result=await getObject(job.result.objectKey,{bucket:job.result.storageBucket||process.env.LEGACY_S3_BUCKET||undefined});reply.type(result.contentType);reply.header('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(job.result.filename)}`);return result.bytes;
+  const result=await getObject(job.result.objectKey,{bucket:job.result.storageBucket||process.env.LEGACY_S3_BUCKET||undefined});
+  if(req.method==='GET')await tenantTransaction(req.identity.workspace.id,tx=>recordDownload(tx,req.identity.workspace.id,job));
+  reply.type(result.contentType);reply.header('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(job.result.filename)}`);return result.bytes;
  });
  const streams=new Set<()=>void>();
  const listeners=new Map<string,Set<()=>void>>();

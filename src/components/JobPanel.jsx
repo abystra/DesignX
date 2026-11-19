@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   X,
   Download,
@@ -6,22 +6,62 @@ import {
   LoaderCircle,
   CheckCircle2,
 } from "lucide-react";
+import { createPortal } from "react-dom";
+import "./JobPanel.css";
 import { api } from "../lib/api";
-export default function JobPanel({ onClose, onToast, onOpenProject }) {
+export default function JobPanel({
+  onClose,
+  onToast,
+  onOpenProject,
+  onFeedback,
+}) {
   const [jobs, setJobs] = useState([]),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [loaded, setLoaded] = useState(false);
+  const loading = useRef(false),
+    mounted = useRef(true),
+    previous = useRef(document.activeElement),
+    panel = useRef(null),
+    close = useRef(onClose);
+  close.current = onClose;
   async function load() {
+    if (loading.current) return;
+    loading.current = true;
     try {
-      setJobs(await api("/jobs"));
-      setError("");
+      const result = await api("/jobs");
+      if (mounted.current) {
+        setJobs(result);
+        setError("");
+        setLoaded(true);
+      }
     } catch (e) {
-      setError(e.message);
+      if (mounted.current) setError(e.message);
+    } finally {
+      loading.current = false;
     }
   }
   useEffect(() => {
+    mounted.current = true;
     load();
+    panel.current?.querySelector("button")?.focus();
+    const onKey = (e) => {
+      if (
+        e.key === "Escape" &&
+        !e.isComposing &&
+        !e.target.closest?.("dialog[open]")
+      ) {
+        e.preventDefault();
+        close.current();
+      }
+    };
+    document.addEventListener("keydown", onKey);
     const timer = setInterval(load, 2500);
-    return () => clearInterval(timer);
+    return () => {
+      mounted.current = false;
+      clearInterval(timer);
+      document.removeEventListener("keydown", onKey);
+      if (previous.current?.isConnected) previous.current.focus();
+    };
   }, []);
   async function action(id, action) {
     try {
@@ -31,16 +71,27 @@ export default function JobPanel({ onClose, onToast, onOpenProject }) {
       onToast?.(e.message);
     }
   }
-  return (
-    <div className="notification-panel job-panel">
+  return createPortal(
+    <div
+      className="notification-panel job-panel"
+      ref={panel}
+      role="region"
+      aria-label="创作动态"
+    >
       <h3>
         创作动态{" "}
         <button className="icon-button" onClick={onClose} aria-label="关闭消息">
           <X size={15} />
         </button>
       </h3>
-      {error && <p role="alert">{error}</p>}
-      {!jobs.length && (
+      {error && (
+        <p role="alert">
+          {error}
+          <button onClick={load}>重试读取任务</button>
+        </p>
+      )}
+      {!loaded && !error && <p role="status">正在读取任务…</p>}
+      {loaded && !error && !jobs.length && (
         <p>上传素材、导入项目和导出作品后，可以在这里查看进度。</p>
       )}
       {jobs.slice(0, 30).map((j) => (
@@ -75,6 +126,18 @@ export default function JobPanel({ onClose, onToast, onOpenProject }) {
           </span>
           {j.error && <small>{j.error}</small>}
           <div className="job-actions">
+            {j.status === "failed" && (
+              <button
+                onClick={() =>
+                  onFeedback?.({
+                    jobId: j.id,
+                    ...(j.projectId ? { projectId: j.projectId } : {}),
+                  })
+                }
+              >
+                反馈此任务
+              </button>
+            )}
             {["failed", "cancelled"].includes(j.status) && (
               <button onClick={() => action(j.id, "retry")}>重试</button>
             )}
@@ -106,6 +169,7 @@ export default function JobPanel({ onClose, onToast, onOpenProject }) {
           </div>
         </article>
       ))}
-    </div>
+    </div>,
+    document.body,
   );
 }

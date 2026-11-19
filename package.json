@@ -46,7 +46,8 @@
     "ops:reconcile": "tsx scripts/reconcile-provider-call.ts",
     "db:backup": "tsx scripts/database-backup.ts",
     "dev:import": "WORKER_ROLE=import tsx watch apps/worker/src/main.ts",
-    "dev:v2": "concurrently -k -n web,api,generation,media,agent,import,renderer \"pnpm dev:web\" \"pnpm dev:api\" \"pnpm dev:generation\" \"pnpm dev:media\" \"pnpm dev:agent\" \"pnpm dev:import\" \"pnpm dev:renderer\""
+    "dev:v2": "concurrently -k -n web,api,generation,media,agent,import,renderer \"pnpm dev:web\" \"pnpm dev:api\" \"pnpm dev:generation\" \"pnpm dev:media\" \"pnpm dev:agent\" \"pnpm dev:import\" \"pnpm dev:renderer\"",
+    "ops:product": "tsx scripts/product-cli.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",

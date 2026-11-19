@@ -59,6 +59,7 @@ import {
 import { initialDesign } from "./data/template-design.js";
 import { creationEntries, materialFor } from "./lib/creation-entry.js";
 import "./styles/poster.css";
+import FeedbackPanel from "./components/FeedbackPanel.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import DesignThumbnail from "./components/DesignThumbnail.jsx";
 import Catalog from "./components/Catalog.jsx";
@@ -485,6 +486,11 @@ export default function App({
     [task, setTask] = useState(null),
     [studio, setStudio] = useState(null),
     [editedProject, setEditedProject] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  function openFeedback(context = {}) {
+    setNotice(false);
+    setFeedback(context);
+  }
   const [notice, setNotice] = useState(false),
     [toast, setToast] = useState(""),
     [searchOpen, setSearchOpen] = useState(false),
@@ -689,7 +695,13 @@ export default function App({
       boot();
     };
     const onKey = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if (
+        !e.isComposing &&
+        e.keyCode !== 229 &&
+        !e.target.closest?.("dialog[open]") &&
+        (e.metaKey || e.ctrlKey) &&
+        e.key === "k"
+      ) {
         e.preventDefault();
         setSearchOpen((v) => !v);
       }
@@ -839,9 +851,43 @@ export default function App({
       notify(e.message);
     }
   }
+  const activeProjectId =
+    editing?.projectId || editing?.id || studio?.projectId;
+  useEffect(() => {
+    if (!activeProjectId || editing?.unavailable || loading || creating) return;
+    // One visit survives refresh; a new application navigation has fresh history state.
+    const previous = history.state?.designxVisit;
+    const visit =
+      previous?.projectId === activeProjectId
+        ? previous
+        : { projectId: activeProjectId, id: crypto.randomUUID() };
+    history.replaceState({ ...history.state, designxVisit: visit }, "");
+    let stopped = false,
+      retry;
+    const record = () =>
+      api(`/projects/${activeProjectId}/open`, {
+        method: "POST",
+        body: { visitId: visit.id },
+      }).catch((error) => {
+        if (!stopped && (!error.status || error.status >= 500))
+          retry = setTimeout(record, 5000);
+      });
+    record();
+    return () => {
+      stopped = true;
+      clearTimeout(retry);
+    };
+  }, [activeProjectId, editing?.unavailable, loading, creating]);
   const current = NAV.find((x) => x[0] === page);
   return (
     <>
+      {feedback && (
+        <FeedbackPanel
+          owner={`${sessionUser.id}:${workspace.id}`}
+          context={feedback}
+          onClose={() => setFeedback(null)}
+        />
+      )}
       {(creating || creationError) && (
         <div
           className="creation-feedback"
@@ -899,6 +945,7 @@ export default function App({
                 onEdit={edit}
                 onSave={save}
                 onToast={notify}
+                onFeedback={() => openFeedback({ projectId: studio.projectId })}
                 editedProject={editedProject}
               />
             </DeferredRoute>
@@ -916,6 +963,13 @@ export default function App({
             <Editor
               key={editing.id}
               project={editing}
+              onFeedback={() =>
+                openFeedback(
+                  editing.unavailable
+                    ? {}
+                    : { projectId: editing.projectId || editing.id },
+                )
+              }
               draftOwner={`${sessionUser.id}:${workspace.id}`}
               onCopy={(copy) => {
                 setStudio(null);
@@ -984,6 +1038,14 @@ export default function App({
                 ))}
               </nav>
               <div className="sidebar-bottom">
+                <button
+                  className="nav-item feedback-entry"
+                  onClick={() => openFeedback()}
+                  title="反馈与帮助"
+                >
+                  <HelpCircle size={18} />
+                  <span>反馈与帮助</span>
+                </button>
                 <div className="sidebar-tip">
                   <div>
                     <Sparkles size={17} />
@@ -1087,6 +1149,7 @@ export default function App({
                 </div>
                 {notice && (
                   <JobPanel
+                    onFeedback={openFeedback}
                     onClose={() => setNotice(false)}
                     onToast={notify}
                     onOpenProject={openProject}

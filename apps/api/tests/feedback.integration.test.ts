@@ -1,0 +1,106 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import sharp from 'sharp';
+import {buildApp} from '../src/server.js';
+import {migrate} from '../../../db/migrate.js';
+import {pool,tenantTransaction,transaction} from '../../../packages/server-infra/src/db.js';
+import {stopQueue} from '../../../packages/server-infra/src/queue.js';
+import {runBusinessJob} from '../../worker/src/process.js';
+import {renderExport,closeBrowser} from '../../renderer/src/render.js';
+import {updateFeedback} from '../../../packages/server-domain/src/feedback.js';
+import {operationalReport,metricsExclusion,retainProductData} from '../../../scripts/product-operations.js';
+await migrate();const app=await buildApp({logger:false});
+const cookies:string[]=[],spaces:string[]=[];let project:any,feedbackId:string,exportId:string;
+const req=(method:string,path:string,body?:any,actor=0,headers:any={})=>app.inject({method:method as any,url:'/api'+path,payload:body,headers:{cookie:cookies[actor],...headers}});
+const facts=()=>tenantTransaction(spaces[0],async tx=>(await tx.query('SELECT * FROM product_events ORDER BY id')).rows);
+const postFeedback=(body:any,key=randomUUID(),actor=0)=>req('POST','/feedback',body,actor,{'idempotency-key':key});
+async function run(id:string){const job=(await tenantTransaction(spaces[0],tx=>tx.query('SELECT * FROM jobs WHERE id=$1',[id]))).rows[0];await runBusinessJob({id:job.queue_id,data:{workspaceId:spaces[0],jobId:id}},renderExport);}
+test.before(async()=>{for(let n=0;n<2;n++){const r=await app.inject({method:'POST',url:'/api/auth/register',payload:{username:'feedback_'+randomUUID().slice(0,8),password:'feedback-test-password'}});assert.equal(r.statusCode,201,r.body);cookies.push(String(r.headers['set-cookie']).split(';')[0]);spaces.push(r.json().workspace.id);}});
+test.after(async()=>{await closeBrowser();await app.close();await stopQueue();await pool.end();});
+test('transactional registration, creation, effective-edit and save facts deduplicate and roll back with their domain writes',async()=>{
+ assert.equal((await facts()).filter(e=>e.event==='registration_completed').length,1);
+ const body={title:'事件正文不应被采集',templateId:'t1',workspaceMode:'editor'},key=randomUUID();
+ const r=await req('POST','/projects',body,0,{'idempotency-key':key});assert.equal(r.statusCode,201,r.body);project=r.json();
+ assert.equal((await req('POST','/projects',body,0,{'idempotency-key':key})).json().id,project.id);
+ const before=(await facts()).length;
+ assert.equal((await req('POST','/projects',{title:'invalid',material:{kind:'asset',id:randomUUID()},workspaceMode:'editor'})).statusCode,400);
+ assert.equal((await facts()).length,before);
+ let saved=await req('PATCH','/projects/'+project.id,{design:project.design,baseRevision:project.revision});assert.equal(saved.statusCode,200,saved.body);project=saved.json();
+ assert.equal((await facts()).filter(e=>e.event==='first_effective_edit').length,0);
+ const edit={design:{...project.design,background:'#abcdef'},baseRevision:project.revision},op=randomUUID();
+ saved=await req('PATCH','/projects/'+project.id,edit,0,{'idempotency-key':op});assert.equal(saved.statusCode,200,saved.body);project=saved.json();
+ await req('PATCH','/projects/'+project.id,edit,0,{'idempotency-key':op});
+ assert.equal((await req('PATCH','/projects/'+project.id,{...edit,baseRevision:1})).statusCode,409);
+ const rows=await facts();assert.equal(rows.filter(e=>e.event==='project_created').length,1);assert.equal(rows.filter(e=>e.event==='first_effective_edit').length,1);assert.equal(rows.filter(e=>e.event==='save_succeeded').length,2);
+ assert.ok(!JSON.stringify(rows).includes('事件正文'));assert.ok(rows.every(e=>!('payload' in e)));
+});
+test('open visits deduplicate refresh/retry; new authorized visit becomes reopen; foreign visits denied',async()=>{
+ const visitId=randomUUID();for(let n=0;n<3;n++)assert.equal((await req('POST',`/projects/${project.id}/open`,{visitId})).statusCode,200);
+ await req('POST',`/projects/${project.id}/open`,{visitId:randomUUID()});await req('POST',`/projects/${project.id}/open`);
+ assert.equal((await req('POST',`/projects/${project.id}/open`,{visitId:randomUUID()},1)).statusCode,404);
+ assert.equal((await facts()).filter(e=>e.event==='project_opened').length,1);assert.equal((await facts()).filter(e=>e.event==='project_reopened').length,1);
+});
+test('feedback validates context, survives API replay without retaining message in generic idempotency response, and is tenant private',async()=>{
+ const body={category:'problem',subject:'导出问题',message:'仅反馈所需内容',projectId:project.id},key=randomUUID();
+ assert.equal((await req('POST','/feedback',body)).statusCode,428);
+ assert.equal((await postFeedback({...body,extra:'not allowed'})).statusCode,400);
+ assert.equal((await postFeedback({...body,message:'x'.repeat(2001)})).statusCode,400);
+ assert.equal((await postFeedback({...body,projectId:randomUUID()})).statusCode,404);
+ const responses=await Promise.all([postFeedback(body,key),postFeedback(body,key)]);for(const r of responses)assert.equal(r.statusCode,201,r.body);
+ feedbackId=responses[0].json().id;assert.equal(responses[1].json().id,feedbackId);
+ assert.equal((await postFeedback({...body,message:'different'},key)).statusCode,409);
+ const stored=(await tenantTransaction(spaces[0],tx=>tx.query('SELECT response FROM idempotency_keys WHERE key=$1',[key]))).rows[0].response;assert.deepEqual(stored,{id:feedbackId,status:'received'});
+ assert.equal((await req('GET','/feedback/'+feedbackId)).json().message,body.message);
+ assert.equal((await req('GET','/feedback/'+feedbackId,undefined,1)).statusCode,404);
+ assert.deepEqual((await req('GET','/feedback',undefined,1)).json().items,[]);
+ assert.equal((await postFeedback(body,randomUUID(),1)).statusCode,404);
+ assert.equal((await req('PATCH','/feedback/'+feedbackId,{status:'resolved'})).statusCode,404);
+ assert.equal((await app.inject('/api/feedback')).statusCode,401);
+});
+test('trusted operator CAS creates visible status history; stale or foreign updates cannot overwrite',async()=>{
+ const input={revision:1,status:'triaged',reply:'正在核对导出任务',actor:'isolated-operator'};
+ const responses=await Promise.allSettled([tenantTransaction(spaces[0],tx=>updateFeedback(tx,spaces[0],feedbackId,input)),tenantTransaction(spaces[0],tx=>updateFeedback(tx,spaces[0],feedbackId,input))]);
+ assert.equal(responses.filter(r=>r.status==='fulfilled').length,1);assert.equal((responses.find(r=>r.status==='rejected') as PromiseRejectedResult).reason.statusCode,409);
+ await assert.rejects(tenantTransaction(spaces[1],tx=>updateFeedback(tx,spaces[1],feedbackId,input)),(e:any)=>e.statusCode===404);
+ const item=(await req('GET','/feedback/'+feedbackId)).json();assert.equal(item.revision,2);assert.equal(item.status,'triaged');assert.equal(item.updates[0].reply,input.reply);assert.ok(!JSON.stringify(item).includes('isolated-operator'));
+ const cli=JSON.parse(execFileSync(process.execPath,['--import','tsx','scripts/product-cli.ts','show','--workspace',spaces[0],'--id',feedbackId],{encoding:'utf8',env:process.env}));assert.equal(cli.id,feedbackId);
+});
+test('persistent feedback limit serializes concurrent requests, replay survives limit, cursor and task context are scoped',async()=>{
+ const body={category:'suggestion',subject:'建议',message:'可操作建议'},key=randomUUID();
+ const first=await postFeedback(body,key);assert.equal(first.statusCode,201);
+ const responses=await Promise.all(Array.from({length:5},()=>postFeedback(body)));assert.equal(responses.filter(r=>r.statusCode===201).length,3);assert.equal(responses.filter(r=>r.statusCode===429).length,2);
+ assert.equal((await postFeedback(body,key)).json().id,first.json().id);
+ const firstPage=(await req('GET','/feedback?limit=2')).json();assert.equal(firstPage.items.length,2);const second=(await req('GET','/feedback?limit=2&cursor='+firstPage.nextCursor)).json();assert.ok(second.items.every((r:any)=>!firstPage.items.some((p:any)=>p.id===r.id)));
+ assert.equal((await req('GET','/feedback?cursor='+feedbackId,undefined,1)).statusCode,404);
+});
+test('only successful export records completion; HEAD/foreign download and thumbnails do not count; real PNG request deduplicates',async()=>{
+ const pending=await req('POST',`/projects/${project.id}/exports`,{format:'png',scale:1});assert.equal(pending.statusCode,202);exportId=pending.json().id;
+ assert.equal((await req('GET','/exports/'+exportId+'/file')).statusCode,409);
+ await run(exportId);const head=await req('HEAD','/exports/'+exportId+'/file');assert.equal(head.statusCode,200,head.body);assert.equal((await facts()).filter(e=>e.event==='download_requested').length,0);
+ assert.equal((await req('GET','/exports/'+exportId+'/file',undefined,1)).statusCode,404);
+ const file=await req('GET','/exports/'+exportId+'/file');assert.equal(file.statusCode,200);const png=await sharp(file.rawPayload).metadata();assert.equal(png.width,600);assert.equal(png.height,800);
+ await req('GET','/exports/'+exportId+'/file');await run(exportId);
+ const preview=await req('POST',`/projects/${project.id}/preview`,{});assert.equal(preview.statusCode,200);await run(preview.json().current.jobId);
+ assert.equal((await facts()).filter(e=>e.event==='export_completed').length,1);assert.equal((await facts()).filter(e=>e.event==='download_requested').length,1);
+ await tenantTransaction(spaces[0],tx=>tx.query("UPDATE feedback SET created_at=now()-interval '11 minutes'"));
+ const linked=await postFeedback({category:'problem',subject:'文件问题',message:'关联任务',jobId:exportId});assert.equal(linked.statusCode,201,linked.body);const detail=(await req('GET','/feedback/'+linked.json().id)).json();assert.equal(detail.projectId,project.id);assert.equal(detail.job.status,'succeeded');assert.equal((await postFeedback({category:'problem',subject:'外部任务',message:'deny',jobId:exportId},randomUUID(),1)).statusCode,404);
+});
+test('operations report uses tenant scopes, explicit cohort denominators, terminal failure formula and fixture exclusion',async()=>{
+ await assert.rejects(operationalReport({}),/explicit/);await assert.rejects(operationalReport({workspaceId:spaces[0],all:true}),/explicit/);
+ const noContext=await transaction(async tx=>{await tx.query("SELECT set_config('app.workspace_id','',true)");await tx.query('SET LOCAL ROLE designx_tenant');return (await tx.query('SELECT count(*)::int AS n FROM jobs')).rows[0].n});assert.equal(noContext,0,'old unscoped query returned misleading zero');
+ await tenantTransaction(spaces[0],tx=>tx.query("INSERT INTO jobs(id,workspace_id,project_id,kind,status,payload) VALUES($1,$2,$3,'render.export','failed','{}')",[randomUUID(),spaces[0],project.id]));
+ let report=await operationalReport({workspaceId:spaces[0]});assert.equal(report.metrics.registeredCohort,1);assert.equal(report.metrics.cohortFirstPosterExport,1);assert.equal(report.metrics.firstPosterExportRate,1);assert.equal(report.metrics.terminalExportFailureRate,0.5);assert.ok(report.workspaces[0].queues.length);
+ const cli=JSON.parse(execFileSync(process.execPath,['--import','tsx','scripts/operations-report.ts','--workspace',spaces[0]],{encoding:'utf8',env:process.env}));assert.equal(cli.metrics.exports.failed,1);
+ await tenantTransaction(spaces[0],tx=>metricsExclusion(tx,spaces[0],true,'isolated acceptance fixture'));
+ report=await operationalReport({workspaceId:spaces[0]});assert.equal(report.metrics.registeredCohort,0);assert.equal(report.metrics.firstPosterExportRate,null);assert.equal(report.metrics.terminalExportFailureRate,null);assert.ok(report.workspaces[0].queues.length,'operational failures remain visible for excluded fixtures');
+});
+test('retention is explicit and dry by default, preserves active feedback and first milestones, and stays tenant scoped',async()=>{
+ await tenantTransaction(spaces[0],async tx=>{await updateFeedback(tx,spaces[0],feedbackId,{revision:2,status:'resolved',reply:'验收完成',actor:'fixture'});await tx.query("UPDATE feedback SET updated_at=now()-interval '366 days'");await tx.query("UPDATE product_events SET created_at=now()-interval '181 days'");});
+ const before=await facts(),dry=await retainProductData({workspaceId:spaces[0]});assert.equal(dry.results[0].events,before.length);assert.equal(dry.results[0].feedback,1);assert.equal((await facts()).length,before.length);
+ const otherBefore=(await req('GET','/feedback',undefined,1)).json();await retainProductData({workspaceId:spaces[0]},true);assert.equal((await facts()).length,0);assert.equal((await req('GET','/feedback/'+feedbackId)).statusCode,404);assert.equal((await req('GET','/feedback')).json().items.length,5);assert.deepEqual((await req('GET','/feedback',undefined,1)).json(),otherBefore);
+ assert.equal((await tenantTransaction(spaces[0],tx=>tx.query("SELECT 1 FROM product_milestones WHERE kind='first_effective_edit'"))).rowCount,1);
+ await req('GET','/exports/'+exportId+'/file');assert.equal((await facts()).filter(e=>e.event==='download_requested').length,0,'old first download is not fabricated after event retention');
+ const next=await req('PATCH','/projects/'+project.id,{design:{...project.design,background:'#123456'},baseRevision:project.revision});assert.equal(next.statusCode,200,next.body);assert.equal((await facts()).filter(e=>e.event==='first_effective_edit').length,0);
+});

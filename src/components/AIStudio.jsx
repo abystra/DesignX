@@ -214,6 +214,7 @@ export default function AIStudio({
   onSave,
   onToast,
   editedProject,
+  onFeedback,
 }) {
   const snap = session.snapshot || {};
   const projectId = session.projectId || session.id;
@@ -1972,6 +1973,9 @@ export default function AIStudio({
           />
           <span>创作空间</span>
           <div>
+            <IconButton label="反馈与帮助" onClick={onFeedback}>
+              <MessageSquare size={16} />
+            </IconButton>
             <IconButton label="本次文件" onClick={() => togglePanel("files")}>
               <FolderOpen size={15} />
             </IconButton>
